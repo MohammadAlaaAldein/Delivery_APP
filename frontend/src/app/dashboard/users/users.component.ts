@@ -76,7 +76,6 @@ export class UsersComponent {
 
 		this.usersService.list(filters).subscribe((res: { data: User[] }) => {
 			const users = res.data;
-			const userHasManagementFunction = this.usersService.hasAccessFunctions(['management_function']);
 			const data = [];
 			for (const user of users) {
 				const options = [
@@ -85,15 +84,12 @@ export class UsersComponent {
 					{ text: this.translate.instant('g.delete'), action: () => { this.confirmDeleteUser(user) } },
 				];
 
-				if (userHasManagementFunction)
-					options.push({ text: this.translate.instant('nav.access_functions'), action: () => { this.updateAccessFunctions(user) } });
-
 				data.push({
 					id: user.id,
 					name: { value: user.name },
 					email: { value: user.email },
 					role: { value: user.role },
-					entity_type: { value: user.entity_type },
+					// entity_type: { value: user.entity_type },
 					create_date: { value: moment(user.created_at).format('YYYY-MM-DD') },
 					actions: { value: null, options: options }
 				});
@@ -139,10 +135,6 @@ export class UsersComponent {
 			this.tableData = this.tableData.filter((u) => u['id'] !== user.id);
 			this.notificationService.setMessage('globalSuccessMsg');
 		});
-	}
-
-	updateAccessFunctions(user: User) {
-		this.router.navigate(['/users/access-functions', user.id]);
 	}
 
 	confirmUpdateUserPassword(user: User) {

@@ -5,16 +5,13 @@ import { JwtService } from '@nestjs/jwt';
 import { JWT_SECRET_TOKEN, JWT_REFRESH_SECRET_TOKEN, JWT_SECRET_TOKEN_TTL, JWT_REFRESH_SECRET_TOKEN_TTL, getSiteBaseURL, WHITELISTED_IPS } from 'src/common/constants';
 import { comparePasswords, generateOtpCode, generateSessionId, translate } from 'src/common/utilities';
 import { FastifyRequest } from 'fastify';
-import { AccessFunctionLevel, AccessFunctionsDto } from '../users/dto/update-access-functions.dto';
 import { RedisService } from '../redis/redis.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MailersService } from '../mailers/mailers.service';
 import { ErrorKeys } from 'src/common/api-response';
 import moment from 'moment';
-import { ACCESS_FUNCTIONS } from 'src/common/access-functions';
 import { UserResponse } from './auth.interface';
 import { encrypt } from 'src/common/common';
-import { UserRolesService } from '../user-roles/user-roles.service';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +20,6 @@ export class AuthService {
 		private jwtService: JwtService,
 		private redisService: RedisService,
 		private readonly eventEmitter: EventEmitter2,
-		private readonly userRolesService: UserRolesService,
 		// private readonly mailersService: MailersService
 	) { }
 
@@ -130,7 +126,6 @@ export class AuthService {
 				role: user.role,
 				// entity_type: user.entity_type,
 				entity_id: user.entity_id,
-				access_functions: user.access_functions,
 			}, // Payload
 			{ secret: JWT_SECRET_TOKEN, expiresIn: JWT_SECRET_TOKEN_TTL },
 		);
@@ -145,7 +140,6 @@ export class AuthService {
 				role: user.role,
 				// entity_type: user.entity_type,
 				entity_id: user.entity_id,
-				access_functions: user.access_functions
 			}, // Payload
 			{ secret: JWT_REFRESH_SECRET_TOKEN, expiresIn: JWT_REFRESH_SECRET_TOKEN_TTL }, // 7 days expiration
 		);
@@ -381,35 +375,4 @@ export class AuthService {
 			throw ex;
 		}
 	}
-}
-
-export const hasAccessFunction = (
-	req: FastifyRequest,
-	function_name: string,
-	options: {
-		accessFunctions?: AccessFunctionsDto,
-		accessLevel?: AccessFunctionLevel
-	} = {}
-) => {
-	return true;
-	const user = req.user;
-	if (!user && !options?.accessFunctions)
-		return false;
-
-	const accessLevel = options.accessLevel || AccessFunctionLevel.READ;
-	const accessFunctions = options.accessFunctions || user?.access_functions;
-
-	if (!accessFunctions)
-		return false;
-
-	if (accessFunctions['super_admin'] == AccessFunctionLevel.WRITE)
-		return true;
-
-	if (!accessFunctions[function_name])
-		return false;
-
-	if (accessLevel == AccessFunctionLevel.READ)
-		return accessFunctions[function_name] != AccessFunctionLevel.NO_ACCESS;
-
-	return accessFunctions[function_name] == accessLevel;
 }

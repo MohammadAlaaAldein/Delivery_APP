@@ -2,7 +2,7 @@
 	<ul class="list-unstyled">
 		<li class="me-3">
 			<div class="dropdown pc-h-item pc-mega-menu" ngbDropdown>
-				<a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0" href="javascript:" ngbDropdownToggle *ngIf="usersService.hasAccessFunctions(['admin'])">
+				<a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0" href="javascript:" ngbDropdownToggle>
 					<i class="ti ti-menu-2"></i>
 				</a>
 				<div class="dropdown-menu pc-h-dropdown pc-mega-drop-menu" ngbDropdownMenu>
@@ -19,7 +19,7 @@
 										<h5 class="mx-3">{{ section.title }}</h5>
 										<ul class="pc-mega-list">
 											@for (item of section.items; track item) {
-												<li *ngIf="usersService.hasAccessFunctions(item.accessFunctions || [])">
+												<li *ngIf="usersService.hasRoleAccess(item.role)">
 													<a [routerLink]="[item.url]" class="dropdown-item">
 														<i class="fas fa-circle me-2"></i>
 														{{ item.title }}

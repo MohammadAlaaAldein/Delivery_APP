@@ -1,4 +1,4 @@
-import { ENTITY_TYPE, USER_ROLE } from "../user-roles/user-roles.service";
+import { USER_ROLE } from "../users/users.service";
 
 export interface UserResponse {
 	name: string;

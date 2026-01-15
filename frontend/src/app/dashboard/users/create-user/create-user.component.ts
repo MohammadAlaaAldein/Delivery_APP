@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { USER_ROLE, UsersService } from '../users.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterEvent } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
 import { User } from '../user.interface';
 import { CommonService } from 'src/app/shared/services/common.service';
@@ -22,8 +22,7 @@ export class CreateUserComponent {
 		id: null,
 		name: "",
 		email: "",
-		role: "",
-		entity_type: "",
+		role: null,
 		password: "",
 		confirm_password: "",
 	}
@@ -58,7 +57,6 @@ export class CreateUserComponent {
 			name: ['', [...requiredFieldsValidator, Validators.minLength(2)]],
 			email: ['', [...requiredFieldsValidator, Validators.email]],
 			role: ['', [...requiredFieldsValidator, Validators.minLength(1)]],
-			entity_type: ['', [...requiredFieldsValidator, Validators.minLength(1)]],
 			password: ['', [...requiredFieldsValidator, Validators.minLength(6)]],
 			confirm_password: ['', [...requiredFieldsValidator]],
 		}, { validator: this.passwordMatchValidator });
@@ -76,6 +74,7 @@ export class CreateUserComponent {
 					this.firstFormGroup.patchValue({
 						name: this.user.name,
 						email: this.user.email,
+						role: this.user.role,
 					});
 
 					this.firstFormGroup.removeControl('password');

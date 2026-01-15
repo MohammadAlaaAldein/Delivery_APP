@@ -11,8 +11,7 @@ import { TranslateService } from '@ngx-translate/core';
 import screenfull from 'screenfull';
 import { ConfigurationComponent } from '../../configuration/configuration.component';
 import { AuthService } from 'src/app/dashboard/users/login/auth.service';
-import { UsersService } from 'src/app/dashboard/users/users.service';
-import { pagesAccessFunctions } from 'src/app/theme/shared/access-functions';
+import { USER_ROLE, UsersService } from 'src/app/dashboard/users/users.service';
 import { CommonDataService } from 'src/app/shared/services/common-data.service';
 import { NgSelectModule } from "@ng-select/ng-select";
 
@@ -24,6 +23,8 @@ import { NgSelectModule } from "@ng-select/ng-select";
 	styleUrl: './nav-right.component.scss'
 })
 export class NavRightComponent implements OnInit {
+	readonly USER_ROLE = USER_ROLE;
+
 	user = null;
 	screenFull: boolean = true;
 	componentSections = [
@@ -33,12 +34,12 @@ export class NavRightComponent implements OnInit {
 				{
 					title: this.translate.instant('nav.users_list'),
 					url: '/users',
-					accessFunctions: pagesAccessFunctions.user_list
+					role: USER_ROLE.ADMIN,
 				},
 				{
 					title: this.translate.instant('nav.add_user'),
 					url: '/users/create',
-					accessFunctions: pagesAccessFunctions.user_create
+					role: USER_ROLE.ADMIN,
 				},
 			]
 		},
@@ -48,12 +49,12 @@ export class NavRightComponent implements OnInit {
 		// 		{
 		// 			title: this.translate.instant('nav.api_logs'),
 		// 			url: '/api-logs',
-		// 			accessFunctions: pagesAccessFunctions.api_logs
+		// 			role: USER_ROLE.ADMIN,
 		// 		},
 		// 		{
 		// 			title: this.translate.instant('nav.action_log'),
 		// 			url: '/action-log',
-		// 			accessFunctions: pagesAccessFunctions.action_log
+		// 			role: USER_ROLE.ADMIN,
 		// 		},
 		// 	]
 		// },

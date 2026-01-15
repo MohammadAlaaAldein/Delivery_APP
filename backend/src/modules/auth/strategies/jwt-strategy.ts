@@ -18,13 +18,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
 	async validate(payload: any) {
 		try {
-			const { sessionId, id, access_functions, name, role, entity_type, entity_id } = payload;
+			const { sessionId, id, name, role, entity_type, entity_id } = payload;
 
 			const token = await this.authService.getTokenSession(id);
 			if (!token || token !== sessionId)
 				throw new UnauthorizedException();
 
-			return { id, sessionId, access_functions, name, role, entity_type, entity_id };
+			return { id, sessionId, name, role, entity_type, entity_id };
 		} catch (ex) {
 			throw ex;
 		}

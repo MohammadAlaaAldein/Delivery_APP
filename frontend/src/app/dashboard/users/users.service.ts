@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AccessFunction, User } from './user.interface';
-import { AccessFunctions } from 'src/app/theme/shared/access-functions';
+import { User } from './user.interface';
 import { ChangePassword } from '../change-password/change-password.interface';
 
 export enum USER_ROLE {
@@ -17,12 +16,24 @@ export enum ENTITY_TYPE {
 	DRIVER = 'driver',
 };
 
+export function hasRoleAccess(requiredRole: USER_ROLE): boolean {
+	const user = JSON.parse(localStorage.getItem('currentUser'));
+	if (!user)
+		return false;
+
+	return user.role === USER_ROLE.ADMIN || user.role === requiredRole;
+}
+
 @Injectable({
 	providedIn: 'root'
 })
 export class UsersService {
 
 	constructor(private http: HttpClient) { }
+
+	hasRoleAccess(requiredRole: USER_ROLE) {
+		return hasRoleAccess(requiredRole);
+	}
 
 	list(filters?: { name?: string; email?: string; id?: number }) {
 		return this.http.get('/users/list', { params: filters });
@@ -94,26 +105,4 @@ export class UsersService {
 		return this.http.get(`/users/validateResetPasswordLink`, { params: { id, enc } });
 	}
 
-	getAccessFunctions(userId, accessToken?: string) {
-		return this.http.get(`/users/get-access-function/${userId}`, { params: { accessToken } });
-	}
-
-	getCurrentUserAccessFunctions() {
-		return this.http.get(`/users/get-current-user-access-functions`);
-	}
-
-	updateUserAccessFunctions(userId: number, access_functions: AccessFunction) {
-		return this.http.patch('/users/update-user-access-functions', { user_id: userId, access_functions });
-	}
-
-	hasAccessFunctions(requiredFunctions) {
-		return true;
-		let user = JSON.parse(localStorage.getItem('currentUser')) || {};
-		let userAccessFunctions = user.access_functions ? Object.keys(user.access_functions) || [] : [];
-
-		if (userAccessFunctions.includes(AccessFunctions.super_admin))
-			return true;
-
-		return requiredFunctions.some((requiredFunction) => userAccessFunctions.includes(requiredFunction));
-	}
 }

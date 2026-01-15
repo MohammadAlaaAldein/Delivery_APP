@@ -91,7 +91,7 @@ export class LoginComponent {
 			this.notificationMessage.closeNotification();
 			const currentUser = {
 				name: res.name,
-				access_functions: null,
+				role: res.role,
 				accessToken: res.accessToken,
 				refreshToken: res.refreshToken,
 			}

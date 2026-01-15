@@ -1,8 +1,6 @@
 import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { hashPassword } from '../../../common/utilities';
-import { AccessFunctionsDto } from "../dto/update-access-functions.dto";
-// import { UserRole } from "src/modules/user-roles/entities/user-role.entity";
-import { ENTITY_TYPE, USER_ROLE } from "src/modules/user-roles/user-roles.service";
+import { USER_ROLE } from "../users.service";
 
 @Entity('users')
 export class User {
@@ -22,14 +20,11 @@ export class User {
 	@Column({ type: 'boolean' })
 	is_active: boolean;
 
-	@Column({ type: 'enum', enum: ENTITY_TYPE, nullable: false })
+	@Column({ type: 'character varying', length: 50, nullable: false })
 	role?: USER_ROLE;
 
 	@Column({ type: 'integer', nullable: true })
 	entity_id?: number;
-
-	@Column({ type: 'jsonb', default: '{}' })
-	access_functions: AccessFunctionsDto;
 
 	@CreateDateColumn({ type: 'timestamp without time zone' })
 	created_at: Date;

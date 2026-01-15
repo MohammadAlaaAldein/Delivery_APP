@@ -6,8 +6,6 @@ import { User } from './entities/user.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { comparePasswords, hashPassword, nowTime, translate } from '../../common/utilities';
 import { ChangeUserPasswordDto } from './dto/change-password.dto';
-import { AccessFunctionsDto, UpdateAccessFunctionsDto } from './dto/update-access-functions.dto';
-import { accessFunctions } from 'src/common/access-functions';
 import { FastifyRequest } from 'fastify';
 import { ErrorKeys } from 'src/common/api-response';
 import { ListUsersDto } from './dto/list-users.dto';
@@ -20,9 +18,13 @@ import { getSiteBaseURL, RESET_PASSWORD_LINK_TTL } from 'src/common/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { encrypt } from 'src/common/common';
-import { UserRolesService } from '../user-roles/user-roles.service';
-import { UserRole } from '../user-roles/entities/user-role.entity';
-import { UpdateUserRoleDto } from '../user-roles/dto/update-user-role.dto';
+
+export enum USER_ROLE {
+	ADMIN = 'admin',
+	SHOP = 'shop',
+	COMPANY = 'company',
+	DRIVER = 'driver',
+};
 
 @Injectable()
 export class UsersService {
@@ -38,7 +40,6 @@ export class UsersService {
 		private redisService: RedisService,
 		// private mailerService: MailersService,
 		private readonly eventEmitter: EventEmitter2,
-		private readonly userRolesService: UserRolesService,
 	) { }
 
 	private getUserRepository(entityManager?: EntityManager): Repository<User> {
@@ -55,12 +56,6 @@ export class UsersService {
 
 			await this.usersRepository.save(user);
 			const { password, ...result } = user;
-
-			await this.userRolesService.save({
-				user_id: result.id,
-				role: createUserDto.role,
-				entity_type: createUserDto.entity_type,
-			});
 
 			// await this.eventEmitter.emitAsync('action.log', {
 			// 	old_values: {},
@@ -82,12 +77,7 @@ export class UsersService {
 			const allowedFields = [
 				'name',
 				'email',
-				'access_functions',
-			];
-
-			const userRolesAllowedFields = [
 				'role',
-				'entity_type',
 			];
 
 			const user = (await this.getUsersInfo([id]))[0];
@@ -107,22 +97,10 @@ export class UsersService {
 					updateFields[field] = fields[field];
 			}
 
-			const updateUserRolesFields: UpdateUserRoleDto = {};
-			for (const field in fields) {
-				if (userRolesAllowedFields.includes(field))
-					updateUserRolesFields[field] = fields[field];
-			}
-
-			if (!Object.keys(updateFields).length && !Object.keys(updateUserRolesFields).length)
+			if (!Object.keys(updateFields).length)
 				return { err: 'no_changes', res: null };
 
 			await this.usersRepository.createQueryBuilder().update().set(updateFields).where('id = :id', { id }).execute();
-
-			await this.userRolesService.save({
-				user_id: id,
-				...updateUserRolesFields,
-				entity_id: null,
-			});
 
 			// await this.eventEmitter.emitAsync('action.log', {
 			// 	old_values: user,
@@ -209,12 +187,10 @@ export class UsersService {
 		try {
 			options.selectColumns ||= '*';
 			const repository = this.getUserRepository(options.entityManager);
-			let qb = repository.createQueryBuilder('users').select(options.selectColumns).whereInIds(ids);
+			let qb = repository.createQueryBuilder().select(options.selectColumns).whereInIds(ids);
 
 			if (options.includeDeletedUsers)
 				qb.withDeleted();
-
-			qb.leftJoin(UserRole, 'users_roles', 'users_roles.user_id = users.id').select(['users.id as id', 'name', 'email', 'access_functions', 'users.created_at as created_at', 'users.updated_at as updated_at', 'role', 'entity_type', 'entity_id']);
 
 			let result = await qb.getRawMany();
 
@@ -222,110 +198,6 @@ export class UsersService {
 				result = result.map(({ password, ...rest }) => rest);
 
 			return result;
-		} catch (ex) {
-			throw ex;
-		}
-	}
-
-	async updateUserAccessFunctions(data: UpdateAccessFunctionsDto, req: FastifyRequest) {
-		try {
-			const { access_functions: accessFunctions, user_id: userId } = data;
-
-			const user = (await this.getUsersInfo([userId]))[0];
-			if (!user)
-				return { err: ErrorKeys.INVALID_USER };
-
-			const userAccessFunctions = req.user.access_functions;
-			const grantableAccessFunctions = this.getUserGrantableAccessFunctions(userAccessFunctions);
-
-			const userGrantableAccessFunctions = this.filterUserGrantableAccessFunctions(grantableAccessFunctions, accessFunctions);
-
-			if (!Object.keys(userGrantableAccessFunctions).length && Object.keys(accessFunctions).length)
-				throw new UnauthorizedException();
-
-			return this.saveUserAccessFunctions(userId, user.access_functions, userGrantableAccessFunctions, grantableAccessFunctions, { req });
-		} catch (ex) {
-			throw ex;
-		}
-	}
-
-	private getUserGrantableAccessFunctions(userAccessFunctions: AccessFunctionsDto) {
-		const allAccessFunctions = accessFunctions.getAccessFunctions();
-
-		const grantableFunctions: AccessFunctionsDto = {};
-		const grantableFunctionKeys = [];
-
-		for (const userAccessFunctionKey in userAccessFunctions) {
-			if (userAccessFunctions[userAccessFunctionKey] && userAccessFunctions[userAccessFunctionKey] === "write")
-				grantableFunctionKeys.push(userAccessFunctionKey);
-		}
-
-		for (const accessFunctionName in allAccessFunctions) {
-			const accessFunctionObject = allAccessFunctions[accessFunctionName];
-
-			if (grantableFunctionKeys.includes(allAccessFunctions[accessFunctionName].controlledBy)) {
-				grantableFunctions[accessFunctionName] = {
-					desc: accessFunctionObject.desc,
-				};
-			}
-		}
-
-		return grantableFunctions;
-	}
-
-	private filterUserGrantableAccessFunctions(grantableAccessFunctions: AccessFunctionsDto, accessFunctions: AccessFunctionsDto) {
-
-		const userGrantableAccessFunctions = {};
-
-		for (const userAccessFunction in accessFunctions) {
-			if (grantableAccessFunctions[userAccessFunction])
-				userGrantableAccessFunctions[userAccessFunction] = accessFunctions[userAccessFunction];
-		}
-
-		return userGrantableAccessFunctions;
-	}
-
-	private async saveUserAccessFunctions(
-		userId: number,
-		oldAccessFunctions: AccessFunctionsDto,
-		accessFunctions: AccessFunctionsDto,
-		grantableAccessFunctions: AccessFunctionsDto,
-		options?: { req?: FastifyRequest }
-	) {
-		try {
-			const newAccessFunctions = { ...oldAccessFunctions, ...accessFunctions };
-
-			for (const func in newAccessFunctions) {
-				if (grantableAccessFunctions[func] && !accessFunctions[func]) {
-					delete newAccessFunctions[func];
-					accessFunctions[func] = 'removed';
-				}
-			}
-
-			return await this.update(userId, { access_functions: newAccessFunctions }, { req: options.req });
-
-			// TODO add log action
-
-		} catch (ex) {
-			throw ex;
-		}
-	}
-
-	async getAccessFunctions(adminAccessFunctions: AccessFunctionsDto, userId: number) {
-		try {
-			// access function for admin
-			const grantableAccessFunctions = this.getUserGrantableAccessFunctions(adminAccessFunctions);
-
-			const user = (await this.getUsersInfo([userId]))[0];
-			if (!user)
-				return { err: 'invalid_user' };
-
-			const userGrantableAccessFunctions = this.filterUserGrantableAccessFunctions(grantableAccessFunctions, user.access_functions);
-
-			return {
-				access_functions_data: grantableAccessFunctions,
-				access_functions: userGrantableAccessFunctions
-			};
 		} catch (ex) {
 			throw ex;
 		}
@@ -340,8 +212,6 @@ export class UsersService {
 					email: () => "'del' || email || '-' || extract(epoch from now())::int",
 					deleted_at: new Date()
 				}).whereInIds([id]).execute();
-
-			await this.userRolesService.deleteUserRole(id, options);
 
 			await this.eventEmitter.emitAsync('action.log', {
 				old_values: {},
@@ -379,7 +249,7 @@ export class UsersService {
 				}
 			}
 
-			const qb = this.usersRepository.createQueryBuilder('users').select('*');
+			const qb = this.usersRepository.createQueryBuilder().select('*');
 
 			for (const field in criteria) {
 				const params = { [field]: criteria[field] };
@@ -387,17 +257,15 @@ export class UsersService {
 					case 'name':
 					case 'email':
 						params[field] = params[field].trim().toLowerCase();
-						qb.andWhere(`LOWER(users.${field}) = :${field}`, params);
+						qb.andWhere(`LOWER(${field}) = :${field}`, params);
 						break;
 					case 'id':
-						qb.andWhere(`users.${field} = :${field}`, params);
+						qb.andWhere(`${field} = :${field}`, params);
 						break;
 					default:
 						break;
 				}
 			}
-
-			qb.leftJoin(UserRole, 'users_roles', 'users_roles.user_id = users.id').select(['users.id as id', 'name', 'email', 'access_functions', 'users.created_at as created_at', 'users.updated_at as updated_at', 'role', 'entity_type', 'entity_id']);
 
 			const result = await qb.getRawMany();
 			return result.map(({ password, ...rest }) => rest);
@@ -463,30 +331,6 @@ export class UsersService {
 			await this.redisService.del([forgotPasswordKey + '_' + userId]);
 
 			return await this.updateUserPassword({ user_id: userId, password: newPassword, confirm_password: confirmPassword }, { req: options.req });
-		} catch (ex) {
-			throw ex;
-		}
-	}
-
-	async getUsersHaveAccessFunction(accessFunction: string, accessType: string, options: { entityManager?: EntityManager } = {}) {
-		try {
-			const repository = this.getUserRepository(options?.entityManager);
-			let qb = repository.createQueryBuilder().select(["id", "name", "email"]);
-
-			if (accessType === "haveAccess") {
-				// Check if key exists and is not null
-				qb.andWhere(`access_functions ->> :func IS NOT NULL`, {
-					func: accessFunction,
-				});
-			} else {
-				// Match specific value in JSON
-				qb.andWhere(`access_functions ->> :func = :val`, {
-					func: accessFunction,
-					val: accessType,
-				});
-			}
-
-			return await qb.getRawMany();
 		} catch (ex) {
 			throw ex;
 		}

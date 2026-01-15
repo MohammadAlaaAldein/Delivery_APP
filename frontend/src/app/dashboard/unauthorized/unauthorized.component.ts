@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
-import { UsersService } from '../users/users.service';
-import { pagesAccessFunctions } from 'src/app/theme/shared/access-functions';
 import { AuthService } from '../users/login/auth.service';
 
 @Component({
@@ -16,7 +14,6 @@ export class UnauthorizedComponent {
 	backUrl = [];
 
 	constructor(
-		private userService: UsersService,
 		private authService: AuthService,
 	) { }
 

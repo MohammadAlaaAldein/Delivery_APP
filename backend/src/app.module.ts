@@ -23,7 +23,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ActionLogModule } from './modules/action-log/action-log.module';
 import { MainRouteController } from './main-route/main-route.controller';
 import { AttachmentsModule } from './modules/attachments/attachments.module';
-import { UserRolesModule } from './modules/user-roles/user-roles.module';
 
 @Module({
 	imports: [
@@ -43,7 +42,6 @@ import { UserRolesModule } from './modules/user-roles/user-roles.module';
 		}),
 		EventEmitterModule.forRoot(),
 		UsersModule,
-		// UserRolesModule,
 		AuthModule,
 		// ActionLogModule,
 		// SentryModule.forRoot(),

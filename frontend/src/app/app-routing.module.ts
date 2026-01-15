@@ -9,11 +9,11 @@ import { ForgotPasswordComponent } from './dashboard/forgot-password/forgot-pass
 import { LoginComponent } from './dashboard/users/login/login.component';
 import { NoAuthGuard } from './theme/shared/_helpers/no-auth-guard.service';
 import { AuthGuard } from './theme/shared/_helpers/auth.guard';
-import { AccessFunctionGuard } from './theme/shared/_helpers/access-fuction.guard';
-import { pagesAccessFunctions } from './theme/shared/access-functions';
 import { GuestComponent } from './theme/layout/guest/guest.component';
 import { ChangePasswordComponent } from './dashboard/change-password/change-password.component';
 import { UnblockLoginComponent } from './dashboard/users/unblock-login/unblock-login.component';
+import { USER_ROLE } from './dashboard/users/users.service';
+import { RoleAccessGuard } from './theme/shared/_helpers/role-access.guard';
 
 const routes: Routes = [
 	{ path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -57,44 +57,36 @@ const routes: Routes = [
 			{
 				path: 'dashboard',
 				loadComponent: () => import('./dashboard/dashboard/dashboard.component').then((c) => c.DashboardComponent),
-				canActivate: [AccessFunctionGuard],
-				// data: { accessFunction: pagesAccessFunctions.dashboard }
 			},
 			{
 				path: 'users',
 				loadComponent: () => import('./dashboard/users/users.component').then((c) => c.UsersComponent),
-				canActivate: [AccessFunctionGuard],
-				// data: { accessFunction: pagesAccessFunctions.user_list }
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
 			},
 			{
 				path: 'users/create',
 				loadComponent: () => import('./dashboard/users/create-user/create-user.component').then((c) => c.CreateUserComponent),
-				canActivate: [AccessFunctionGuard],
-				// data: { accessFunction: pagesAccessFunctions.user_create }
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
 			},
 			{
 				path: 'users/edit/:id',
 				loadComponent: () => import('./dashboard/users/create-user/create-user.component').then((c) => c.CreateUserComponent),
-				canActivate: [AccessFunctionGuard],
-				// data: { accessFunction: pagesAccessFunctions.user_edit }
-			},
-			{
-				path: 'users/access-functions/:id',
-				loadComponent: () => import('./dashboard/users/access-functions/access-functions.component').then((c) => c.AccessFunctionsComponent),
-				canActivate: [AccessFunctionGuard],
-				// data: { accessFunction: pagesAccessFunctions.user_access_functions }
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
 			},
 			{
 				path: 'api-logs',
 				loadComponent: () => import('./dashboard/logs/api-logs/api-logs.component').then((c) => c.ApiLogsComponent),
-				canActivate: [AccessFunctionGuard],
-				// data: { accessFunction: pagesAccessFunctions.api_logs }
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
 			},
 			{
 				path: 'action-log',
 				loadComponent: () => import('./dashboard/admin/action-log/action-log.component').then((c) => c.ActionLogComponent),
-				canActivate: [AccessFunctionGuard],
-				// data: { accessFunction: pagesAccessFunctions.action_log }
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
 			},
 		]
 	},

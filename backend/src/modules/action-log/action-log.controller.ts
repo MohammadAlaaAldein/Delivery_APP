@@ -2,8 +2,6 @@ import { Controller, Get, Query, Req, UnauthorizedException, UseGuards} from '@n
 import { ActionLogService } from './action-log.service';
 import { FastifyRequest } from 'fastify';
 import { GetActionLogDto } from './dto/get-action-logs.dto';
-import { ACCESS_FUNCTIONS } from 'src/common/access-functions';
-import { hasAccessFunction } from '../auth/auth.service';
 import { handleSuccessApiResponse } from 'src/common/api-response';
 import { JwtGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -17,11 +15,7 @@ export class ActionLogController {
 		@Req() req: FastifyRequest,
 		@Query() getActionLogDto: GetActionLogDto,
 	) {
-		if (!hasAccessFunction(req, ACCESS_FUNCTIONS.ADMIN))
-			throw new UnauthorizedException();
-
 		const result = await this.actionLogService.getActionLogs(getActionLogDto);
-
 		return handleSuccessApiResponse({data: result});
 	}
 }

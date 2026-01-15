@@ -10,7 +10,6 @@ import { User } from '../users/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET_TOKEN, JWT_SECRET_TOKEN_TTL } from '../../common/constants';
 import { AuthCaptchaService } from './auth-captcha/auth-captcha.service';
-import { UserRolesModule } from '../user-roles/user-roles.module';
 
 @Module({
 	providers: [
@@ -25,7 +24,6 @@ import { UserRolesModule } from '../user-roles/user-roles.module';
 	controllers: [AuthController],
 	imports: [
 		TypeOrmModule.forFeature([User]),
-		UserRolesModule,
 		JwtModule.register({
 			secret: `${JWT_SECRET_TOKEN}`,
 			signOptions: { expiresIn: JWT_SECRET_TOKEN_TTL },

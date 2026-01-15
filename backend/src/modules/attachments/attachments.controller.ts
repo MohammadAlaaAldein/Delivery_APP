@@ -5,8 +5,6 @@ import { AttachmentsService } from './attachments.service';
 import { FastifyRequest } from 'fastify';
 import { handleFiles } from 'src/common/common';
 import { handleSuccessApiResponse, handleThrowApiError } from 'src/common/api-response';
-import { hasAccessFunction } from '../auth/auth.service';
-import { ACCESS_FUNCTIONS } from 'src/common/access-functions';
 
 @Controller(getControllersPrefixes('attachments'))
 @UseGuards(JwtGuard)
@@ -21,9 +19,6 @@ export class AttachmentsController {
 	async addAttachments(
 		@Req() req: FastifyRequest,
 	) {
-		if (!hasAccessFunction(req, ACCESS_FUNCTIONS.ADMIN))
-			throw new UnauthorizedException();
-
 		const { files, fields } = await handleFiles(req.parts());
 
 		const source = fields.source?.value;
