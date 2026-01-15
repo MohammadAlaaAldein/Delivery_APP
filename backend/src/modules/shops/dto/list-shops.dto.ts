@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsOptional, IsInt, IsString, IsEmail, MaxLength } from 'class-validator';
 
-export class ListUsersDto {
+export class ListShopDto {
 	@IsOptional()
 	@Transform(({ value }) => parseInt(value))
 	@IsInt()
@@ -11,13 +11,4 @@ export class ListUsersDto {
 	@IsString()
 	@MaxLength(100)
 	name?: string;
-
-	@IsOptional()
-	@IsEmail()
-	@Transform(({ value }) => (value === '' ? undefined : value))
-	email?: string;
-
-	@IsOptional()
-	@IsString()
-	domain?: string;
 }

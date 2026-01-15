@@ -33,7 +33,7 @@ export class UsersComponent {
 	filterColumns = [
 		{ key: 'name', title: this.translate.instant('users.name'), type: "text" },
 		{ key: 'email', title: this.translate.instant('users.email'), type: "email" },
-		{ key: 'id', title: this.translate.instant('users.id'), type: "number" },
+		{ key: 'id', title: this.translate.instant('g.id'), type: "number" },
 	];
 
 	filters = {

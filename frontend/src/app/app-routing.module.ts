@@ -77,6 +77,24 @@ const routes: Routes = [
 				data: { role: USER_ROLE.ADMIN }
 			},
 			{
+				path: 'shops',
+				loadComponent: () => import('./dashboard/shops/shops.component').then((c) => c.ShopsComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'shops/create',
+				loadComponent: () => import('./dashboard/shops/create-shop/create-shop.component').then((c) => c.CreateShopComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'shops/edit/:id',
+				loadComponent: () => import('./dashboard/shops/create-shop/create-shop.component').then((c) => c.CreateShopComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
 				path: 'api-logs',
 				loadComponent: () => import('./dashboard/logs/api-logs/api-logs.component').then((c) => c.ApiLogsComponent),
 				canActivate: [RoleAccessGuard],

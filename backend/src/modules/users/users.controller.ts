@@ -39,6 +39,8 @@ export class UsersController {
 		private readonly authCaptchaService: AuthCaptchaService,
 	) { }
 
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
 	@Post('register')
 	async registerUser(
 		@Body() createUserDto: CreateUserDto,

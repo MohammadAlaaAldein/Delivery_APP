@@ -9,6 +9,7 @@ export enum ErrorKeys {
 	INCORRECT_OLD_PASSWORD = 'incorrect_old_password',
 	INVALID_CAPTCHA = 'invalid_captcha',
 	RESET_PASSWORD_LINK_EXPIRED = 'invalid_reset_password_link',
+	UNIQUE_VIOLATION_NAME = 'unique_violation_name',
 	NO_CHANGES = 'no_changes',
 }
 
@@ -51,9 +52,21 @@ const errorMap = {
 		},
 		[ErrorKeys.NO_CHANGES]: {
 			status: HttpStatus.UNPROCESSABLE_ENTITY,
-			message: translate('users.no_changes_applied'),
+			message: translate('g.no_changes_applied'),
 			error: 'Bad Request'
-		}
+		},
+	},
+	shops: {
+		[ErrorKeys.UNIQUE_VIOLATION_NAME]: {
+			status: HttpStatus.CONFLICT,
+			message: translate('shops.name_is_already_in_use'),
+			error: 'Conflict'
+		},
+		[ErrorKeys.NO_CHANGES]: {
+			status: HttpStatus.UNPROCESSABLE_ENTITY,
+			message: translate('g.no_changes_applied'),
+			error: 'Bad Request'
+		},
 	},
 };
 

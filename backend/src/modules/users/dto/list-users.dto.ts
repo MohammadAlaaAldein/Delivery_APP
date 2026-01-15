@@ -16,8 +16,4 @@ export class ListUsersDto {
 	@IsEmail()
 	@Transform(({ value }) => (value === '' ? undefined : value))
 	email?: string;
-
-	@IsOptional()
-	@IsString()
-	domain?: string;
 }
