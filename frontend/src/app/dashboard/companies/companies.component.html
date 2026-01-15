@@ -1,0 +1,77 @@
+<div>
+	<div class="row">
+		<div class="col-sm-12 mb-4">
+			<div class="card">
+				<div class="card-body custom-table-style">
+					<app-card
+						cardTitle="{{ 'Filters' }}"
+						class="p-0"
+						[showHeader]="true"
+						[supportExpand]="true"
+						[headerClass]="'py-2 cursor-pointer justify-content-start bg-on-hover'"
+						[showContent]="false"
+					>
+						<div class="filters">
+							<div class="row">
+								<ng-container *ngFor="let col of filterColumns">
+									<div class="col-md-6">
+										<div class="mb-1 py-2 px-3">
+											<label class="mb-1">{{ col.title | translate }}</label>
+
+											<div [ngSwitch]="col.filter_type">
+												<ng-container *ngSwitchDefault>
+													<input
+														[type]="col.type"
+														class="form-control"
+														placeholder="{{ col.title | translate }}"
+														[name]="col.key"
+														[(ngModel)]="filters[col.key]"
+													/>
+												</ng-container>
+												<div *ngSwitchCase="'dropdown'">
+													<ng-select
+														[name]="col.key"
+														bindLabel="label"
+														bindValue="value"
+														[items]="col.filter_data"
+														[(ngModel)]="filters[col.key]"
+														[clearable]="false"
+														class="w-100"
+													></ng-select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</ng-container>
+							</div>
+							<div class="p-3">
+								<button uiSref="work" class="btn btn-primary me-2 btn-raised" (click)="search()">
+									{{ 'g.search' | translate }}
+								</button>
+								<button
+									class="btn btn-light-secondary ms-2"
+									type="button"
+									(click)="filters = {}; resetData()"
+									[disabled]="!isFiltersFilled()"
+								>
+									{{ 'g.reset' | translate }}
+								</button>
+							</div>
+						</div>
+					</app-card>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-12 mb-4">
+			<div class="card">
+				<div class="card-body custom-table-style">
+					<sct-custom-table
+						[columnsConfig]="columnConfig"
+						[data]="tableData"
+						[config]="tableConfig"
+					></sct-custom-table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

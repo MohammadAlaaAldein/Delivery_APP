@@ -68,6 +68,18 @@ const errorMap = {
 			error: 'Bad Request'
 		},
 	},
+	companies: {
+		[ErrorKeys.UNIQUE_VIOLATION_NAME]: {
+			status: HttpStatus.CONFLICT,
+			message: translate('companies.name_is_already_in_use'),
+			error: 'Conflict'
+		},
+		[ErrorKeys.NO_CHANGES]: {
+			status: HttpStatus.UNPROCESSABLE_ENTITY,
+			message: translate('g.no_changes_applied'),
+			error: 'Bad Request'
+		},
+	},
 };
 
 export const handleThrowApiError = (module: string, errorKey: string) => {

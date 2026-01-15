@@ -24,6 +24,7 @@ import { ActionLogModule } from './modules/action-log/action-log.module';
 import { MainRouteController } from './main-route/main-route.controller';
 import { AttachmentsModule } from './modules/attachments/attachments.module';
 import { ShopsModule } from './modules/shops/shops.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 
 @Module({
 	imports: [
@@ -44,6 +45,7 @@ import { ShopsModule } from './modules/shops/shops.module';
 		EventEmitterModule.forRoot(),
 		UsersModule,
 		ShopsModule,
+		CompaniesModule,
 		AuthModule,
 		// ActionLogModule,
 		// SentryModule.forRoot(),

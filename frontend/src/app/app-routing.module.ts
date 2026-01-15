@@ -95,6 +95,24 @@ const routes: Routes = [
 				data: { role: USER_ROLE.ADMIN }
 			},
 			{
+				path: 'companies',
+				loadComponent: () => import('./dashboard/companies/companies.component').then((c) => c.CompaniesComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'companies/create',
+				loadComponent: () => import('./dashboard/companies/create-company/create-company.component').then((c) => c.CreateCompanyComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'companies/edit/:id',
+				loadComponent: () => import('./dashboard/companies/create-company/create-company.component').then((c) => c.CreateCompanyComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
 				path: 'api-logs',
 				loadComponent: () => import('./dashboard/logs/api-logs/api-logs.component').then((c) => c.ApiLogsComponent),
 				canActivate: [RoleAccessGuard],

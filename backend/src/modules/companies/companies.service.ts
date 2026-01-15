@@ -1,36 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { CreateShopDto } from './dto/create-shop.dto';
-import { UpdateShopDto } from './dto/update-shop.dto';
+import { CreateCompanyDto } from './dto/create-company.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Shop } from './entities/shop.entity';
+import { Company } from './entities/company.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { FastifyRequest } from 'fastify';
 import { ErrorKeys } from 'src/common/api-response';
-import { ListShopDto } from './dto/list-shops.dto';
+import { ListCompanyDto } from './dto/list-companies.dto';
 
 @Injectable()
-export class ShopsService {
+export class CompaniesService {
 
 	constructor(
-		@InjectRepository(Shop)
-		private readonly shopsRepository: Repository<Shop>,
+		@InjectRepository(Company)
+		private readonly companiesRepository: Repository<Company>,
 		private connection: DataSource,
 	) { }
 
-	private getShopRepository(entityManager?: EntityManager): Repository<Shop> {
-		return entityManager ? entityManager.getRepository(Shop) : this.connection.getRepository(Shop);
+	private getCompanyRepository(entityManager?: EntityManager): Repository<Company> {
+		return entityManager ? entityManager.getRepository(Company) : this.connection.getRepository(Company);
 	}
 
-	async create(createShopDto: CreateShopDto, options?: { req?: FastifyRequest }): Promise<any> {
+	async create(createCompanyDto: CreateCompanyDto, options?: { req?: FastifyRequest }): Promise<any> {
 		try {
-			const shop = this.shopsRepository.create(createShopDto);
+			const company = this.companiesRepository.create(createCompanyDto);
 
-			const uniqueFieldFound = await this.checkShopUniqueFields(createShopDto);
+			const uniqueFieldFound = await this.checkCompanyUniqueFields(createCompanyDto);
 			if (uniqueFieldFound)
-				return this.checkShopUniqueFieldsError(uniqueFieldFound);
+				return this.checkCompanyUniqueFieldsError(uniqueFieldFound);
 
-			await this.shopsRepository.save(shop);
-			const { ...result } = shop;
+			await this.companiesRepository.save(company);
+			const { ...result } = company;
 
 			return result;
 		} catch (ex) {
@@ -38,20 +38,20 @@ export class ShopsService {
 		}
 	}
 
-	async update(id: number, fields: UpdateShopDto, options?: { req?: FastifyRequest }): Promise<any> {
+	async update(id: number, fields: UpdateCompanyDto, options?: { req?: FastifyRequest }): Promise<any> {
 		try {
 			const allowedFields = [
 				'name',
 			];
 
-			const shop = (await this.getShops({ id }))[0];
+			const company = (await this.getCompanies({ id }))[0];
 
 			// Check uniqueness
-			const uniqueFieldFound = await this.checkShopUniqueFields(fields, shop);
+			const uniqueFieldFound = await this.checkCompanyUniqueFields(fields, company);
 			if (uniqueFieldFound)
-				return this.checkShopUniqueFieldsError(uniqueFieldFound);
+				return this.checkCompanyUniqueFieldsError(uniqueFieldFound);
 
-			const updateFields: UpdateShopDto = {};
+			const updateFields: UpdateCompanyDto = {};
 
 			for (const field in fields) {
 				if (allowedFields.includes(field))
@@ -61,7 +61,7 @@ export class ShopsService {
 			if (!Object.keys(updateFields).length)
 				return { err: 'no_changes', res: null };
 
-			await this.shopsRepository.createQueryBuilder().update().set(updateFields).where('id = :id', { id }).execute();
+			await this.companiesRepository.createQueryBuilder().update().set(updateFields).where('id = :id', { id }).execute();
 
 			const { ...updatedFields } = updateFields;
 			return { err: null, res: updatedFields };
@@ -70,7 +70,7 @@ export class ShopsService {
 		}
 	}
 
-	private checkShopUniqueFieldsError(field: string) {
+	private checkCompanyUniqueFieldsError(field: string) {
 		let errorKey = '';
 		switch (field) {
 			case 'name':
@@ -82,7 +82,7 @@ export class ShopsService {
 		return { err: errorKey };
 	}
 
-	private async checkShopUniqueFields(fields: UpdateShopDto, oldShopInfo?: UpdateShopDto): Promise<any> {
+	private async checkCompanyUniqueFields(fields: UpdateCompanyDto, oldCompanyInfo?: UpdateCompanyDto): Promise<any> {
 		try {
 			// Check uniqueness
 			const uniqueFields = ['name'];
@@ -90,17 +90,17 @@ export class ShopsService {
 			const values = {};
 
 			for (const field of uniqueFields) {
-				if (field in fields && (!oldShopInfo || oldShopInfo[field] != fields[field])) {
+				if (field in fields && (!oldCompanyInfo || oldCompanyInfo[field] != fields[field])) {
 					conditions.push(`${field} = :${field}`);
 					values[field] = fields[field];
 				}
 			}
 
 			if (conditions.length) {
-				const shop = await this.shopsRepository.createQueryBuilder().where(conditions.join(' OR '), values).getOne();
-				if (shop) {
+				const company = await this.companiesRepository.createQueryBuilder().where(conditions.join(' OR '), values).getOne();
+				if (company) {
 					for (const field of uniqueFields) {
-						if (shop[field] == fields[field])
+						if (company[field] == fields[field])
 							return field;
 					}
 				}
@@ -112,9 +112,9 @@ export class ShopsService {
 		}
 	}
 
-	async deleteShop(id: number, options: { entityManager?: EntityManager, req?: FastifyRequest } = {}): Promise<any> {
+	async deleteCompany(id: number, options: { entityManager?: EntityManager, req?: FastifyRequest } = {}): Promise<any> {
 		try {
-			const repository = this.getShopRepository(options.entityManager);
+			const repository = this.getCompanyRepository(options.entityManager);
 			return await repository.createQueryBuilder().softDelete().where({ id }).execute();
 		} catch (ex) {
 			throw ex;
@@ -122,7 +122,7 @@ export class ShopsService {
 		}
 	}
 
-	async getShops(filters: ListShopDto): Promise<Shop[]> {
+	async getCompanies(filters: ListCompanyDto): Promise<Company[]> {
 		try {
 			const criteria = {};
 			if (filters && Object.keys(filters).length) {
@@ -134,7 +134,7 @@ export class ShopsService {
 				}
 			}
 
-			const qb = this.shopsRepository.createQueryBuilder().select('*');
+			const qb = this.companiesRepository.createQueryBuilder().select('*');
 
 			for (const field in criteria) {
 				const params = { [field]: criteria[field] };

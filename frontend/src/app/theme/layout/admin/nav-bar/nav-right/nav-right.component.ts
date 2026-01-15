@@ -58,6 +58,21 @@ export class NavRightComponent implements OnInit {
 				},
 			]
 		},
+		{
+			title: this.translate.instant('nav.companies_management'),
+			items: [
+				{
+					title: this.translate.instant('nav.companies_list'),
+					url: '/companies',
+					role: USER_ROLE.ADMIN,
+				},
+				{
+					title: this.translate.instant('nav.add_company'),
+					url: '/companies/create',
+					role: USER_ROLE.ADMIN,
+				},
+			]
+		},
 		// {
 		// 	title: this.translate.instant('nav.admin_tools'),
 		// 	items: [
