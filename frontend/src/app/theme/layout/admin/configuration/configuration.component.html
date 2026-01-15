@@ -1,0 +1,19 @@
+<div id="styleSelector" class="menu-styler" [ngClass]="{ open: styleSelectorToggle }">
+	@defer (when styleSelectorToggle) {
+		<div class="row g-2 theme-color theme-layout">
+			<div class="col-6">
+				<div class="d-grid">
+					<button
+						class="preset-btn btn size bg-dark"
+						[ngClass]="{ active: themeMode === true, 'bg-dark': themeMode !== true }"
+						(click)="setDarkLayout(!themeMode)"
+						ngbTooltip="Dark"
+					>
+						<img *ngIf="!themeMode" src="assets/images/customization/moon-filled.svg" alt="img" class="wid-20 hei-20" />
+						<img *ngIf="themeMode" src="assets/images/customization/sun.svg" alt="img" class="wid-20 hei-20" />
+					</button>
+				</div>
+			</div>
+		</div>
+	}
+</div>

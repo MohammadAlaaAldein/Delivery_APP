@@ -1,0 +1,279 @@
+/**  =====================
+    Maintain css start
+==========================  **/
+.maintenance-block {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+}
+.error-card {
+	box-shadow: none;
+	text-align: center;
+	.error-image-block {
+		position: relative;
+		text-align: center;
+		display: inline-flex;
+
+		.img-404 {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			&.error-text {
+				animation: 3s ease-in-out 0s infinite normal none running bounce;
+			}
+			&.error-primary {
+				animation: 15s ease-in-out 0s infinite normal none running wings;
+			}
+			&.error-secondary {
+				animation: 12s ease-in-out 0s infinite normal none running wings;
+			}
+		}
+	}
+}
+.error-card-unauth {
+	box-shadow: none;
+	text-align: center;
+	.error-image-block {
+		position: relative;
+		text-align: center;
+		display: inline-flex;
+
+		.img-unauth {
+			position: absolute;
+			top: -80px;
+			left: 60px;
+			width: 79%;
+			&.error-text {
+				animation: 3s ease-in-out 0s infinite normal none running bounce;
+			}
+			&.error-primary {
+				animation: 15s ease-in-out 0s infinite normal none running wings;
+			}
+			&.error-secondary {
+				animation: 12s ease-in-out 0s infinite normal none running wings;
+			}
+		}
+	}
+}
+
+.construction-card {
+	text-align: center;
+	.construction-image-block {
+		position: relative;
+		display: inline-flex;
+		.img-block {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			animation: 10s ease-in-out 0s infinite normal none running blink;
+		}
+
+		.img-main {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			animation: 5s ease-in-out 0s infinite normal none running bounce;
+		}
+	}
+}
+.soon-card {
+	text-align: center;
+	.soon-image-block {
+		position: relative;
+		display: inline-block;
+		.img-soon {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			&.soon-box {
+				animation: blink 5s ease-in-out infinite;
+			}
+			&.soon-secondary,
+			&.soon-primary {
+				animation: wings 5s ease-in-out infinite;
+			}
+			&.soon-secondary {
+				animation-delay: 2s;
+			}
+		}
+	}
+}
+.coming-soon-wrapper {
+	display: flex;
+	align-items: center;
+	.side-animation-block {
+		position: relative;
+		.img-bg-ring {
+			height: 100vh;
+		}
+		.img-bg-logo {
+			position: absolute;
+			top: 40px;
+			left: 40px;
+		}
+		.img-comming {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100vh;
+			&.img-bg-1,
+			&.img-bg-2 {
+				animation: blink 5s ease-in-out infinite;
+			}
+			&.img-bg-2 {
+				animation-delay: 1.5s;
+			}
+			&.img-widget {
+				animation: wings 5s ease-in-out infinite;
+				&.img-widget1 {
+					animation-delay: 1s;
+				}
+				&.img-widget2 {
+					animation-delay: 2s;
+				}
+				&.img-widget3 {
+					animation-delay: 3s;
+				}
+				&.img-widget4 {
+					animation-delay: 4s;
+				}
+				&.img-widget5 {
+					animation-delay: 5s;
+				}
+			}
+		}
+	}
+	.content-block {
+		flex: 1 1 auto;
+		width: 1%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		.coming-soon-block {
+			max-width: 600px;
+		}
+		.cs-footer-text {
+			margin-top: 30px;
+			text-align: end;
+			.d-flex {
+				justify-content: flex-end;
+			}
+		}
+	}
+	.coming-soon-slider {
+		position: relative;
+		&::after {
+			content: '';
+			position: absolute;
+			top: -24px;
+			right: 0;
+			border-radius: var(--bs-border-radius);
+			width: calc(100% - 24px);
+			height: 100%;
+			background: rgba(var(--bs-primary-rgb), 0.1);
+			z-index: 1;
+		}
+		.carousel-inner {
+			position: relative;
+			overflow: hidden;
+			z-index: 9;
+			border-radius: var(--bs-border-radius);
+			margin-right: 24px;
+			margin-top: 24px;
+			width: calc(100% - 24px);
+			box-shadow: 0px 0px 50px rgba(33, 150, 243, 0.2);
+		}
+	}
+	@media (max-width: 1199.98px) {
+		flex-direction: column;
+		.side-animation-block {
+			order: 2;
+			width: 100%;
+			position: static;
+			margin-top: -160px;
+			.bottom-img {
+				display: none;
+			}
+		}
+		.content-block {
+			order: 1;
+			width: 100%;
+			margin-top: 100px;
+			.cs-footer-text {
+				margin-top: 50px;
+				text-align: center;
+				.d-flex {
+					justify-content: center;
+				}
+			}
+		}
+	}
+	@media (max-width: 767.98px) {
+		.side-animation-block {
+			.img-comm-ring-small {
+				height: auto;
+				width: 100%;
+			}
+		}
+	}
+}
+
+@media (max-width: 575.98px) {
+	.timer-block {
+		.avtar.avtar-xl {
+			width: 45px;
+			height: 45px;
+			font-size: 16px;
+		}
+	}
+}
+
+@keyframes blink {
+	50% {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes bounce {
+	0%,
+	20%,
+	53%,
+	to {
+		animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		transform: translateZ(0);
+	}
+
+	40%,
+	43% {
+		animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+		transform: translate3d(0, -5px, 0);
+	}
+
+	70% {
+		animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+		transform: translate3d(0, -7px, 0);
+	}
+
+	80% {
+		transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		transform: translateZ(0);
+	}
+
+	90% {
+		transform: translate3d(0, -2px, 0);
+	}
+}
+
+/**  =====================
+    Maintain css end
+==========================  **/

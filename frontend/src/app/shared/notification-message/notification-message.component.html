@@ -1,0 +1,5 @@
+<p *ngIf="message.show && !autoClose" id="notification" #outlet>
+	<alert [type]="message.type" [dismissible]="true" (onClose)="close()">
+		<div [innerHTML]="message.message | safe: message?.safeType"></div>
+	</alert>
+</p>

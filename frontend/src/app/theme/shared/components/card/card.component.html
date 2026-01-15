@@ -1,0 +1,40 @@
+<div class="card" [ngClass]="cardClass">
+	@if (showHeader) {
+		<div class="card-header d-flex align-items-center justify-content-between" [ngClass]="headerClass" (click)="toggleExpand()">
+			<div [class]="titleClass">{{ cardTitle }}</div>
+			<ng-container *ngTemplateOutlet="headerTitleTemplate"></ng-container>
+			<div></div>
+			<ng-container *ngTemplateOutlet="headerOptionsTemplate"></ng-container>
+			<div>
+				@if (printOptions) {
+					<button
+						class="btn btn-light hide-on-print"
+						printTitle="{{ printOptions.title }}"
+						[useExistingCss]="true"
+						printSectionId="{{ printOptions.printElementId }}"
+						ngxPrint
+						title="{{ 'Print' }}"
+					>
+						<i class="material-icons-two-tone f-24 me-1">print</i>
+					</button>
+				}
+
+				@if (supportExpand) {
+					<button class="btn btn-light hide-on-print" [useExistingCss]="true" title="{{ expandTitle }}">
+						<i class="f-28" [ngClass]="expandIcon"></i>
+					</button>
+				}
+			</div>
+		</div>
+	}
+	@if (showContent) {
+		<div class="card-body" [ngClass]="blockClass" [style.padding.px]="padding">
+			<ng-content></ng-content>
+		</div>
+	}
+	@if (footerTemplate) {
+		<div class="card-footer" [ngClass]="footerClass">
+			<ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+		</div>
+	}
+</div>

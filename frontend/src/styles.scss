@@ -1,0 +1,197 @@
+// main framework
+@import 'node_modules/bootstrap/scss/functions';
+@import 'node_modules/bootstrap/scss/variables';
+@import 'node_modules/bootstrap/scss/variables-dark';
+
+@import 'scss/settings/color-variables';
+@import 'scss/settings/theme-variables';
+@import 'scss/settings/bootstrap-variables.scss';
+
+@import 'scss/bootstrap/bootstrap.scss';
+
+body.delivery_app-ltr {
+	@import 'node_modules/bootstrap/scss/utilities';
+	@import 'node_modules/bootstrap/scss/utilities/api';
+}
+
+body.delivery_app-rtl {
+	@import 'scss/themes/layouts/themeMode/style-rtl-utility';
+	@import 'node_modules/bootstrap/scss/utilities/api';
+}
+
+// main framework
+@import 'scss/themes/generic';
+@import 'scss/themes/general';
+
+// theme component
+@import 'scss/themes/components/components';
+
+// angular Material css
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+// text-editor
+@import '../node_modules/quill/dist/quill.bubble.css';
+@import '../node_modules/quill/dist/quill.snow.css';
+
+// ng-select
+@import '~@ng-select/ng-select/themes/default.theme.css';
+
+// text-editor
+@import '../node_modules/quill/dist/quill.bubble.css';
+@import '../node_modules/quill/dist/quill.snow.css';
+
+// calender css
+@import '../node_modules/angular-calendar/css/angular-calendar.css';
+
+// carousel
+@import 'node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.carousel.min.css';
+@import 'node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.theme.default.min.css';
+
+// angular notification
+@import '../node_modules/angular-notifier/styles';
+
+// page
+@import 'scss/themes/dashboard/dashboard.scss';
+@import 'scss/themes/widget/widget.scss';
+@import 'scss/themes/application/application.scss';
+@import 'scss/themes/application/user.scss';
+
+// custom page
+@import 'scss/themes/pages/date-picker.scss';
+@import 'scss/themes/pages/authentication.scss';
+@import 'scss/themes/pages/maintain.scss';
+@import 'scss/themes/pages/contact-us.scss';
+@import 'scss/themes/pages/faq.scss';
+@import 'scss/themes/pages/price.scss';
+
+// custom plugin
+@import 'scss/themes/plugins/data-tables.scss';
+@import 'scss/themes/plugins/text-editor.scss';
+@import 'scss/themes/plugins/light-box.scss';
+@import 'scss/themes/plugins/sweatalert.scss';
+@import 'scss/themes/plugins/ngx-chips.scss';
+@import 'scss/themes/plugins/angular-datatable.scss';
+
+// layout
+@import 'scss/themes/layouts/Menu/sidebar.scss';
+@import 'scss/themes/layouts/Menu/horizontal-menu.scss';
+@import 'scss/themes/layouts/Menu/compact-menu.scss';
+@import 'scss/themes/layouts/navbar/navbar.scss';
+@import 'scss/themes/layouts/footer/footer.scss';
+@import 'scss/themes/layouts/pc-common.scss';
+@import 'scss/themes/layouts/themeConfig/style-config.scss';
+@import 'scss/themes/layouts/font-family.scss';
+
+// theme mode
+@import 'scss/themes/layouts/themeMode/dark.scss';
+@import 'scss/themes/layouts/themeMode/style-rtl.scss';
+
+// fonts
+@import url('scss/fonts/delivery_app/delivery-app-icons.css');
+/** custom font icons - delivery_app **/
+@import 'scss/fonts/feather.css';
+@import 'scss/fonts/fontawesome.css';
+@import 'scss/fonts/material.css';
+@import 'scss/fonts/tabler-icons.min.css';
+@import 'scss/fonts/phosphor/duotone/style.css';
+
+// different color theme
+@import 'scss/themes/layouts/style-preset.scss';
+@import 'scss/themes/layouts/delivery-app-global.scss';
+
+.custom-table-style {
+	background-color: $white;
+	padding: 20px;
+	border-radius: 10px;
+
+	.table_container .filter_field {
+		display: block;
+	}
+
+	thead tr th {
+		background: $white !important;
+	}
+
+	.table-striped tbody tr:nth-child(odd) {
+		background-color: rgba(38, 137, 226, 0.03) !important;
+		border-top: $border-color solid 0.1px;
+		border-bottom: $border-color solid 0.21px;
+	}
+
+	.table_container .data-cell {
+		padding: 25px 0px 25px 10px;
+	}
+}
+
+body.delivery_app-dark .custom-table-style {
+	background-color: #172249;
+
+	tbody tr th,
+	thead tr th {
+		background: #172249 !important;
+	}
+
+	.table-striped tbody tr:nth-child(odd) {
+		background-color: #172249 !important;
+		border-top: #273256 solid 0.1px;
+		border-bottom: #273256 solid 0.21px;
+	}
+
+	.table-striped tbody tr:nth-child(even) {
+		background-color: #17254e !important;
+	}
+
+	.mat-mdc-paginator-container,
+	input,
+	.mat-mdc-paginator .mat-mdc-select,
+	.hide-columns-popup {
+		background-color: #172249;
+		color: var(--bs-body-color);
+	}
+
+	.hide-columns-popup {
+		border: 1px solid var(--bs-body-color);
+	}
+
+	.mat-mdc-icon-button .mat-mdc-paginator-icon {
+		fill: var(--bs-body-color);
+	}
+
+	.mat-mdc-select-arrow {
+		color: var(--bs-body-color);
+	}
+
+	.mat-mdc-icon-button[disabled] .mat-mdc-paginator-icon {
+		opacity: 0.5;
+	}
+
+	.mdc-notched-outline {
+		border: 1px solid var(--bs-body-color);
+		border-radius: 5px;
+	}
+}
+
+.devices-tabs-container {
+	.nav-item.active {
+		color: var(--bs-nav-tabs-link-active-color);
+		background-color: var(--bs-nav-tabs-link-active-bg);
+		border-color: var(--bs-nav-tabs-link-active-border-color);
+	}
+
+	.nav {
+		background-color: white;
+		padding: 5px;
+		border-radius: 10px;
+		margin-bottom: 20px;
+	}
+
+	.nav-item {
+		height: fit-content;
+		min-width: 150px;
+		text-align: center;
+	}
+}
+
+.input-group-text {
+	height: 100%;
+}

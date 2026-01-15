@@ -1,0 +1,135 @@
+import { NgFor, NgIf } from '@angular/common';
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { USER_ROLE, UsersService } from '../users.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
+import { User } from '../user.interface';
+import { CommonService } from 'src/app/shared/services/common.service';
+import { FormBuilderComponent } from 'src/app/shared/form-builder/form-builder.component';
+
+@Component({
+	selector: 'app-create-user',
+	standalone: true,
+	imports: [ReactiveFormsModule, TranslateModule, FormBuilderComponent],
+	templateUrl: './create-user.component.html',
+	styleUrl: './create-user.component.scss'
+})
+export class CreateUserComponent {
+
+	user: User = {
+		id: null,
+		name: "",
+		email: "",
+		role: "",
+		entity_type: "",
+		password: "",
+		confirm_password: "",
+	}
+
+	fields = {
+		name: { type: "text", is_required: true },
+		email: { type: "email", is_required: true },
+		role: {
+			type: "select", is_required: true,
+			options: Object.keys(USER_ROLE).map(role => ({ label: this.translateService.instant(`g.${role.toLowerCase()}`), value: USER_ROLE[role] }))
+		},
+		password: { type: "password", is_required: true },
+		confirm_password: { type: "password", is_required: true },
+	}
+	formFieldsList = [];
+
+	firstFormGroup = new FormGroup({});
+
+	constructor(
+		private _formBuilder: FormBuilder,
+		private usersService: UsersService,
+		private route: ActivatedRoute,
+		private router: Router,
+		private notificationMessageService: NotificationMessageService,
+		private commonService: CommonService,
+		private translateService: TranslateService,
+	) { }
+
+	ngOnInit() {
+		const requiredFieldsValidator = this.commonService.getRequireFieldsValidator(true);
+		this.firstFormGroup = this._formBuilder.group({
+			name: ['', [...requiredFieldsValidator, Validators.minLength(2)]],
+			email: ['', [...requiredFieldsValidator, Validators.email]],
+			role: ['', [...requiredFieldsValidator, Validators.minLength(1)]],
+			entity_type: ['', [...requiredFieldsValidator, Validators.minLength(1)]],
+			password: ['', [...requiredFieldsValidator, Validators.minLength(6)]],
+			confirm_password: ['', [...requiredFieldsValidator]],
+		}, { validator: this.passwordMatchValidator });
+
+		this.formFieldsList = Object.keys(this.fields);
+		this.checkAndFillUserData();
+	}
+
+	checkAndFillUserData() {
+		this.user.id = this.route.snapshot.paramMap.get('id') || '';
+		if (this.user.id) {
+			this.usersService.list({ id: this.user.id }).subscribe((res: { data: User[] }) => {
+				if (res.data.length) {
+					this.user = res.data[0];
+					this.firstFormGroup.patchValue({
+						name: this.user.name,
+						email: this.user.email,
+					});
+
+					this.firstFormGroup.removeControl('password');
+					this.firstFormGroup.removeControl('confirm_password');
+
+					const { password, confirm_password, ...remainingFields } = this.fields;
+					const newFields: any = {};
+
+					Object.keys(remainingFields).forEach(key => { newFields[key] = remainingFields[key] });
+
+					this.fields = newFields;
+					this.formFieldsList = Object.keys(this.fields);
+
+					this.firstFormGroup.markAsPristine();
+				}
+			});
+		}
+	}
+
+	passwordMatchValidator(group: FormGroup) {
+		const password = group.get('password')?.value;
+		const confirmPassword = group.get('confirm_password')?.value;
+		return password === confirmPassword ? null : { mismatch: true };
+	}
+
+	onSubmit() {
+		if (this.firstFormGroup.valid) {
+			const user: Partial<User> = this.getUserDirtyFields(this.user.id, this.firstFormGroup);
+			this.usersService.addUser(this.user.id, user).subscribe((res) => {
+				this.notificationMessageService.setMessage('globalSuccessMsg', { clearOnXTimeNavigate: 1 });
+				this.router.navigate(['/users']);
+			});
+		} else {
+			console.log('Form is invalid');
+			this.firstFormGroup.markAllAsTouched();
+		}
+	}
+
+	onCancel() {
+		this.router.navigate(['/users']);
+	}
+
+	getUserDirtyFields(userId: number, form: FormGroup) {
+		let user: Partial<User> = {};
+		if (userId) {
+			Object.keys(form.controls).forEach(key => {
+				const control = form.get(key);
+				if (control?.dirty)
+					user[key] = control.value;
+			});
+			return user;
+		}
+		else
+			user = this.firstFormGroup.value as User;
+		return user;
+	}
+}

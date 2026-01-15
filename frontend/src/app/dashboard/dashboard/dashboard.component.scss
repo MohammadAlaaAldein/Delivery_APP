@@ -1,0 +1,12 @@
+.bg-gray {
+	background-color: #eef2f6 !important;
+}
+
+.hide-on-print {
+}
+
+@media print {
+	.hide-on-print {
+		display: none;
+	}
+}

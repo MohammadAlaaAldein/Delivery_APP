@@ -1,0 +1,16 @@
+.faq-card {
+	margin-top: 105px;
+}
+
+.faq-details {
+	position: relative;
+
+	.faq-mail {
+		position: absolute;
+		bottom: -210px;
+		right: 98px;
+		width: 400px;
+		max-width: 100%;
+		animation: 5s ease-in-out 0s infinite normal none running wings;
+	}
+}

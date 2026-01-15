@@ -1,0 +1,40 @@
+{
+	"login": {
+		"email": [{"type": "required"}, {"type": "email"}],
+		"password": [{"type": "required"}, {"type": "password"}]
+	},
+
+	"forgotPassword": {
+		"email": [{"type": "required"}, {"type": "email"}]
+	},
+
+	"resetPassword": {
+		"newPassword": [{"type": "required"}, {"type": "password"}],
+		"confirmPassword": [{"type": "required"}, {"type": "password"}]
+	},
+
+	"user": {
+		"name": [{"type": "required"}, {"type": "string", "min": 1, "max": 255}],
+		"email": [{"type": "required"}, {"type": "email"}],
+		"phone_number": [{"type": "phone", "allowEmpty": true}],
+		"role_id": [{"type": "required"}, {"type": "userRole"}],
+		"company_id": [{"type": "required"}, {"type": "integer","min": 0}]
+	},
+	
+	"editUserPassword": {
+		"new_password": [{"type": "required"}, {"type": "password"}]
+	},
+
+	"changeUserPassword": {
+		"old_password": [{"type": "required"}, {"type": "password"}],
+		"new_password": [{"type": "required"}, {"type": "password"}]
+	},
+
+	"device": {
+		"imei": [{"type": "required"}, {"type": "regex", "strPatt": "^\\d{15,16}$"}],
+		"iccid": [{"type": "required"}, {"type": "regex", "strPatt": "^\\d{16,23}$"}],
+		"company_id": [{"type": "required"}, {"type": "integer"}],
+		"trip_id": [{"type": "required"}, {"type": "integer", "allowEmpty": true}],
+		"is_lost": [{"type": "boolean", "allowEmpty": true}]
+	}
+}

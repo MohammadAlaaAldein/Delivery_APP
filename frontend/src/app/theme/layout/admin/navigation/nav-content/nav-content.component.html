@@ -1,0 +1,89 @@
+<!-- Vertical layout -->
+@if (currentLayout === 'vertical') {
+	<ng-scrollbar style="height: calc(100vh - 88px)" visibility="hover">
+		<div class="navbar-content">
+			<ul class="nav coded-inner-navbar" (click)="fireOutClick()" (mouseleave)="navMob()">
+				@for (item of navigations; track item) {
+					@if (!item.hide || 1) {
+						@if (item.type === 'group') {
+							<app-nav-group [item]="item"></app-nav-group>
+						} @else if (item.type === 'collapse') {
+							<app-nav-collapse [item]="item"></app-nav-collapse>
+						} @else if (item.type === 'item') {
+							<app-nav-item [item]="item"></app-nav-item>
+						}
+					}
+				}
+			</ul>
+			<!-- <div class="version">
+        <label disabled class="pe-auto">v{{ currentApplicationVersion }}</label>
+      </div> -->
+		</div>
+	</ng-scrollbar>
+} @else if (currentLayout === 'horizontal') {
+	<div class="navbar-content sidenav-horizontal" id="layout-sidenav">
+		<a href="javascript:" class="sidenav-horizontal-prev" [ngClass]="prevDisabled" (click)="scrollMinus()"></a>
+		<div #navbarWrapper class="sidenav-horizontal-wrapper">
+			<ul
+				#navbarContent
+				id="side-nav-horizontal"
+				class="nav coded-inner-navbar sidenav-inner"
+				(click)="fireLeave()"
+				(mouseleave)="fireLeave()"
+			>
+				@for (item of navigations; track item) {
+					@if (!item.hide || 1) {
+						@if (item.type === 'group') {
+							<app-nav-group [item]="item"></app-nav-group>
+						} @else if (item.type === 'collapse') {
+							<app-nav-collapse [item]="item"></app-nav-collapse>
+						} @else if (item.type === 'item') {
+							<app-nav-item [item]="item"></app-nav-item>
+						}
+					}
+				}
+			</ul>
+		</div>
+		<a href="javascript:" class="sidenav-horizontal-next" [ngClass]="nextDisabled" (click)="scrollPlus()"></a>
+	</div>
+}
+
+<!-- Compact Layout -->
+<div class="navbar-content">
+	@if (currentLayout === 'compact') {
+		<ng-scrollbar style="height: calc(100vh - 80px)" visibility="hover">
+			<ul class="nav coded-inner-navbar" (click)="fireOutClick()" (mouseleave)="navMob()">
+				@for (item of navigations; track item) {
+					@if (!item.hide || 1) {
+						@if (item.type === 'group') {
+							<app-nav-group [item]="item" (showCollapseItem)="subMenuCollapse($event)"></app-nav-group>
+						} @else if (item.type === 'collapse') {
+							<app-nav-collapse></app-nav-collapse>
+						} @else if (item.type === 'item') {
+							<app-nav-item [item]="item"></app-nav-item>
+						}
+					}
+				}
+			</ul>
+		</ng-scrollbar>
+	}
+</div>
+@if (currentLayout === 'compact') {
+	<div class="pc-compact-submenu">
+		<div class="collapse-item">
+			<ng-scrollbar style="height: calc(100vh - 70px)" visibility="hover">
+				@for (item of collapseItem; track item) {
+					@if (!item.hide || 1) {
+						@if (item.type === 'group') {
+							<app-nav-group [item]="item"></app-nav-group>
+						} @else if (item.type === 'collapse') {
+							<app-nav-collapse [item]="item"></app-nav-collapse>
+						} @else if (item.type === 'item') {
+							<app-nav-item [item]="item"></app-nav-item>
+						}
+					}
+				}
+			</ng-scrollbar>
+		</div>
+	</div>
+}

@@ -1,0 +1,114 @@
+.taskboard {
+	overflow-x: auto;
+	overflow-y: hidden;
+	white-space: nowrap;
+	padding: 1rem;
+
+	.taskboard-wrapper {
+		width: 280px;
+		padding-right: 0.5rem;
+		padding-left: 0.5rem;
+		box-sizing: border-box;
+		display: inline-block;
+		vertical-align: top;
+		height: 100%;
+
+		&:first-child {
+			padding-left: 0px;
+		}
+
+		.taskboard-list {
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			max-height: 100%;
+			white-space: normal;
+			border-radius: 8px;
+			background: rgba(var(--bs-primary-rgb), 0.175);
+
+			.taskboard-header {
+				position: relative;
+				display: flex;
+				text-align: center;
+				flex-direction: row;
+				align-items: center;
+				text-transform: uppercase;
+				letter-spacing: 0.02rem;
+				font-size: 18px;
+				font-weight: 700;
+				padding: 16px;
+
+				.form-control {
+					&:not(:focus) {
+						border-color: transparent;
+						background: transparent;
+						box-shadow: none;
+					}
+				}
+			}
+
+			.taskboard-cards {
+				padding: 0 16px 16px;
+				box-sizing: border-box;
+				display: block;
+
+				.taskboard-task {
+					position: relative;
+					display: flex;
+					flex-direction: column;
+					border: 0px solid rgba(0, 0, 0, 0.125);
+					border-radius: $border-radius;
+					color: $black;
+					font-weight: 900;
+					background: $white;
+
+					&:after {
+						content: '';
+						position: absolute;
+						border: 4px solid transparent;
+						top: 0;
+						border-top-width: 12px;
+						border-bottom-color: transparent;
+						right: 6px;
+					}
+
+					&:hover {
+						cursor: grab;
+					}
+
+					&:last-child {
+						margin-bottom: 0;
+					}
+
+					&.task-status-success:after {
+						border-top-color: var(--bs-success);
+						border-right-color: var(--bs-success);
+						border-left-color: var(--bs-success);
+					}
+
+					&.task-status-info:after {
+						border-top-color: var(--bs-info);
+						border-right-color: var(--bs-info);
+						border-left-color: var(--bs-info);
+					}
+
+					&.task-status-warning:after {
+						border-top-color: var(--bs-warning);
+						border-right-color: var(--bs-warning);
+						border-left-color: var(--bs-warning);
+					}
+
+					&.task-status-danger:after {
+						border-top-color: var(--bs-danger);
+						border-right-color: var(--bs-danger);
+						border-left-color: var(--bs-danger);
+					}
+				}
+			}
+		}
+	}
+}
+
+app-kanban .ng-scroll-content {
+	display: block;
+}

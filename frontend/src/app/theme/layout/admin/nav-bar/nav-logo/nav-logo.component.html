@@ -1,0 +1,18 @@
+<div class="m-header">
+	<a [style.pointer-events]="'auto'" (click)="returnToHome()" class="b-brand"
+		style="cursor: pointer">
+		<!-- ========   change your logo hear   ============ -->
+		@if (themeMode === false) {
+		<img src="assets/images/logo.png" width="60" height="60" alt="logo-img" class="logo pointer" />
+		} @else {
+		<img src="assets/images/logo.png" width="60" height="60" alt="logo-img" class="logo" />
+		}
+	</a>
+	<!-- ======= Menu collapse Icon ===== -->
+	<div class="pc-h-item" *ngIf="!hideNavToggle">
+		<a href="javascript:" class="pc-head-link head-link-secondary m-0 mobile-menu" [ngClass]="{ on: navCollapsed }"
+			id="sidebar-hide mobile-collapse" (click)="navCollapse()" title="Click to Menu Collapse">
+			<i class="ti ti-menu-2"></i>
+		</a>
+	</div>
+</div>

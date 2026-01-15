@@ -1,0 +1,78 @@
+<div class="auth-main">
+	<div class="auth-wrapper v3">
+		<div class="auth-form">
+			<div class="card mt-5">
+				<div class="card-body">
+					<form #verifyCodeFrm="ngForm" (ngSubmit)="verifyCode()">
+						<!-- Logo -->
+						<a href="javascript:" class="d-flex justify-content-center">
+							@if (themeMode === false) {
+							<img src="assets/images/logo.png" width="100" alt="logo-img" />
+							} @else {
+							<img src="assets/images/logo-dark.png" width="100" alt="darkMode-logo" />
+							}
+						</a>
+						<!-- Header -->
+						<div class="text-center mt-5">
+							<h1 class="text-secondary">
+								{{ 'otp.enter_verification_code' | translate }}
+							</h1>
+							<!-- Messages -->
+							<p class="muted f-14 mt-3" *ngIf="!maxAttemptsReached && !accountBlocked && !otpJustResent">
+								{{ 'otp.otp_sent' | translate:{ email: userEmail } }}
+							</p>
+							<p class="muted f-14 mt-3" *ngIf="otpJustResent && !accountBlocked">
+								{{ 'otp.otp_resent' | translate }}
+							</p>
+							<p class="muted text-danger mt-3" *ngIf="maxAttemptsReached && !accountBlocked">
+								{{ 'otp.max_attempts_reached_message' | translate }}
+							</p>
+							<p class="muted text-danger mt-3" *ngIf="accountBlocked">
+								{{ 'otp.login_blocked_try_after_x_minutes' | translate:{ counter: blockTimeRemaining }
+								}}
+							</p>
+						</div>
+						<div class="form-group otp-inputs d-flex justify-content-center"
+							*ngIf="!maxAttemptsReached && !accountBlocked">
+							<input #otpInput type="text" maxlength="1" class="otp-box"
+								*ngFor="let _ of [0,1,2,3,4,5]; let i = index" [(ngModel)]="otp[i]" name="otp{{i}}"
+								(input)="handleOtpInput($event,i)" (paste)="handleOtpPaste($event,i)"
+								(keydown)="handleOtpKeydown($event,i)" autocomplete="one-time-code">
+						</div>
+
+						<div class="text-center mt-2">
+							<small class="text-success" *ngIf="message">{{ message }}</small>
+						</div>
+
+						<hr />
+						<!-- Verify Button -->
+						<div class="d-grid mt-4" *ngIf="!maxAttemptsReached && !accountBlocked">
+							<button type="submit" class="btn btn-secondary p-2" [disabled]="!isOtpComplete()">
+								{{ 'otp.verify' | translate }}
+							</button>
+						</div>
+						<!-- Resend (normal state) -->
+						<div class="d-grid mt-3"
+							*ngIf="!maxResendAttemptsReached && !maxAttemptsReached && !accountBlocked">
+							<button type="button" class="btn btn-light-secondary" (click)="resendCode()"
+								[disabled]="resendDisabled">
+								{{ 'otp.resend' | translate }}
+								<span *ngIf="resendDisabled">
+									({{ getFormattedCountdown() }})
+								</span>
+							</button>
+						</div>
+						<!-- Resend only (max attempts reached) -->
+						<div class="d-grid mt-4" *ngIf="maxAttemptsReached && !accountBlocked">
+							<button type="button" class="btn btn-outline-secondary" (click)="resendCode()"
+								[disabled]="resendDisabled">
+								{{ 'otp.request_new_code' | translate }}
+							</button>
+						</div>
+						<hr />
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

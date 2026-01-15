@@ -1,0 +1,59 @@
+@if (!item.hidden) {
+	<!-- Horizontal Layout -->
+	@if (currentLayout === 'horizontal') {
+		<li (mouseenter)="navCollapse($event)" data-username="Delivery APP Dashboard" class="nav-item coded-hasmenu" [routerLinkActive]="['active']">
+			<a [routerLinkActive]="['active']" href="javascript:" class="nav-link">
+				<ng-container *ngTemplateOutlet="itemContent"></ng-container>
+			</a>
+			<ng-container *ngTemplateOutlet="subMenuContent"></ng-container>
+		</li>
+	}
+
+	<!-- Vertical Layout -->
+	@if (currentLayout === 'vertical') {
+		<li data-username="Delivery APP Dashboard" class="nav-item coded-hasmenu" [routerLinkActive]="['active']">
+			<a [routerLinkActive]="['active']" href="javascript:" class="nav-link" (click)="navCollapse($event)">
+				<ng-container *ngTemplateOutlet="itemContent"></ng-container>
+			</a>
+			<ng-container *ngTemplateOutlet="subMenuContent"></ng-container>
+		</li>
+	}
+
+	<!-- Compact Layout -->
+	@if (currentLayout === 'compact') {
+		<li
+			data-username="Delivery APP Dashboard"
+			class="nav-item coded-hasmenu"
+			[routerLinkActive]="['active']"
+			placement="'top'"
+			(click)="subMenuCollapse(item)"
+		>
+			<a href="javascript:" class="nav-link">
+				<ng-container *ngTemplateOutlet="itemContent"></ng-container>
+			</a>
+			<ng-container *ngTemplateOutlet="subMenuContent"></ng-container>
+		</li>
+	}
+
+	<ng-template #itemContent>
+		@if (item.icon) {
+			<span class="coded-micon">
+				<i class="{{ item.icon }}"></i>
+			</span>
+		}
+		<span class="coded-mtext">
+			{{ item.title | translate }}
+		</span>
+	</ng-template>
+	<ng-template #subMenuContent>
+		<ul class="coded-submenu" [routerLinkActive]="['active']" [ngClass]="item.classes!">
+			@for (item of item.children; track item) {
+				@if (item.type === 'item') {
+					<app-nav-item [item]="item"></app-nav-item>
+				} @else if (item.type === 'collapse') {
+					<app-nav-collapse [item]="item"></app-nav-collapse>
+				}
+			}
+		</ul>
+	</ng-template>
+}

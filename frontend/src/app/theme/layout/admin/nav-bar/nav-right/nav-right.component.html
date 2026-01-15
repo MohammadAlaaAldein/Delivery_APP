@@ -1,0 +1,82 @@
+<div class="ms-auto">
+	<ul class="list-unstyled">
+		<li class="me-3">
+			<div class="dropdown pc-h-item pc-mega-menu" ngbDropdown>
+				<a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0" href="javascript:" ngbDropdownToggle *ngIf="usersService.hasAccessFunctions(['admin'])">
+					<i class="ti ti-menu-2"></i>
+				</a>
+				<div class="dropdown-menu pc-h-dropdown pc-mega-drop-menu" ngbDropdownMenu>
+					<div class="row g-0">
+						<div class="col-4">
+							<div class="text-center image-block p-2">
+								<img src="assets/images/pages/img-megamenu.svg" alt="image" class="img-fluid rounded" />
+							</div>
+						</div>
+						<div class="col-8">
+							<div class="row p-4">
+								@for (section of componentSections; track section) {
+									<div class="col">
+										<h5 class="mx-3">{{ section.title }}</h5>
+										<ul class="pc-mega-list">
+											@for (item of section.items; track item) {
+												<li *ngIf="usersService.hasAccessFunctions(item.accessFunctions || [])">
+													<a [routerLink]="[item.url]" class="dropdown-item">
+														<i class="fas fa-circle me-2"></i>
+														{{ item.title }}
+													</a>
+												</li>
+											}
+										</ul>
+									</div>
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</li>
+		<app-configuration></app-configuration>
+		<li>
+			<div class="dropdown pc-h-item header-user-profile" ngbDropdown>
+				<a class="pc-head-link head-link-primary dropdown-toggle arrow-none me-0" href="javascript:" ngbDropdownToggle>
+					<span>
+						<i class="ti ti-settings"></i>
+					</span>
+				</a>
+				<div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown" ngbDropdownMenu>
+					<div class="dropdown-header">
+						<h4>{{'g.hello' | translate}}, {{user?.name || ''}}</h4>
+						<ng-scrollbar visibility="hover">
+							<!-- Timezone selector -->
+							<div class="timezone-item mt-2 mb-2" *ngIf="timezones?.length">
+								<div class="pl-2 pr-2 pt-1 pb-1">
+									<ng-select
+										[items]="timezones"
+										[(ngModel)]="selectedTimezone"
+										placeholder="{{ 'users.time_zone' | translate }}"
+										(ngModelChange)="updateTimezone()"
+										[appendTo]="'body'"
+										[clearable]="false"
+									>
+									</ng-select>
+								</div>
+							</div>
+							<a [routerLink]="['users/edit-settings']" class="dropdown-item user-options my-1" *ngIf="0">
+								<i class="ti ti-user"></i>
+								<span>{{ 'users.user_settings' | translate }}</span>
+							</a>
+							<a [routerLink]="['change-user-password']" class="dropdown-item user-options my-1" *ngIf="0">
+								<i class="ti ti-key"></i>
+								<span>{{ 'users.change_password' | translate }}</span>
+							</a>
+							<a class="dropdown-item pe-auto user-options my-1" href="javascript:" (click)="logout()">
+								<i class="ti ti-logout"></i>
+								<span>{{ 'users.logout' | translate }}</span>
+							</a>
+						</ng-scrollbar>
+					</div>
+				</div>
+			</div>
+		</li>
+	</ul>
+</div>

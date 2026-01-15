@@ -1,0 +1,8 @@
+<div class="container mt-2">
+	<div class="text-center my-3 logo">
+		<img src="assets/images/logo.png" width="100" alt="logo-img" />
+	</div>
+	<h2 class="text-danger mt-2 text-center" *ngIf="errorMsg">{{ errorMsg }}</h2>
+	<h2 class="text-success mt-2 text-center" *ngIf="successMsg">{{ successMsg }}</h2>
+	<h4 class="mt-2 text-center" *ngIf="successMsgDesc">{{ successMsgDesc }}</h4>
+</div>

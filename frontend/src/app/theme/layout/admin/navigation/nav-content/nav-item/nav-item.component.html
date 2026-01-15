@@ -1,0 +1,60 @@
+@if (!item.hidden) {
+	@if (item.url && !item.external) {
+		@if (currentLayout === 'vertical') {
+			<li [ngClass]="item.classes!" [routerLinkActive]="['active']">
+				<a class="nav-link" [target]="item.target ? '_blank' : '_self'" [routerLink]="[item.url]" (click)="closeOtherMenu($event)">
+					<ng-container *ngTemplateOutlet="itemIcon"></ng-container>
+					@if (item.icon) {
+						<span class="coded-mtext">{{ item.title | translate }}</span>
+					} @else {
+						{{ item.title | translate }}
+					}
+				</a>
+			</li>
+		} @else if (currentLayout === 'horizontal') {
+			<li [ngClass]="item.classes!" [routerLinkActive]="['active']">
+				<a class="nav-link" [target]="item.target ? '_blank' : '_self'" [routerLink]="[item.url]" (click)="closeOtherMenu($event)">
+					<ng-container *ngTemplateOutlet="itemIcon"></ng-container>
+					@if (item.icon) {
+						<span class="coded-mtext">{{ item.title | translate }}</span>
+					} @else {
+						{{ item.title | translate }}
+					}
+				</a>
+			</li>
+		} @else if (currentLayout === 'compact') {
+			<li
+				[ngClass]="item.classes!"
+				[routerLinkActive]="['active']"
+				[placement]="'top'"
+				[ngbTooltip]="item.type === 'item' ? item.title : null"
+			>
+				<a class="nav-link" [target]="item.target ? '_blank' : '_self'" [routerLink]="[item.url]" (click)="closeOtherMenu($event)">
+					<ng-container *ngTemplateOutlet="itemIcon"></ng-container>
+					@if (item.icon) {
+						<span class="coded-mtext">{{ item.title | translate }}</span>
+					} @else {
+						{{ item.title | translate }}
+					}
+				</a>
+			</li>
+		}
+	}
+	@if (item.url && item.external) {
+		<li [ngClass]="item.classes!" [routerLinkActive]="['active']">
+			<a [target]="item.target ? '_blank' : '_self'" [href]="item.url">
+				<ng-container *ngTemplateOutlet="itemIcon"></ng-container>
+				@if (item.icon) {
+					<span class="coded-mtext">{{ item.title | translate }}</span>
+				} @else {
+					{{ item.title | translate }}
+				}
+			</a>
+		</li>
+	}
+	<ng-template #itemIcon>
+		@if (item.icon) {
+			<span class="coded-micon"><i [ngClass]="item.icon"></i></span>
+		}
+	</ng-template>
+}

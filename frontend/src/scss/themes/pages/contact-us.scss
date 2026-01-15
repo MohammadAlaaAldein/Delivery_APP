@@ -1,0 +1,53 @@
+.contact-details {
+	position: relative;
+
+	.contact-mail {
+		position: absolute;
+		bottom: -210px;
+		right: 98px;
+		width: 400px;
+		max-width: 100%;
+		animation: 5s ease-in-out 0s infinite normal none running wings;
+	}
+}
+
+.contact-card {
+	margin-top: 106px;
+
+	.contact-footer {
+		display: flex;
+		justify-content: space-between;
+
+		p {
+			span {
+				color: var(--bs-primary);
+				text-decoration: underline;
+			}
+		}
+	}
+}
+
+.front-header-image {
+	position: relative;
+	margin-top: 75px;
+
+	& > * {
+		position: relative;
+		z-index: 5;
+	}
+
+	.bg-img-overlay {
+		position: fixed;
+		background-size: cover;
+		height: 500px;
+		width: 100%;
+		top: 0;
+		left: 0;
+	}
+
+	p {
+		span {
+			color: rgb(33, 150, 243);
+		}
+	}
+}

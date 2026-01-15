@@ -1,0 +1,16 @@
+<div class="card">
+	<div class="card-body">
+		<span>{{ title }}</span>
+		<h3>{{ value }}</h3>
+		<div id="chart">
+			<apx-chart
+				[series]="chartOptions.series"
+				[chart]="chartOptions.chart"
+				[stroke]="chartOptions.stroke"
+				[yaxis]="chartOptions.yaxis"
+				[tooltip]="chartOptions.tooltip"
+				[colors]="chartOptions.colors"
+			></apx-chart>
+		</div>
+	</div>
+</div>

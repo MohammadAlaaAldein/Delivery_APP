@@ -1,0 +1,78 @@
+.is-invalid .ng-select-container {
+	border: 1px solid #f44336;
+}
+
+.cursor-pointer {
+	cursor: pointer;
+}
+
+img.delivery_app {
+	max-width: 200px;
+}
+
+#print_area>app-card>div>div.card-header.d-flex.align-items-center.justify-content-between>div:nth-child(1)>h2 {
+	text-align: center !important;
+}
+
+@media print {
+	.card .card-header {
+		border-bottom: none !important;
+	}
+
+	mat-sidenav-container {
+		overflow: inherit !important;
+	}
+
+	img.sct {
+		max-height: 40px;
+		max-width: 120px;
+	}
+
+	img.delivery_app {
+		//max-width: 300px;
+		max-width: 200px;
+		//border-top: 50px;
+		text-align: center;
+	}
+
+	.separator {
+		width: 100%;
+		height: 3rem;
+	}
+
+	.hide-on-print {
+		display: none;
+	}
+}
+
+.justify-content-start {
+	justify-content: start !important;
+}
+
+.ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-placeholder {
+	padding-top: 5px !important;
+}
+
+.ng-select .ng-clear-wrapper {
+	padding-top: 5px;
+}
+
+.filters .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value {
+	margin-bottom: 3px !important;
+}
+
+.filters .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-placeholder {
+	padding-top: unset !important;
+}
+
+.ng-select .ng-clear-wrapper {
+	padding-top: unset !important;
+}
+
+.ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-input {
+	padding-top: 6px;
+}
+
+.filters .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-input {
+	padding-top: unset !important;
+}

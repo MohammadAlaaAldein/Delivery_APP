@@ -1,0 +1,62 @@
+<div class="auth-main" *ngIf="!has2svOpt">
+	<div class="auth-wrapper v3">
+		<div class="auth-form">
+			<div class="card my-5">
+				<div class="card-body">
+					<a href="javascript:" class="d-flex justify-content-center">
+						@if (themeMode === false) {
+						<img src="assets/images/logo.png" width="100" alt="logo-img" />
+						} @else {
+						<img src="assets/images/logo-dark.png" width="100" alt="darkMode-logo" />
+						}
+					</a>
+					<div class="row">
+						<div class="d-flex justify-content-center">
+							<div class="auth-header">
+								<p class="f-16 mt-2">{{ 'users.enter_credentials' | translate }}</p>
+							</div>
+						</div>
+					</div>
+					<form #editUserFrm="ngForm" (ngSubmit)="login()" [validate-form]="'login'">
+						<div class="form-floating mb-3">
+							<input type="email" class="form-control" id="username" name="email"
+								[(ngModel)]="usernameValue"
+								[ngClass]="{ 'is-invalid': !elementValidationMapper['email'].isValid }"
+								placeholder="name@example.com" />
+							<label for="username">{{ 'users.email' | translate }}</label>
+						</div>
+						<div class="form-floating mb-3">
+							<input type="{{ passwordVisible ? 'text' : 'password' }}" [(ngModel)]="userPassword"
+								class="form-control" id="password" name="password"
+								[ngClass]="{ 'is-invalid': !elementValidationMapper['password'].isValid }"
+								placeholder="name@example.com" />
+							<label for="password">{{ 'users.password' | translate }}</label>
+							<i class="feather position-absolute" style="top: 10px; right: 10px; cursor: pointer"
+								*ngIf="userPassword" [ngClass]="passwordVisible ? 'icon-eye-off' : 'icon-eye'"
+								(click)="passwordVisible = !passwordVisible"></i>
+						</div>
+						<div *ngIf="showCaptcha">
+							<app-captcha #captchaComponent [darkBackground]="true"></app-captcha>
+						</div>
+						<div class="d-flex mt-1 justify-content-between">
+							<h5 class="text-secondary">
+								<a [routerLink]="['/forgot-password']">{{ 'users.forgot_password' | translate }}</a>
+							</h5>
+						</div>
+						<div class="d-grid mt-4">
+							<button type="submit" class="btn btn-secondary"
+								[disabled]="showCaptcha && !captchaComponent?.captchaText">
+								{{ 'users.sign_in' | translate }}
+							</button>
+						</div>
+					</form>
+					<hr />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<app-otp-verification-code *ngIf="has2svOpt" [userEmail]="usernameValue" (loginByOptVerified)="loginByOptVerified()">
+</app-otp-verification-code>
+
+<notifier-container></notifier-container>

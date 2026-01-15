@@ -1,0 +1,56 @@
+.pc-header .header-user-profile .pc-head-link > span > i {
+	margin-right: 0px;
+}
+
+.pc-header .header-user-profile .pc-head-link {
+	height: 48px !important;
+	width: 48px !important;
+	border-radius: 50px;
+}
+
+.timezone-wrapper {
+	position: relative;
+	display: inline-block;
+}
+
+.timezone-btn {
+	background: transparent;
+	border: 1px solid #ccc;
+	padding: 6px 12px;
+	border-radius: 6px;
+	color: white;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+}
+
+.timezone-btn i {
+	font-size: 16px;
+}
+
+.timezone-dropdown {
+	position: absolute;
+	left: -220px;
+	top: 0;
+	width: 200px;
+	max-height: 250px;
+	overflow-y: auto;
+	background: #1e1e2d;
+	border: 1px solid #444;
+	border-radius: 6px;
+	padding: 6px 0;
+	z-index: 9999;
+}
+
+.timezone-option {
+	padding: 8px 12px;
+	cursor: pointer;
+	color: white;
+	white-space: nowrap;
+}
+
+.timezone-option:hover {
+	background: #2a2a3a;
+}

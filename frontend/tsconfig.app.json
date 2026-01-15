@@ -1,0 +1,16 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./out-tsc/app",
+		"module": "commonjs",
+		"types": ["node"]
+	},
+	"files": [
+		"src/main.ts",
+		"src/polyfills.ts",
+    	"./node_modules/sct-custom-table/sct-table/projects/sct-table/src/lib/sct-table.module.ts",
+    	"./node_modules/sct-custom-table/sct-table/projects/sct-table/src/lib/sct-table.component.ts",
+	],
+	"include": ["src/**/*.d.ts"]
+}

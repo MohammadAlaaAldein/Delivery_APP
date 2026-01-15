@@ -1,0 +1,16 @@
+.nav-tabs .nav-link {
+	padding: 10px 24px;
+	border: none;
+}
+.nav-tabs {
+	border-bottom: 0px;
+}
+app-configuration .switch {
+	margin-right: 10px !important;
+}
+
+@media (max-width: 600px) {
+	.nav-tabs .nav-link {
+		padding: 10px 14px;
+	}
+}

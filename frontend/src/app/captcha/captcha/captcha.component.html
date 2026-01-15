@@ -1,0 +1,10 @@
+<div class="mt-4" *ngIf="!triesLimitReached">
+	<label for="captcha">Please enter Captcha text below</label>
+	<div>
+		<img [src]="captchaUrl" height="50px" width="150px" />
+		<fa-icon class="fas fa-sync-alt text-primary" (click)="getCaptcha(true)"></fa-icon>
+	</div>
+</div>
+<div class="mt-2" *ngIf="!triesLimitReached">
+	<input type="text" class="form-control" name="captchaText" [(ngModel)]="captchaText" required />
+</div>

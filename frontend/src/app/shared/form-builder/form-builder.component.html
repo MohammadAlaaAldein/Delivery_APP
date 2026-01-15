@@ -1,0 +1,151 @@
+<div class="card">
+	<div class="card-body custom-table-style">
+		<form [formGroup]="formGroup">
+			<div class="row">
+				<div class="col-12" *ngFor="let field of formFieldsList">
+					<div class="form-group d-flex justify-content-between align-items-center" *ngIf="fields[field].type !== 'label'">
+						<label class="form-label d-flex align-items-center" [for]="field">
+							<span>{{ (translationKey + '.' + field) | translate }}{{ fields[field]?.is_required ? ' *' : '' }}</span>
+
+							<!-- Tooltip icon -->
+							<span *ngIf="fields[field]?.tooltipMessage"
+								ngbTooltip="{{ fields[field].tooltipMessage }}"
+								class="ms-2 d-inline-flex align-items-center"
+								style="cursor: pointer;"
+							>
+    							<fa-icon icon="question-circle" class="text-muted small-icon"></fa-icon>
+  							</span>
+						</label>
+
+						<div [ngSwitch]="fields[field]?.type" 
+							class="input-container"
+							(mouseleave)="hideFieldTooltip()">
+							<!-- Toggle Switch -->
+							<ng-container *ngSwitchCase="'checkbox'">
+								<label class="toggle-switch">
+									<input type="checkbox" [id]="field"
+										[formControlName]="field"
+										[disabled]="fields[field].disabled" />
+									<span class="toggle-slider"></span>
+									</label>
+							</ng-container>
+
+							<!-- Select -->
+							<ng-container *ngSwitchCase="'select'">
+								<select
+									[id]="field"
+									class="form-select"
+									[formControlName]="field"
+									[disabled]="fields[field].disabled"
+									[ngClass]="{ 
+										'is-invalid': formGroup.get(field)?.touched && formGroup.get(field)?.invalid,
+									}"
+								>
+									<option *ngFor="let option of fields[field].options" [value]="option.value">
+										{{ option.label | translate }}
+									</option>
+								</select>
+								<div class="text-danger" *ngIf="formGroup.get(field)?.touched && formGroup.get(field)?.invalid">
+									<small *ngIf="formGroup.get(field)?.errors?.['required']">
+										{{ (translationKey + '.' + field) | translate }} {{ "validation.is_required" | translate }}
+									</small>
+								</div>
+							</ng-container>
+
+							<!-- select-with-tags -->
+							<ng-container *ngSwitchCase="'multi-select'">
+								<ng-select
+									[name]="field"
+									[multiple]="true"
+									[addTag]="true"
+									[items]="fields[field].items"
+									[bindLabel]="field"
+									[clearable]="false"
+									placeholder="{{(translationKey + '.' + field) | translate}}"
+									[disabled]="fields[field].disabled"
+									[formControlName]="field"
+								>
+									<ng-template ng-label-tmp let-item="item" let-clear="clear">
+										<span>
+											<span class="ng-value-icon left" (click)="clear(item)" aria-hidden="true">×</span>
+											<span class="ng-value-label">{{item[field]}}</span>
+										</span>
+									</ng-template>
+								</ng-select>
+								<div class="text-danger" *ngIf="formGroup.get(field)?.touched && formGroup.get(field)?.invalid">
+									<small *ngIf="formGroup.get(field)?.errors?.['required']">
+										{{ (translationKey + '.' + field) | translate }} {{ "validation.is_required" | translate }}
+									</small>
+								</div>
+							</ng-container>
+							<ng-container *ngSwitchCase="'password'">
+								<div class="position-relative">
+									<input
+										[type]="passwordVisible[field] ? 'text' : 'password'"
+										[id]="field"
+										class="form-control"
+										[formControlName]="field"
+										[disabled]="fields[field].disabled"
+										[placeholder]="(translationKey + '.' + field) | translate"
+										[ngClass]="{ 
+											'is-invalid': formGroup.get(field)?.touched && formGroup.get(field)?.invalid,
+										}"
+									/>
+									<i
+										class="feather position-absolute"
+										style="top: 10px; right: 10px; cursor: pointer"
+										*ngIf="formGroup.get(field)?.value"
+										[ngClass]="passwordVisible[field] ? 'icon-eye-off' : 'icon-eye'"
+										(click)="togglePasswordVisibility(field)"
+									></i>
+								</div>
+							</ng-container>
+
+							<!-- Default input -->
+							<ng-container *ngSwitchDefault>
+								<input
+									[type]="fields[field]?.type || 'text'"
+									[id]="field"
+									class="form-control"
+									[ngClass]="{ 
+										'is-invalid': formGroup.get(field)?.touched && formGroup.get(field)?.invalid,
+									}"
+									[formControlName]="field"
+									[disabled]="fields[field].disabled"
+								/>
+								<div class="text-danger" *ngIf="formGroup.get(field)?.touched && formGroup.get(field)?.invalid">
+									<small *ngIf="formGroup.get(field)?.errors?.['required']">
+										{{ (translationKey + '.' + field) | translate }} {{ "validation.is_required" | translate }}
+									</small>
+									<small *ngIf="formGroup.get(field)?.errors?.['email']">
+										{{ "validation.invalid_email" | translate }}
+									</small>
+
+									<small *ngIf="formGroup.get(field)?.errors?.['pattern']">
+										{{ (fields[field]?.validationMessage || 'validation.invalid_format') | translate }}
+									</small>
+								</div>
+							</ng-container>
+						</div>
+					</div>
+
+					<div class="form-group my-3" *ngIf="fields[field].type === 'label'">
+						<h3 class="form-label">{{ (translationKey + '.' + field) | translate }}</h3>
+					</div>
+				</div>
+
+				<div class="row mt-3" *ngIf="hasButtons">
+					<div class="col-6"></div>
+					<div class="col-6 text-end">
+						<button type="button" (click)="back()" class="btn btn-secondary d-inline-flex align-items-center me-2">
+							{{ "g.back" | translate }}
+						</button>
+						<button type="button" (click)="onSubmit()" class="btn btn-primary d-inline-flex align-items-center" *ngIf="!isReadonly">
+							{{ "g.save" | translate }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>

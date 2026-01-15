@@ -1,0 +1,29 @@
+<div class="maintenance-block">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="card error-card-unauth">
+					<div class="card-body">
+						<div class="error-image-block">
+							<img class="image-animated img-fluid" src="assets/images/pages/img-maintenance-bg.svg" alt="theme images" />
+							<img src="assets/images/pages/ths.png" class="img-unauth error-text" alt="theme images" />
+						</div>
+						<div class="text-center">
+							<h1 class="mt-4">
+								<b>{{ 'g.unauthorized_access' | translate }}</b>
+							</h1>
+							<a class="btn btn-primary" role="button" [routerLink]="backUrl" *ngIf="backUrl.length">
+								<i class="ti ti-home m-r-5"></i>
+								{{ 'nav.home' | translate }}
+							</a>
+							<a class="btn btn-primary" role="button" href="javascript:" (click)="logout()" *ngIf="!backUrl.length">
+								<i class="ti ti-logout"></i>
+								{{ 'users.logout' | translate }}
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

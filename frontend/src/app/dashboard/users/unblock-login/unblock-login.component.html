@@ -1,0 +1,29 @@
+<div class="auth-main">
+	<div class="auth-wrapper v3">
+		<div class="auth-form">
+			<div class="card my-5">
+				<div class="card-body">
+					<a href="javascript:" class="d-flex justify-content-center mb-3">
+						<img *ngIf="!themeMode" src="assets/images/logo.png" width="100" alt="logo-img" />
+						<img *ngIf="themeMode" src="assets/images/logo-dark.png" width="100" alt="darkMode-logo" />
+					</a>
+
+					<div class="row">
+						<div class="d-flex justify-content-center">
+							<div class="auth-header text-center">
+								<p class="f-16 mt-2">{{'otp.unblock_account_msg' | translate }}</p>
+								<p class="text-muted f-14">{{'otp.unblock_account_button' | translate }}</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="d-grid mt-4">
+						<button class="btn btn-secondary" (click)="unblockUser()">
+							{{ 'g.confirm' | translate }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

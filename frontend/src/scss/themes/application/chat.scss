@@ -1,0 +1,140 @@
+.chat-wrapper {
+	display: flex;
+	.chat-user_list {
+		width: 320px;
+		margin-right: var(--bs-gutter-x);
+
+		.delivery_app-rtl & {
+			margin-left: var(--bs-gutter-x);
+			margin-right: 0px;
+		}
+	}
+	.chat-content {
+		flex: 1 1 auto;
+	}
+
+	.form-search {
+		.user-search {
+			&.form-control {
+				max-width: 100%;
+				padding: 0.62rem 0.5rem 0.62rem 2.6rem;
+			}
+		}
+	}
+
+	.chat-user_info {
+		width: 300px;
+		margin-left: var(--bs-gutter-x);
+
+		.delivery_app-rtl & {
+			margin-right: var(--bs-gutter-x);
+			margin-left: 0px;
+		}
+
+		.chat-avatar {
+			img {
+				border: 1px solid var(--bs-primary);
+				padding: 3px;
+			}
+			.chat-badge {
+				bottom: 8px;
+				right: 8px;
+				width: 14px;
+				height: 14px;
+			}
+		}
+	}
+	.chat-offcanvas {
+		--bs-offcanvas-width: 301px;
+		&.show {
+			.collapse:not(.show) {
+				display: block;
+			}
+			.chat-user_list {
+				margin-right: 0;
+			}
+			.chat-user_info {
+				margin-left: 0;
+			}
+		}
+	}
+	.unread_message {
+		width: 20px;
+		height: 20px;
+		font-size: 12px;
+	}
+	.user-left-side {
+		.delivery_app-rtl & {
+			margin-left: auto;
+			margin-right: 0px;
+		}
+	}
+	.user-right-side {
+		.delivery_app-rtl & {
+			margin-right: auto;
+			margin-left: 0px;
+		}
+	}
+}
+.chat-badge {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	display: inline-block;
+}
+.chat-avatar {
+	position: relative;
+	.chat-badge {
+		position: absolute;
+		bottom: 2px;
+		right: 2px;
+	}
+}
+.chat-input {
+	position: relative;
+	.chat-input-btn {
+		position: absolute;
+		right: 6.5px;
+		top: 6.5px;
+	}
+	.form-control {
+		padding-right: 80px;
+	}
+}
+.chat-message {
+	.msg-content {
+		padding: 12px 16px;
+		border-radius: var(--bs-border-radius);
+		margin-bottom: 24px;
+		max-width: 60%;
+		p {
+			color: var(--bs-body-color);
+		}
+		p:last-child {
+			text-align: right;
+		}
+		@media (max-width: 768px) {
+			max-width: 90%;
+		}
+	}
+	.message-out,
+	.message-in {
+		display: flex;
+	}
+	.message-out {
+		justify-content: flex-end;
+		.msg-content {
+			background: var(--bs-primary-light);
+		}
+	}
+	.message-in {
+		justify-content: flex-start;
+		.msg-content {
+			background: var(--bs-secondary-light);
+		}
+	}
+}
+
+app-chat .nav {
+	display: block;
+}
