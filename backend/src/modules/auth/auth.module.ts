@@ -10,6 +10,8 @@ import { User } from '../users/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET_TOKEN, JWT_SECRET_TOKEN_TTL } from '../../common/constants';
 import { AuthCaptchaService } from './auth-captcha/auth-captcha.service';
+import { ShopsModule } from '../shops/shops.module';
+import { CompaniesModule } from '../companies/companies.module';
 
 @Module({
 	providers: [
@@ -28,6 +30,8 @@ import { AuthCaptchaService } from './auth-captcha/auth-captcha.service';
 			secret: `${JWT_SECRET_TOKEN}`,
 			signOptions: { expiresIn: JWT_SECRET_TOKEN_TTL },
 		}),
+		ShopsModule,
+		CompaniesModule,
 	],
 })
 export class AuthModule { }

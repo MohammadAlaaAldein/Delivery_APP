@@ -18,6 +18,9 @@ import { getSiteBaseURL, RESET_PASSWORD_LINK_TTL } from 'src/common/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { encrypt } from 'src/common/common';
+import { ShopsService } from '../shops/shops.service';
+import { CompaniesService } from '../companies/companies.service';
+import { keyBy } from 'lodash';
 
 export enum USER_ROLE {
 	ADMIN = 'admin',
@@ -40,6 +43,8 @@ export class UsersService {
 		private redisService: RedisService,
 		// private mailerService: MailersService,
 		private readonly eventEmitter: EventEmitter2,
+		private readonly shopsService: ShopsService,
+		private readonly companiesService: CompaniesService,
 	) { }
 
 	private getUserRepository(entityManager?: EntityManager): Repository<User> {
@@ -239,7 +244,7 @@ export class UsersService {
 		}
 	}
 
-	async getUsers(filters: ListUsersDto) {
+	async getUsers(filters: ListUsersDto): Promise<User[]> {
 		try {
 			const criteria = {};
 			if (filters && Object.keys(filters).length > 0) {
@@ -261,7 +266,10 @@ export class UsersService {
 						qb.andWhere(`LOWER(${field}) = :${field}`, params);
 						break;
 					case 'id':
-						qb.andWhere(`${field} = :${field}`, params);
+						if (!Array.isArray(params[field]))
+							params[field] = [params[field]];
+
+						qb.andWhere(`${field} = ANY(:${field})`, params);
 						break;
 					default:
 						break;
@@ -367,4 +375,44 @@ export class UsersService {
 			throw ex;
 		}
 	}
+
+	async mapUsersEntity(users: User[]) {
+		try {
+			const shopIds = [];
+			const companyIds = [];
+
+			let shops: any = [];
+			let companies: any = [];
+
+			for (const user of users) {
+				if (user.entity_id && user.role == USER_ROLE.SHOP)
+					shopIds.push(user.entity_id);
+
+				if (user.entity_id && user.role == USER_ROLE.COMPANY)
+					companyIds.push(user.entity_id);
+			}
+
+			if (shopIds.length)
+				shops = await this.shopsService.getShops({ id: shopIds });
+
+			if (companyIds.length)
+				companies = await this.companiesService.getCompanies({ id: companyIds });
+
+			shops = keyBy(shops, 'id');
+			companies = keyBy(companies, 'id');
+
+			for (const user of users) {
+				if (user.entity_id && user.role == USER_ROLE.SHOP)
+					user.entity_name = shops[user.entity_id]?.name;
+
+				if (user.entity_id && user.role == USER_ROLE.COMPANY)
+					user.entity_name = companies[user.entity_id]?.name;
+			}
+
+			return users;
+		} catch (ex) {
+			throw ex;
+		}
+	}
+
 }

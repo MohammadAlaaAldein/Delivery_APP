@@ -27,6 +27,7 @@ import { ForgotPasswordDto, ResetUserPasswordDto } from './dto/forgot-password.d
 import { NotAuthenticatedGuard } from '../auth/guards/not-authenticated.guard';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { RoleInterceptor } from 'src/interceptors/role-interceptor';
+import { RolesService } from './roles.service';
 
 @Controller(getControllersPrefixes('users'))
 
@@ -37,6 +38,7 @@ export class UsersController {
 	constructor(
 		private readonly usersService: UsersService,
 		private readonly authCaptchaService: AuthCaptchaService,
+		private readonly rolesService: RolesService
 	) { }
 
 	@UseGuards(JwtGuard)
@@ -102,7 +104,9 @@ export class UsersController {
 		@Req() req: FastifyRequest,
 		@Query() filters: ListUsersDto,
 	) {
-		const users = await this.usersService.getUsers(filters);
+		let users: any = await this.usersService.getUsers(filters);
+		users = await this.usersService.mapUsersEntity(users);
+
 		return handleSuccessApiResponse({ data: users });
 	}
 

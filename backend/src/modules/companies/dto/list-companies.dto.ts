@@ -5,7 +5,7 @@ export class ListCompanyDto {
 	@IsOptional()
 	@Transform(({ value }) => parseInt(value))
 	@IsInt()
-	id?: number;
+	id?: number | number[];
 
 	@IsOptional()
 	@IsString()

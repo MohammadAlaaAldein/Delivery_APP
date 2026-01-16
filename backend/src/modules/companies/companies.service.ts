@@ -140,7 +140,10 @@ export class CompaniesService {
 				const params = { [field]: criteria[field] };
 				switch (field) {
 					case 'id':
-						qb.andWhere(`${field} = :${field}`, params);
+						if (!Array.isArray(params[field]))
+							params[field] = [params[field]];
+
+						qb.andWhere(`${field} = ANY(:${field})`, params);
 						break;
 					case 'name':
 						params[field] = params[field].trim().toLowerCase();

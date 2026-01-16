@@ -1,5 +1,5 @@
 import { Component, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
-import { UsersService } from './users.service';
+import { USER_ROLE, UsersService } from './users.service';
 import { CommonModule } from '@angular/common';
 import { keyBy as _keyBy } from 'lodash';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -26,6 +26,8 @@ export class UsersComponent {
 	columnConfig: ColumnsConfig[] = [
 		{ key: 'name', name: this.translate.instant('users.name'), type: 'string' },
 		{ key: 'email', name: this.translate.instant('users.email'), type: 'string' },
+		{ key: 'role', name: this.translate.instant('users.role'), type: 'string' },
+		{ key: 'entity_id', name: this.translate.instant('users.entity_id'), type: 'string' },
 		{ key: 'create_date', name: this.translate.instant('g.creation_date'), type: 'date' },
 		{ key: 'actions', name: this.translate.instant('g.actions'), type: 'dropdown' }
 	];
@@ -33,12 +35,21 @@ export class UsersComponent {
 	filterColumns = [
 		{ key: 'name', title: this.translate.instant('users.name'), type: "text" },
 		{ key: 'email', title: this.translate.instant('users.email'), type: "email" },
+		// {
+		// 	key: 'role',
+		// 	name: 'role',
+		// 	title: this.translate.instant('users.role'),
+		// 	type: "text",
+		// 	filter_type: "dropdown",
+		// 	filter_data: Object.values(USER_ROLE).map(role => ({ value: role, label: this.translate.instant(`g.${role.toLowerCase()}`) }))
+		// },
 		{ key: 'id', title: this.translate.instant('g.id'), type: "number" },
 	];
 
 	filters = {
 		name: "",
 		email: "",
+		// role: null,
 		id: 0,
 	}
 
@@ -88,7 +99,8 @@ export class UsersComponent {
 					id: user.id,
 					name: { value: user.name },
 					email: { value: user.email },
-					role: { value: user.role },
+					role: { value: this.translate.instant(`g.${user.role}`) },
+					entity_id: { value: user.entity_name },
 					// entity_type: { value: user.entity_type },
 					create_date: { value: moment(user.created_at).format('YYYY-MM-DD') },
 					actions: { value: null, options: options }
@@ -102,6 +114,7 @@ export class UsersComponent {
 		this.filters = {
 			name: null,
 			email: null,
+			// role: null,
 			id: null,
 		};
 

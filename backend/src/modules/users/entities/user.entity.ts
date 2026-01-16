@@ -40,4 +40,6 @@ export class User {
 		if (this.password)
 			this.password = await hashPassword(this.password);
 	}
+
+	entity_name?: string;
 }
