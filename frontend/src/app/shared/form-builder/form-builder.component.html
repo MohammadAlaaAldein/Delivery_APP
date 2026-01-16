@@ -37,6 +37,7 @@
 									class="form-select"
 									[formControlName]="field"
 									[disabled]="fields[field].disabled"
+									(ngModelChange)="fields[field].callBack?.(field, $event)"
 									[ngClass]="{ 
 										'is-invalid': formGroup.get(field)?.touched && formGroup.get(field)?.invalid,
 									}"

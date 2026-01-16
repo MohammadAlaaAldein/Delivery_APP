@@ -17,6 +17,7 @@
 		"reset": "Reset",
 		"save": "Save",
 		"cancel": "Cancel",
+		"select_option": "Select Option",
 		"unauthorized_access": "Unauthorized Access",
 		"unauthorized_user": "Unauthorized User",
 		"global_success_msg": "Operation done successfully!",
@@ -146,7 +147,7 @@
 		"time_zone": "Time Zone",
 		"two_sv_enabled": "Enable 2-Step Verification via Email",
 		"role": "Role",
-		"entity_type": "Entity Type",
+		"entity_id": "Entity",
 		"": ""
 	},
 	"shops": {

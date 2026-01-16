@@ -5,6 +5,7 @@ export interface User {
 	name?: string;
 	email?: string;
 	role?: USER_ROLE;
+	entity_id?: number;
 	// entity_type?: string;
 	created_at?: Date;
 	password?: string;

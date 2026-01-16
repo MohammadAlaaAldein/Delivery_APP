@@ -78,6 +78,7 @@ export class UsersService {
 				'name',
 				'email',
 				'role',
+				'entity_id',
 			];
 
 			const user = (await this.getUsersInfo([id]))[0];

@@ -1,4 +1,4 @@
-import { Component, ViewContainerRef } from '@angular/core';
+import { Component } from '@angular/core';
 import { CompaniesService } from './companies.service';
 import { CommonModule } from '@angular/common';
 import { keyBy as _keyBy } from 'lodash';
@@ -49,7 +49,7 @@ export class CompaniesComponent {
 		hideNoData: true,
 		hasActionButtons: true,
 		actionButtonsList: [
-			{ text: this.translate.instant('shops.add_shop'), link: ['/', 'shops', 'create'], enable: true },
+			{ text: this.translate.instant('companies.add_company'), link: ['/', 'companies', 'create'], enable: true },
 		],
 	};
 
@@ -58,7 +58,6 @@ export class CompaniesComponent {
 		private translate: TranslateService,
 		private router: Router,
 		private notificationService: NotificationMessageService,
-		private viewContainerRef: ViewContainerRef,
 	) { }
 
 	ngOnInit() {
