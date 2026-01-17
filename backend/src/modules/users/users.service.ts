@@ -385,10 +385,10 @@ export class UsersService {
 			let companies: any = [];
 
 			for (const user of users) {
-				if (user.entity_id && user.role == USER_ROLE.SHOP)
+				if (user.entity_id && [USER_ROLE.SHOP].includes(user.role))
 					shopIds.push(user.entity_id);
 
-				if (user.entity_id && user.role == USER_ROLE.COMPANY)
+				if (user.entity_id && [USER_ROLE.COMPANY, USER_ROLE.DRIVER].includes(user.role))
 					companyIds.push(user.entity_id);
 			}
 
@@ -402,10 +402,10 @@ export class UsersService {
 			companies = keyBy(companies, 'id');
 
 			for (const user of users) {
-				if (user.entity_id && user.role == USER_ROLE.SHOP)
+				if (user.entity_id && [USER_ROLE.SHOP].includes(user.role))
 					user.entity_name = shops[user.entity_id]?.name;
 
-				if (user.entity_id && user.role == USER_ROLE.COMPANY)
+				if (user.entity_id && [USER_ROLE.COMPANY, USER_ROLE.DRIVER].includes(user.role))
 					user.entity_name = companies[user.entity_id]?.name;
 			}
 

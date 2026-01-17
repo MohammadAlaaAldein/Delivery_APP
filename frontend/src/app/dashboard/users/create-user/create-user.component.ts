@@ -135,6 +135,7 @@ export class CreateUserComponent {
 				this.fields.entity_id.options = this.shops;
 				break;
 			case USER_ROLE.COMPANY:
+			case USER_ROLE.DRIVER:
 				this.fields.entity_id.options = this.companies;
 				break;
 			default:
