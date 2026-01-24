@@ -15,6 +15,7 @@ export enum ErrorKeys {
 	UNIQUE_VIOLATION_NATIONAL_ID = 'unique_violation_national_id',
 	UNIQUE_VIOLATION_LICENSE_NUMBER = 'unique_violation_license_number',
 	UNIQUE_VIOLATION_PLATE_NUMBER = 'unique_violation_plate_number',
+	INVALID_REQUEST = 'invalid_request',
 }
 
 const errorMap = {

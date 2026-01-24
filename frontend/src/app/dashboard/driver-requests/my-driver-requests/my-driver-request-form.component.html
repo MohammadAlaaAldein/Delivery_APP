@@ -1,0 +1,43 @@
+﻿<div>
+    <div class="row">
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body custom-table-style">
+                    <app-form-builder [formGroup]="firstFormGroup" [formFieldsList]="formFieldsList" [fields]="fields"
+                        (submit)="onSubmit()" [translationKey]="'driver_requests'" (backClicked)="onCancel()"
+                        [isReadonly]="request?.status === 'approved'"
+                        [hasButtons]="isCreateMode || request?.status === 'pending' || request?.status === 'rejected'"></app-form-builder>
+
+                    <!-- Show admin notes if rejected -->
+                    <div class="alert alert-info mt-3" *ngIf="request?.status === 'rejected' && request?.admin_notes">
+                        <strong>{{ 'driver_requests.admin_notes' | translate }}:</strong>
+                        <p class="mb-0 mt-2">{{ request?.admin_notes }}</p>
+                    </div>
+
+                    <!-- Resubmit notice for rejected request -->
+                    <div class="alert alert-info mt-3" *ngIf="!isCreateMode && request?.status === 'rejected'">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ 'driver_requests.resubmit_notice' | translate }}
+                    </div>
+
+                    <!-- Delete button for pending/rejected requests -->
+                    <div class="mt-3" *ngIf="!isCreateMode && (request?.status === 'pending' || request?.status === 'rejected')">
+                        <button class="btn btn-danger" (click)="deleteRequest()">
+                            <i class="feather icon-trash-2 me-1"></i>
+                            {{ 'g.delete' | translate }}
+                        </button>
+                    </div>
+
+                    <!-- Status info for approved requests -->
+                    <div class="mt-4" *ngIf="request?.status === 'approved'">
+                        <hr />
+                        <div class="alert alert-success">
+                            <strong>{{ 'g.status' | translate }}:</strong>
+                            {{ 'driver_requests.' + request?.status | translate }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -26,6 +26,8 @@ import { AttachmentsModule } from './modules/attachments/attachments.module';
 import { ShopsModule } from './modules/shops/shops.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { DriversModule } from './modules/drivers/drivers.module';
+import { ShopRequestsModule } from './modules/shop-requests/shop-requests.module';
+import { DriverRequestsModule } from './modules/driver-requests/driver-requests.module';
 
 @Module({
 	imports: [
@@ -48,6 +50,8 @@ import { DriversModule } from './modules/drivers/drivers.module';
 		ShopsModule,
 		CompaniesModule,
 		DriversModule,
+		ShopRequestsModule,
+		DriverRequestsModule,
 		AuthModule,
 		// ActionLogModule,
 		// SentryModule.forRoot(),

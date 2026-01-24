@@ -57,6 +57,16 @@ export class NavRightComponent implements OnInit {
 					url: '/my-drivers',
 					role: USER_ROLE.COMPANY,
 				},
+				{
+					title: this.translate.instant('nav.my_shop_requests'),
+					url: '/my-shop-requests',
+					role: USER_ROLE.COMPANY,
+				},
+				{
+					title: this.translate.instant('nav.my_driver_requests'),
+					url: '/my-driver-requests',
+					role: USER_ROLE.COMPANY,
+				},
 			]
 		},
 		// ==================== DRIVER USER SECTIONS ====================
@@ -103,6 +113,11 @@ export class NavRightComponent implements OnInit {
 					url: '/shops/create',
 					role: USER_ROLE.ADMIN,
 				},
+				{
+					title: this.translate.instant('nav.shop_requests'),
+					url: '/shop-requests',
+					role: USER_ROLE.ADMIN,
+				},
 			]
 		},
 		{
@@ -130,20 +145,25 @@ export class NavRightComponent implements OnInit {
 					url: '/drivers',
 					role: USER_ROLE.ADMIN,
 				},
+				{
+					title: this.translate.instant('nav.driver_requests'),
+					url: '/driver-requests',
+					role: USER_ROLE.ADMIN,
+				},
 			]
 		},
 		// {
-		// name: 'admin_tools',
+		// 	name: 'admin_tools',
 		// 	title: this.translate.instant('nav.admin_tools'),
 		// 	items: [
 		// 		{
-		// 			title: this.translate.instant('nav.api_logs'),
-		// 			url: '/api-logs',
+		// 			title: this.translate.instant('nav.action_log'),
+		// 			url: '/action-log',
 		// 			role: USER_ROLE.ADMIN,
 		// 		},
 		// 		{
-		// 			title: this.translate.instant('nav.action_log'),
-		// 			url: '/action-log',
+		// 			title: this.translate.instant('nav.api_logs'),
+		// 			url: '/api-logs',
 		// 			role: USER_ROLE.ADMIN,
 		// 		},
 		// 	]

@@ -78,6 +78,55 @@ const routes: Routes = [
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.COMPANY }
 			},
+			// ==================== COMPANY USER REQUESTS ====================
+			{
+				path: 'my-shop-requests',
+				loadComponent: () => import('./dashboard/shop-requests/my-shop-requests/my-shop-requests.component').then((c) => c.MyShopRequestsComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-shop-requests/create',
+				loadComponent: () => import('./dashboard/shop-requests/my-shop-requests/my-shop-request-form.component').then((c) => c.MyShopRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-shop-requests/view/:id',
+				loadComponent: () => import('./dashboard/shop-requests/my-shop-requests/my-shop-request-form.component').then((c) => c.MyShopRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-shop-requests/edit/:id',
+				loadComponent: () => import('./dashboard/shop-requests/my-shop-requests/my-shop-request-form.component').then((c) => c.MyShopRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-driver-requests',
+				loadComponent: () => import('./dashboard/driver-requests/my-driver-requests/my-driver-requests.component').then((c) => c.MyDriverRequestsComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-driver-requests/create',
+				loadComponent: () => import('./dashboard/driver-requests/my-driver-requests/my-driver-request-form.component').then((c) => c.MyDriverRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-driver-requests/view/:id',
+				loadComponent: () => import('./dashboard/driver-requests/my-driver-requests/my-driver-request-form.component').then((c) => c.MyDriverRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-driver-requests/edit/:id',
+				loadComponent: () => import('./dashboard/driver-requests/my-driver-requests/my-driver-request-form.component').then((c) => c.MyDriverRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
 			// ==================== DRIVER USER ROUTES ====================
 			{
 				path: 'my-profile',
@@ -161,6 +210,44 @@ const routes: Routes = [
 			{
 				path: 'action-log',
 				loadComponent: () => import('./dashboard/admin/action-log/action-log.component').then((c) => c.ActionLogComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			// ==================== SHOP REQUESTS (ADMIN) ====================
+			{
+				path: 'shop-requests',
+				loadComponent: () => import('./dashboard/shop-requests/shop-requests.component').then((c) => c.ShopRequestsComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'shop-requests/edit/:id',
+				loadComponent: () => import('./dashboard/shop-requests/shop-request-form/shop-request-form.component').then((c) => c.ShopRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'shop-requests/view/:id',
+				loadComponent: () => import('./dashboard/shop-requests/shop-request-form/shop-request-form.component').then((c) => c.ShopRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			// ==================== DRIVER REQUESTS (ADMIN) ====================
+			{
+				path: 'driver-requests',
+				loadComponent: () => import('./dashboard/driver-requests/driver-requests.component').then((c) => c.DriverRequestsComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'driver-requests/edit/:id',
+				loadComponent: () => import('./dashboard/driver-requests/driver-request-form/driver-request-form.component').then((c) => c.DriverRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'driver-requests/view/:id',
+				loadComponent: () => import('./dashboard/driver-requests/driver-request-form/driver-request-form.component').then((c) => c.DriverRequestFormComponent),
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.ADMIN }
 			},

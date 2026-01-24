@@ -1,0 +1,53 @@
+<div>
+    <div class="row">
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body custom-table-style">
+                    <app-card cardTitle="{{ 'Filters' }}" class="p-0" [showHeader]="true" [supportExpand]="true"
+                        [headerClass]="'py-2 cursor-pointer justify-content-start bg-on-hover'" [showContent]="false">
+                        <div class="filters">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-1 py-2 px-3">
+                                        <label class="mb-1">{{ 'driver_requests.name' | translate }}</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.name" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-1 py-2 px-3">
+                                        <label class="mb-1">{{ 'g.status' | translate }}</label>
+                                        <select class="form-control" [(ngModel)]="filters.status">
+                                            <option value="">{{ 'g.all' | translate }}</option>
+                                            <option value="pending">{{ 'driver_requests.pending' | translate }}</option>
+                                            <option value="approved">{{ 'driver_requests.approved' | translate }}
+                                            </option>
+                                            <option value="rejected">{{ 'driver_requests.rejected' | translate }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <button class="btn btn-primary me-2 btn-raised" (click)="search()">
+                                    {{ 'g.search' | translate }}
+                                </button>
+                                <button class="btn btn-light-secondary ms-2" type="button" (click)="resetData()"
+                                    [disabled]="!isFiltersFilled()">
+                                    {{ 'g.reset' | translate }}
+                                </button>
+                            </div>
+                        </div>
+                    </app-card>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body custom-table-style">
+                    <sct-custom-table [columnsConfig]="columnConfig" [data]="tableData"
+                        [config]="tableConfig"></sct-custom-table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

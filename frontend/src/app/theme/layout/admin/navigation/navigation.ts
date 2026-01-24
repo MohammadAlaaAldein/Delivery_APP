@@ -32,6 +32,94 @@ const NavigationItems: NavigationItem[] = [
 				icon: 'ti ti-home',
 				breadcrumbs: false,
 				role_ids: []
+			},
+			{
+				id: 'my-shop',
+				title: 'nav.my_shop',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-shop',
+				icon: 'ti ti-building-store',
+				breadcrumbs: true,
+				role_ids: [3] // SHOP role
+			},
+			{
+				id: 'my-company',
+				title: 'nav.my_company',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-company',
+				icon: 'ti ti-building',
+				breadcrumbs: true,
+				role_ids: [2] // COMPANY role
+			},
+			{
+				id: 'my-drivers',
+				title: 'nav.my_drivers',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-drivers',
+				icon: 'ti ti-car',
+				breadcrumbs: true,
+				role_ids: [2] // COMPANY role
+			},
+			{
+				id: 'my-shop-requests',
+				title: 'nav.my_shop_requests',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-shop-requests',
+				icon: 'ti ti-building-store',
+				breadcrumbs: true,
+				role_ids: [2], // COMPANY role
+				children: [
+					{
+						id: 'create-shop-request',
+						title: 'shop_requests.request_new_shop',
+						type: 'item',
+						url: '/my-shop-requests/create'
+					},
+					{
+						id: 'view-my-shop-request',
+						title: 'shop_requests.view_request',
+						type: 'item',
+						urlPattern: '^/my-shop-requests/view/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'my-driver-requests',
+				title: 'nav.my_driver_requests',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-driver-requests',
+				icon: 'ti ti-car',
+				breadcrumbs: true,
+				role_ids: [2], // COMPANY role
+				children: [
+					{
+						id: 'create-driver-request',
+						title: 'driver_requests.request_new_driver',
+						type: 'item',
+						url: '/my-driver-requests/create'
+					},
+					{
+						id: 'view-my-driver-request',
+						title: 'driver_requests.view_request',
+						type: 'item',
+						urlPattern: '^/my-driver-requests/view/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'my-profile',
+				title: 'nav.my_profile',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-profile',
+				icon: 'ti ti-user',
+				breadcrumbs: true,
+				role_ids: [4] // DRIVER role
 			}
 		]
 	},
@@ -130,6 +218,52 @@ const NavigationItems: NavigationItem[] = [
 						title: 'drivers.edit_driver',
 						type: 'item',
 						urlPattern: '^/drivers/edit/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'shop-requests',
+				title: 'nav.shop_requests',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/shop-requests',
+				icon: 'ti ti-building-store',
+				breadcrumbs: true,
+				children: [
+					{
+						id: 'edit-shop-request',
+						title: 'shop_requests.edit_request',
+						type: 'item',
+						urlPattern: '^/shop-requests/edit/\\d+$'
+					},
+					{
+						id: 'view-shop-request',
+						title: 'shop_requests.view_request',
+						type: 'item',
+						urlPattern: '^/shop-requests/view/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'driver-requests',
+				title: 'nav.driver_requests',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/driver-requests',
+				icon: 'ti ti-car',
+				breadcrumbs: true,
+				children: [
+					{
+						id: 'edit-driver-request',
+						title: 'driver_requests.edit_request',
+						type: 'item',
+						urlPattern: '^/driver-requests/edit/\\d+$'
+					},
+					{
+						id: 'view-driver-request',
+						title: 'driver_requests.view_request',
+						type: 'item',
+						urlPattern: '^/driver-requests/view/\\d+$'
 					}
 				]
 			},

@@ -1,0 +1,206 @@
+import { Component } from '@angular/core';
+import { ShopRequestsService } from './shop-requests.service';
+import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import Swal from 'sweetalert2';
+import { SCTTableModule } from 'sct-custom-table/sct-table/projects/sct-table/src/lib/sct-table.module';
+import { ColumnsConfig, TableConfig, TableData } from 'sct-custom-table/sct-table/projects/sct-table/src/lib/custom-table-interface';
+import moment from 'moment';
+import { CardComponent } from "../../theme/shared/components/card/card.component";
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
+import { ShopRequest } from './shop-request.interface';
+
+@Component({
+    selector: 'app-shop-requests',
+    standalone: true,
+    imports: [CommonModule, SCTTableModule, TranslateModule, CardComponent, FormsModule],
+    templateUrl: './shop-requests.component.html'
+})
+export class ShopRequestsComponent {
+
+    shopRequests: ShopRequest[] = [];
+
+    columnConfig: ColumnsConfig[] = [
+        { key: 'name', name: this.translate.instant('shop_requests.name'), type: 'string' },
+        { key: 'company_name', name: this.translate.instant('shop_requests.requesting_company'), type: 'string' },
+        { key: 'city', name: this.translate.instant('shop_requests.city'), type: 'string' },
+        { key: 'status', name: this.translate.instant('g.status'), type: 'string' },
+        { key: 'created_at', name: this.translate.instant('g.creation_date'), type: 'date' },
+        { key: 'actions', name: this.translate.instant('g.actions'), type: 'dropdown' }
+    ];
+
+    filters = {
+        name: "",
+        status: "",
+    }
+
+    tableData: TableData[] = [];
+    tableConfig: TableConfig = {
+        hasExport: false,
+        hasPagination: true,
+        pageSize: 100,
+        pageSizeOptions: [20, 50, 100, 200],
+        fitScreen: true,
+        hideNoData: true,
+        hasActionButtons: false,
+    };
+
+    constructor(
+        private shopRequestsService: ShopRequestsService,
+        private translate: TranslateService,
+        private router: Router,
+        private notificationService: NotificationMessageService,
+    ) { }
+
+    ngOnInit() {
+        this.getRequestsList(this.filters);
+    }
+
+    search() {
+        this.getRequestsList(this.filters);
+    }
+
+    getRequestsList(filters: { name?: string; status?: string }) {
+        this.shopRequestsService.list(filters as any).subscribe((res) => {
+            const requests = res.data;
+            const data = [];
+            for (const request of requests) {
+                const options = this.getActionOptions(request);
+
+                data.push({
+                    id: request.id,
+                    name: { value: request.name },
+                    company_name: { value: request.company_name || '-' },
+                    city: { value: request.city || '-' },
+                    status: {
+                        value: this.translate.instant(`shop_requests.${request.status}`),
+                        class: this.getStatusClass(request.status)
+                    },
+                    created_at: { value: moment(request.created_at).format('YYYY-MM-DD') },
+                    actions: { value: null, options: options }
+                });
+            }
+
+            this.tableData = data;
+        });
+    }
+
+    getActionOptions(request: ShopRequest) {
+        const options = [];
+
+        // Edit action for all requests
+        options.push({ text: this.translate.instant('g.edit'), action: () => { this.edit(request) } });
+
+        // Approve/Reject for pending/rejected requests
+        if (request.status === 'pending' || request.status === 'rejected') {
+            options.push({ text: this.translate.instant('shop_requests.approve'), action: () => { this.confirmApprove(request) } });
+            options.push({ text: this.translate.instant('shop_requests.reject'), action: () => { this.confirmReject(request) } });
+        }
+
+        options.push({ text: this.translate.instant('g.delete'), action: () => { this.confirmDelete(request) } });
+
+        return options;
+    }
+
+    getStatusClass(status: string): string {
+        switch (status) {
+            case 'pending':
+                return 'badge bg-warning';
+            case 'approved':
+                return 'badge bg-success';
+            case 'rejected':
+                return 'badge bg-danger';
+            default:
+                return 'badge bg-secondary';
+        }
+    }
+
+    resetData() {
+        this.filters = {
+            name: "",
+            status: "",
+        };
+        this.getRequestsList({});
+    }
+
+    isFiltersFilled() {
+        return Object.values(this.filters).some((v) => v);
+    }
+
+    edit(request: ShopRequest) {
+        this.router.navigate(['/shop-requests/edit', request.id]);
+    }
+
+    view(request: ShopRequest) {
+        this.router.navigate(['/shop-requests/view', request.id]);
+    }
+
+    confirmApprove(request: ShopRequest) {
+        Swal.fire({
+            title: this.translate.instant('shop_requests.approve_request'),
+            text: this.translate.instant('shop_requests.approve_confirm_msg'),
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: this.translate.instant('shop_requests.approve'),
+            cancelButtonText: this.translate.instant('g.cancel')
+        }).then(result => {
+            if (result.isConfirmed) {
+                this.approveRequest(request);
+            }
+        });
+    }
+
+    approveRequest(request: ShopRequest) {
+        this.shopRequestsService.approve(request.id).subscribe(() => {
+            this.notificationService.setMessage('globalSuccessMsg');
+            this.getRequestsList(this.filters);
+        });
+    }
+
+    confirmReject(request: ShopRequest) {
+        Swal.fire({
+            title: this.translate.instant('shop_requests.reject_request'),
+            input: 'textarea',
+            inputLabel: this.translate.instant('shop_requests.rejection_reason'),
+            inputPlaceholder: this.translate.instant('shop_requests.enter_rejection_reason'),
+            showCancelButton: true,
+            confirmButtonText: this.translate.instant('shop_requests.reject'),
+            cancelButtonText: this.translate.instant('g.cancel')
+        }).then(result => {
+            if (result.isConfirmed) {
+                this.rejectRequest(request, result.value);
+            }
+        });
+    }
+
+    rejectRequest(request: ShopRequest, adminNotes?: string) {
+        this.shopRequestsService.reject(request.id, adminNotes).subscribe(() => {
+            this.notificationService.setMessage('globalSuccessMsg');
+            this.getRequestsList(this.filters);
+        });
+    }
+
+    confirmDelete(request: ShopRequest) {
+        Swal.fire({
+            title: this.translate.instant('shop_requests.delete_request'),
+            text: this.translate.instant('shop_requests.delete_confirm_msg'),
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: this.translate.instant('g.confirm'),
+            cancelButtonText: this.translate.instant('g.cancel')
+        }).then(result => {
+            if (result.isConfirmed) {
+                this.deleteRequest(request);
+            }
+        });
+    }
+
+    deleteRequest(request: ShopRequest) {
+        this.shopRequestsService.delete(request.id).subscribe(() => {
+            this.tableData = this.tableData.filter((r) => r['id'] !== request.id);
+            this.notificationService.setMessage('globalSuccessMsg');
+        });
+    }
+}

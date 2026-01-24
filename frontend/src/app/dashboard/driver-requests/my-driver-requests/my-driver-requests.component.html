@@ -1,0 +1,25 @@
+<div>
+    <div class="row">
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body custom-table-style">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">{{ 'driver_requests.my_driver_requests' | translate }}</h5>
+                        <button class="btn btn-primary" (click)="addNew()">
+                            <i class="feather icon-plus me-1"></i>
+                            {{ 'driver_requests.request_new_driver' | translate }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body custom-table-style">
+                    <sct-custom-table [columnsConfig]="columnConfig" [data]="tableData"
+                        [config]="tableConfig"></sct-custom-table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

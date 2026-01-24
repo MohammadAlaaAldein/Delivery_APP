@@ -1,0 +1,50 @@
+﻿<div>
+    <div class="row">
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body custom-table-style">
+                    <app-form-builder [formGroup]="firstFormGroup" [formFieldsList]="formFieldsList" [fields]="fields"
+                        (submit)="onSubmit()" [translationKey]="'shop_requests'" (backClicked)="onCancel()"
+                        [isReadonly]="isViewMode"
+                        [hasButtons]="!isViewMode && (request?.status === 'pending' || request?.status === 'rejected')"></app-form-builder>
+
+                    <!-- Action buttons for pending/rejected requests in edit mode -->
+                    <div class="mt-4"
+                        *ngIf="!isViewMode && (request?.status === 'pending' || request?.status === 'rejected')">
+                        <hr />
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" (click)="confirmApprove()">
+                                <i class="feather icon-check me-1"></i>
+                                {{ 'shop_requests.approve' | translate }}
+                            </button>
+                            <button class="btn btn-danger" (click)="confirmReject()">
+                                <i class="feather icon-x me-1"></i>
+                                {{ 'shop_requests.reject' | translate }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status info for view mode or approved requests -->
+                    <div class="mt-4" *ngIf="isViewMode || request?.status === 'approved'">
+                        <hr />
+                        <div class="alert" [ngClass]="{
+                            'alert-warning': request?.status === 'pending',
+                            'alert-success': request?.status === 'approved',
+                            'alert-danger': request?.status === 'rejected'
+                        }">
+                            <strong>{{ 'g.status' | translate }}:</strong>
+                            {{ 'shop_requests.' + request?.status | translate }}
+                            <span *ngIf="request?.admin_notes">
+                                <br /><strong>{{ 'shop_requests.admin_notes' | translate }}:</strong> {{
+                                request?.admin_notes }}
+                            </span>
+                        </div>
+                        <button class="btn btn-secondary" *ngIf="isViewMode" (click)="onCancel()">
+                            {{ 'g.back' | translate }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
