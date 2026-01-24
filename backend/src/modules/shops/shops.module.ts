@@ -3,12 +3,12 @@ import { ShopsService } from './shops.service';
 import { ShopsController } from './shops.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Shop } from './entities/shop.entity';
+import { CompaniesShopsModule } from '../companies-shops/companies-shops.module';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([
-			Shop,
-		]),
+		TypeOrmModule.forFeature([Shop]),
+		CompaniesShopsModule,
 	],
 	controllers: [ShopsController],
 	providers: [ShopsService],

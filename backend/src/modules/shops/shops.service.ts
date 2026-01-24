@@ -7,6 +7,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { FastifyRequest } from 'fastify';
 import { ErrorKeys } from 'src/common/api-response';
 import { ListShopDto } from './dto/list-shops.dto';
+import { CompaniesShopsService } from '../companies-shops/companies-shops.service';
 
 @Injectable()
 export class ShopsService {
@@ -14,6 +15,7 @@ export class ShopsService {
 	constructor(
 		@InjectRepository(Shop)
 		private readonly shopsRepository: Repository<Shop>,
+		private readonly companiesShopsService: CompaniesShopsService,
 		private connection: DataSource,
 	) { }
 
@@ -23,15 +25,21 @@ export class ShopsService {
 
 	async create(createShopDto: CreateShopDto, options?: { req?: FastifyRequest }): Promise<any> {
 		try {
-			const shop = this.shopsRepository.create(createShopDto);
+			const { company_ids, ...shopData } = createShopDto;
+			const shop = this.shopsRepository.create(shopData);
 
-			const uniqueFieldFound = await this.checkShopUniqueFields(createShopDto);
+			const uniqueFieldFound = await this.checkShopUniqueFields(shopData);
 			if (uniqueFieldFound)
 				return this.checkShopUniqueFieldsError(uniqueFieldFound);
 
 			await this.shopsRepository.save(shop);
-			const { ...result } = shop;
 
+			// Handle company associations
+			if (company_ids && company_ids.length > 0) {
+				await this.companiesShopsService.updateRelations('shop', shop.id, company_ids);
+			}
+
+			const { ...result } = shop;
 			return result;
 		} catch (ex) {
 			throw ex;
@@ -40,6 +48,7 @@ export class ShopsService {
 
 	async update(id: number, fields: UpdateShopDto, options?: { req?: FastifyRequest }): Promise<any> {
 		try {
+			const { company_ids, ...updateData } = fields;
 			const allowedFields = [
 				'name',
 			];
@@ -47,21 +56,25 @@ export class ShopsService {
 			const shop = (await this.getShops({ id }))[0];
 
 			// Check uniqueness
-			const uniqueFieldFound = await this.checkShopUniqueFields(fields, shop);
+			const uniqueFieldFound = await this.checkShopUniqueFields(updateData, shop);
 			if (uniqueFieldFound)
 				return this.checkShopUniqueFieldsError(uniqueFieldFound);
 
-			const updateFields: UpdateShopDto = {};
+			const updateFields: Partial<UpdateShopDto> = {};
 
-			for (const field in fields) {
+			for (const field in updateData) {
 				if (allowedFields.includes(field))
-					updateFields[field] = fields[field];
+					updateFields[field] = updateData[field];
 			}
 
-			if (!Object.keys(updateFields).length)
-				return { err: 'no_changes', res: null };
+			if (Object.keys(updateFields).length) {
+				await this.shopsRepository.createQueryBuilder().update().set(updateFields).where('id = :id', { id }).execute();
+			}
 
-			await this.shopsRepository.createQueryBuilder().update().set(updateFields).where('id = :id', { id }).execute();
+			// Handle company associations if provided
+			if (company_ids !== undefined) {
+				await this.companiesShopsService.updateRelations('shop', id, company_ids);
+			}
 
 			const { ...updatedFields } = updateFields;
 			return { err: null, res: updatedFields };
@@ -122,7 +135,7 @@ export class ShopsService {
 		}
 	}
 
-	async getShops(filters: ListShopDto): Promise<Shop[]> {
+	async getShops(filters: ListShopDto): Promise<any[]> {
 		try {
 			const criteria = {};
 			if (filters && Object.keys(filters).length) {
@@ -134,7 +147,7 @@ export class ShopsService {
 				}
 			}
 
-			const qb = this.shopsRepository.createQueryBuilder().select('*');
+			const qb = this.shopsRepository.createQueryBuilder('shop').select('shop.*');
 
 			for (const field in criteria) {
 				const params = { [field]: criteria[field] };
@@ -143,19 +156,27 @@ export class ShopsService {
 						if (!Array.isArray(params[field]))
 							params[field] = [params[field]];
 
-						qb.andWhere(`${field} = ANY(:${field})`, params);
+						qb.andWhere(`shop.${field} = ANY(:${field})`, params);
 						break;
 					case 'name':
 						params[field] = params[field].trim().toLowerCase();
-						qb.andWhere(`LOWER(${field}) = :${field}`, params);
+						qb.andWhere(`LOWER(shop.${field}) = :${field}`, params);
 						break;
 					default:
 						break;
 				}
 			}
 
-			const result = await qb.getRawMany();
-			return result.map(({ password, ...rest }) => rest);
+			const shops = await qb.getRawMany();
+
+			// Fetch company_ids for each shop
+			const result = await Promise.all(shops.map(async (shop) => {
+				const { password, ...rest } = shop;
+				const company_ids = await this.companiesShopsService.getCompanyIdsByShopId(shop.id);
+				return { ...rest, company_ids };
+			}));
+
+			return result;
 		} catch (ex) {
 			throw ex;
 		}

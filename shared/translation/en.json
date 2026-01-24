@@ -159,6 +159,9 @@
 		"name_is_already_in_use": "Name is already in use",
 		"shop_updated_successfully": "Shop updated successfully",
 		"shop_deleted_successfully": "Shop deleted successfully",
+		"companies": "Companies",
+		"select_companies": "Select Companies",
+		"company_ids": "Companies",
 		"": ""
 	},
 	"companies": {
@@ -170,6 +173,9 @@
 		"name_is_already_in_use": "Name is already in use",
 		"company_updated_successfully": "Company updated successfully",
 		"company_deleted_successfully": "Company deleted successfully",
+		"shops": "Shops",
+		"select_shops": "Select Shops",
+		"shop_ids": "Shops",
 		"": ""
 	},
 	"schedules": {

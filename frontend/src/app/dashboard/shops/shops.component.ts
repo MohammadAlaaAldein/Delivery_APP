@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
 import { Shop } from './shop.interface';
+import { Company } from '../companies/company.interface';
 
 @Component({
 	selector: 'app-shops',
@@ -23,8 +24,12 @@ import { Shop } from './shop.interface';
 export class ShopsComponent {
 
 	shops: Shop[] = [];
+	companies: Company[] = [];
+	companiesMap: { [key: number]: Company } = {};
+
 	columnConfig: ColumnsConfig[] = [
 		{ key: 'name', name: this.translate.instant('shops.name'), type: 'string' },
+		{ key: 'companies', name: this.translate.instant('shops.companies'), type: 'string' },
 		{ key: 'create_date', name: this.translate.instant('g.creation_date'), type: 'date' },
 		{ key: 'actions', name: this.translate.instant('g.actions'), type: 'dropdown' }
 	];
@@ -62,7 +67,15 @@ export class ShopsComponent {
 	) { }
 
 	ngOnInit() {
-		this.getShopsList(this.filters);
+		this.loadCompanies();
+	}
+
+	loadCompanies() {
+		this.shopsService.listCompanies({}).subscribe((res: { data: Company[] }) => {
+			this.companies = res.data;
+			this.companiesMap = _keyBy(this.companies, 'id');
+			this.getShopsList(this.filters);
+		});
 	}
 
 	search() {
@@ -79,9 +92,15 @@ export class ShopsComponent {
 					{ text: this.translate.instant('g.delete'), action: () => { this.confirmDeleteShop(shop) } },
 				];
 
+				const companyNames = (shop.company_ids || [])
+					.map(id => this.companiesMap[id]?.name)
+					.filter(name => name)
+					.join(', ');
+
 				data.push({
 					id: shop.id,
 					name: { value: shop.name },
+					companies: { value: companyNames || '-' },
 					create_date: { value: moment(shop.created_at).format('YYYY-MM-DD') },
 					actions: { value: null, options: options }
 				});

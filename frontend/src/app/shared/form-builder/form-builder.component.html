@@ -58,10 +58,11 @@
 								<ng-select
 									[name]="field"
 									[multiple]="true"
-									[addTag]="true"
+									[addTag]="fields[field].addTag !== false"
 									[items]="fields[field].items"
-									[bindLabel]="field"
-									[clearable]="false"
+									[bindLabel]="fields[field].bindLabel || field"
+									[bindValue]="fields[field].bindValue"
+									[clearable]="fields[field].clearable !== false"
 									placeholder="{{(translationKey + '.' + field) | translate}}"
 									[disabled]="fields[field].disabled"
 									[formControlName]="field"
@@ -69,7 +70,7 @@
 									<ng-template ng-label-tmp let-item="item" let-clear="clear">
 										<span>
 											<span class="ng-value-icon left" (click)="clear(item)" aria-hidden="true">×</span>
-											<span class="ng-value-label">{{item[field]}}</span>
+											<span class="ng-value-label">{{item[fields[field].bindLabel || field]}}</span>
 										</span>
 									</ng-template>
 								</ng-select>

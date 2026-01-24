@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Shop } from './shop.interface';
+import { Company } from '../companies/company.interface';
 
 @Injectable({
 	providedIn: 'root'
@@ -29,6 +30,10 @@ export class ShopsService {
 
 	delete(shopId: number) {
 		return this.http.delete(`${this.route}/${shopId}`);
+	}
+
+	listCompanies(filters?: { name?: string; id?: number }) {
+		return this.http.get<{ data: Company[] }>('/companies/list', { params: filters });
 	}
 
 }

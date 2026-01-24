@@ -7,6 +7,7 @@ import { NotificationMessageService } from 'src/app/shared/notification-message/
 import { Shop } from '../shop.interface';
 import { CommonService } from 'src/app/shared/services/common.service';
 import { FormBuilderComponent } from 'src/app/shared/form-builder/form-builder.component';
+import { Company } from '../../companies/company.interface';
 
 @Component({
 	selector: 'app-create-shop',
@@ -19,10 +20,14 @@ export class CreateShopComponent {
 	shop: Shop = {
 		id: null,
 		name: "",
+		company_ids: [],
 	}
 
-	fields = {
+	companies: Company[] = [];
+
+	fields: any = {
 		name: { type: "text", is_required: true },
+		company_ids: { type: "multi-select", items: [], bindLabel: 'name', bindValue: 'id', addTag: false },
 	}
 	formFieldsList = [];
 
@@ -35,16 +40,28 @@ export class CreateShopComponent {
 		private router: Router,
 		private notificationMessageService: NotificationMessageService,
 		private commonService: CommonService,
+		private translate: TranslateService,
 	) { }
 
 	ngOnInit() {
-		const requiredFieldsValidator = this.commonService.getRequireFieldsValidator(true);
 		this.firstFormGroup = this._formBuilder.group({
-			name: ['', [...requiredFieldsValidator, Validators.minLength(2)]],
+			name: ['', [Validators.required, Validators.minLength(2)]],
+			company_ids: [[]],
 		}, { validator: '' });
 
 		this.formFieldsList = Object.keys(this.fields);
+		this.loadCompanies();
 		this.checkAndFillShopData();
+	}
+
+	loadCompanies() {
+		this.shopsService.listCompanies({}).subscribe((res: { data: Company[] }) => {
+			this.companies = res.data;
+			this.fields = {
+				...this.fields,
+				company_ids: { ...this.fields.company_ids, items: this.companies }
+			};
+		});
 	}
 
 	checkAndFillShopData() {
@@ -56,18 +73,8 @@ export class CreateShopComponent {
 					this.shop = res.data[0];
 					this.firstFormGroup.patchValue({
 						name: this.shop.name,
+						company_ids: this.shop.company_ids || [],
 					});
-
-					this.firstFormGroup.removeControl('password');
-					this.firstFormGroup.removeControl('confirm_password');
-
-					const { ...remainingFields } = this.fields;
-					const newFields: any = {};
-
-					Object.keys(remainingFields).forEach(key => { newFields[key] = remainingFields[key] });
-
-					this.fields = newFields;
-					this.formFieldsList = Object.keys(this.fields);
 
 					this.firstFormGroup.markAsPristine();
 				}
