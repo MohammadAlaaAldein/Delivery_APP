@@ -40,4 +40,13 @@ export class ShopsService {
 		return this.http.get<{ data: Company[] }>('/companies/list', { params: filters as any });
 	}
 
+	// My shop endpoints (for shop users)
+	getMyShop() {
+		return this.http.get<{ data: Shop }>(`${this.route}/my`);
+	}
+
+	updateMyShop(shop: Partial<Shop>) {
+		return this.http.patch<{ data: any }>(`${this.route}/my`, shop);
+	}
+
 }

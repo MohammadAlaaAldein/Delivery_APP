@@ -28,7 +28,53 @@ export class NavRightComponent implements OnInit {
 	user = null;
 	screenFull: boolean = true;
 	componentSections = [
+		// ==================== SHOP USER SECTIONS ====================
 		{
+			name: 'my_shop_management',
+			title: this.translate.instant('nav.my_shop'),
+			hideForAdmin: true,
+			items: [
+				{
+					title: this.translate.instant('nav.my_shop'),
+					url: '/my-shop',
+					role: USER_ROLE.SHOP,
+				},
+			]
+		},
+		// ==================== COMPANY USER SECTIONS ====================
+		{
+			name: 'my_company_management',
+			title: this.translate.instant('nav.my_company'),
+			hideForAdmin: true,
+			items: [
+				{
+					title: this.translate.instant('nav.my_company'),
+					url: '/my-company',
+					role: USER_ROLE.COMPANY,
+				},
+				{
+					title: this.translate.instant('nav.my_drivers'),
+					url: '/my-drivers',
+					role: USER_ROLE.COMPANY,
+				},
+			]
+		},
+		// ==================== DRIVER USER SECTIONS ====================
+		{
+			name: 'my_profile_management',
+			title: this.translate.instant('nav.my_profile'),
+			hideForAdmin: true,
+			items: [
+				{
+					title: this.translate.instant('nav.my_profile'),
+					url: '/my-profile',
+					role: USER_ROLE.DRIVER,
+				},
+			]
+		},
+		// ==================== ADMIN SECTIONS ====================
+		{
+			name: 'users_management',
 			title: this.translate.instant('nav.users_management'),
 			items: [
 				{
@@ -44,6 +90,7 @@ export class NavRightComponent implements OnInit {
 			]
 		},
 		{
+			name: 'shops_management',
 			title: this.translate.instant('nav.shops_management'),
 			items: [
 				{
@@ -59,6 +106,7 @@ export class NavRightComponent implements OnInit {
 			]
 		},
 		{
+			name: 'companies_management',
 			title: this.translate.instant('nav.companies_management'),
 			items: [
 				{
@@ -74,6 +122,7 @@ export class NavRightComponent implements OnInit {
 			]
 		},
 		{
+			name: 'drivers_management',
 			title: this.translate.instant('nav.drivers_management'),
 			items: [
 				{
@@ -84,6 +133,7 @@ export class NavRightComponent implements OnInit {
 			]
 		},
 		// {
+		// name: 'admin_tools',
 		// 	title: this.translate.instant('nav.admin_tools'),
 		// 	items: [
 		// 		{
@@ -139,6 +189,37 @@ export class NavRightComponent implements OnInit {
 
 	updateTimezone() {
 		this.commonDataService.setTimezone(this.selectedTimezone);
+	}
+
+	canAccessTheNavMenu() {
+		for (const section of this.componentSections) {
+			if (section.hideForAdmin && this.usersService.hasRoleAccess(USER_ROLE.ADMIN)) {
+				continue;
+			}
+
+			for (const item of section.items) {
+				if (this.usersService.hasRoleAccess(item.role)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	canAccessSection(name: string) {
+		const section = this.componentSections.find(sec => sec.name === name);
+		if (section.hideForAdmin && this.usersService.hasRoleAccess(USER_ROLE.ADMIN)) {
+			return false;
+		}
+
+		for (const item of section.items) {
+			if (this.usersService.hasRoleAccess(item.role)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

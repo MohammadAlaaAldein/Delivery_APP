@@ -47,4 +47,13 @@ export class DriversService {
     listCompanies(filters?: { name?: string; id?: number; is_active?: boolean }) {
         return this.http.get<{ data: Company[] }>('/companies/list', { params: filters as any });
     }
+
+    // My driver endpoints (for driver users)
+    getMyDriver() {
+        return this.http.get<{ data: Driver }>(`${this.route}/my`);
+    }
+
+    updateMyDriver(driver: Partial<Driver>) {
+        return this.http.patch<{ data: any }>(`${this.route}/my`, driver);
+    }
 }

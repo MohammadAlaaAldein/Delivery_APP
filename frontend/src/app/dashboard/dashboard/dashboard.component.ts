@@ -3,9 +3,10 @@ import { DeliveryAppConfig } from '../../app-config';
 import { CommonModule, Location, LocationStrategy } from '@angular/common';
 import { ThemeService } from '../../theme/shared/service/theme.service';
 import { SharedModule } from '../../theme/shared/shared.module';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgxPrintModule } from 'ngx-print';
+import { USER_ROLE } from '../users/users.service';
 
 @Component({
 	selector: 'app-dashboard',
@@ -30,7 +31,8 @@ export class DashboardComponent implements OnInit {
 	constructor(
 		private location: Location,
 		private locationStrategy: LocationStrategy,
-		private themeService: ThemeService
+		private themeService: ThemeService,
+		private router: Router
 	) {
 		this.currentLayout = DeliveryAppConfig.layout;
 
@@ -52,7 +54,33 @@ export class DashboardComponent implements OnInit {
 		});
 	}
 
-	ngOnInit(): void { }
+	ngOnInit(): void {
+		this.redirectBasedOnRole();
+	}
+
+	private redirectBasedOnRole(): void {
+		const currentUser = localStorage.getItem('currentUser');
+		if (!currentUser) return;
+
+		const user = JSON.parse(currentUser);
+
+		switch (user.role) {
+			case USER_ROLE.SHOP:
+				this.router.navigate(['/my-shop']);
+				break;
+			case USER_ROLE.COMPANY:
+				this.router.navigate(['/my-company']);
+				break;
+			case USER_ROLE.DRIVER:
+				this.router.navigate(['/my-profile']);
+				break;
+			case USER_ROLE.ADMIN:
+				// Admin stays on dashboard
+				break;
+			default:
+				break;
+		}
+	}
 
 	// private method
 	private isThemeLayout(layout: string) {

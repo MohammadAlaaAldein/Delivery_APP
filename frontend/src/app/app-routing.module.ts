@@ -58,6 +58,34 @@ const routes: Routes = [
 				path: 'dashboard',
 				loadComponent: () => import('./dashboard/dashboard/dashboard.component').then((c) => c.DashboardComponent),
 			},
+			// ==================== SHOP USER ROUTES ====================
+			{
+				path: 'my-shop',
+				loadComponent: () => import('./dashboard/shops/shop-dashboard/shop-dashboard.component').then((c) => c.ShopDashboardComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.SHOP }
+			},
+			// ==================== COMPANY USER ROUTES ====================
+			{
+				path: 'my-company',
+				loadComponent: () => import('./dashboard/companies/company-dashboard/company-dashboard.component').then((c) => c.CompanyDashboardComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'my-drivers',
+				loadComponent: () => import('./dashboard/companies/company-drivers/company-drivers.component').then((c) => c.CompanyDriversComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			// ==================== DRIVER USER ROUTES ====================
+			{
+				path: 'my-profile',
+				loadComponent: () => import('./dashboard/drivers/driver-dashboard/driver-dashboard.component').then((c) => c.DriverDashboardComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.DRIVER }
+			},
+			// ==================== ADMIN ROUTES ====================
 			{
 				path: 'users',
 				loadComponent: () => import('./dashboard/users/users.component').then((c) => c.UsersComponent),

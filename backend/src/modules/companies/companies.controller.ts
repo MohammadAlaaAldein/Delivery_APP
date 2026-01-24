@@ -21,6 +21,7 @@ import { ListCompanyDto } from './dto/list-companies.dto';
 import { getControllersPrefixes, translate } from 'src/common/utilities';
 import { RoleInterceptor } from 'src/interceptors/role-interceptor';
 import { USER_ROLE } from '../users/users.service';
+import { DriversService } from '../drivers/drivers.service';
 
 @Controller(getControllersPrefixes('companies'))
 
@@ -30,7 +31,57 @@ export class CompaniesController {
 
 	constructor(
 		private readonly companiesService: CompaniesService,
+		private readonly driversService: DriversService,
 	) { }
+
+	// ==================== MY COMPANY ENDPOINTS (for company users) ====================
+
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.COMPANY, { requireEntityOwnership: true }))
+	@Get('my')
+	async getMyCompany(
+		@Req() req: FastifyRequest,
+	) {
+		const companyId = req.user.entity_id;
+		const companies = await this.companiesService.getCompanies({ id: companyId });
+		if (!companies.length)
+			return handleThrowApiError(this.THROW_API_MODULE, 'NOT_FOUND');
+
+		return handleSuccessApiResponse({ data: companies[0] });
+	}
+
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.COMPANY, { requireEntityOwnership: true }))
+	@Patch('my')
+	async updateMyCompany(
+		@Req() req: FastifyRequest,
+		@Body() updateCompanyDto: UpdateCompanyDto,
+	) {
+		const companyId = req.user.entity_id;
+
+		// Remove shop_ids from update - company users cannot modify their associated shops
+		const { shop_ids, ...allowedFields } = updateCompanyDto;
+
+		const result = await this.companiesService.update(companyId, allowedFields, { req });
+
+		if (result.err)
+			return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+		return handleSuccessApiResponse({ message: translate('companies.company_updated_successfully'), data: result.res });
+	}
+
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.COMPANY, { requireEntityOwnership: true }))
+	@Get('my/drivers')
+	async getMyCompanyDrivers(
+		@Req() req: FastifyRequest,
+	) {
+		const companyId = req.user.entity_id;
+		const drivers = await this.driversService.getDrivers({ company_id: companyId });
+		return handleSuccessApiResponse({ data: drivers });
+	}
+
+	// ==================== ADMIN ENDPOINTS ====================
 
 	@UseGuards(JwtGuard)
 	@UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))

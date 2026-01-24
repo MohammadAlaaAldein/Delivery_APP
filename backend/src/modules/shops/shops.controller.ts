@@ -32,6 +32,44 @@ export class ShopsController {
 		private readonly shopsService: ShopsService,
 	) { }
 
+	// ==================== MY SHOP ENDPOINTS (for shop users) ====================
+
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.SHOP, { requireEntityOwnership: true }))
+	@Get('my')
+	async getMyShop(
+		@Req() req: FastifyRequest,
+	) {
+		const shopId = req.user.entity_id;
+		const shops = await this.shopsService.getShops({ id: shopId });
+		if (!shops.length)
+			return handleThrowApiError(this.THROW_API_MODULE, 'NOT_FOUND');
+
+		return handleSuccessApiResponse({ data: shops[0] });
+	}
+
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.SHOP, { requireEntityOwnership: true }))
+	@Patch('my')
+	async updateMyShop(
+		@Req() req: FastifyRequest,
+		@Body() updateShopDto: UpdateShopDto,
+	) {
+		const shopId = req.user.entity_id;
+
+		// Remove company_ids from update - shop users cannot modify their associated companies
+		const { company_ids, ...allowedFields } = updateShopDto;
+
+		const result = await this.shopsService.update(shopId, allowedFields, { req });
+
+		if (result.err)
+			return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+		return handleSuccessApiResponse({ message: translate('shops.shop_updated_successfully'), data: result.res });
+	}
+
+	// ==================== ADMIN ENDPOINTS ====================
+
 	@UseGuards(JwtGuard)
 	@UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
 	@Post('add')

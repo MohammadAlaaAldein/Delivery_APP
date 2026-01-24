@@ -3,6 +3,7 @@ export interface Shop {
 	name?: string;
 	is_active?: boolean;
 	company_ids?: number[];
+	company_names?: string[];
 	// Location fields
 	city?: string;
 	area?: string;

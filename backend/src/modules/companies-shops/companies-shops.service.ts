@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CompanyShop } from './company-shop.entity';
+import { Shop } from '../shops/entities/shop.entity';
+import { Company } from '../companies/entities/company.entity';
 
 @Injectable()
 export class CompaniesShopsService {
@@ -9,6 +11,10 @@ export class CompaniesShopsService {
 	constructor(
 		@InjectRepository(CompanyShop)
 		private readonly companyShopRepository: Repository<CompanyShop>,
+		@InjectRepository(Shop)
+		private readonly shopRepository: Repository<Shop>,
+		@InjectRepository(Company)
+		private readonly companyRepository: Repository<Company>,
 	) { }
 
 	/**
@@ -73,6 +79,42 @@ export class CompaniesShopsService {
 			select: ['company_id'],
 		});
 		return relations.map(r => r.company_id);
+	}
+
+	/**
+	 * Get related shop IDs and names for a company
+	 */
+	async getShopsByCompanyId(companyId: number): Promise<{ ids: number[], names: string[] }> {
+		const shopIds = await this.getShopIdsByCompanyId(companyId);
+		if (shopIds.length === 0) {
+			return { ids: [], names: [] };
+		}
+		const shops = await this.shopRepository.find({
+			where: { id: In(shopIds) },
+			select: ['id', 'name'],
+		});
+		return {
+			ids: shopIds,
+			names: shops.map(s => s.name),
+		};
+	}
+
+	/**
+	 * Get related company IDs and names for a shop
+	 */
+	async getCompaniesByShopId(shopId: number): Promise<{ ids: number[], names: string[] }> {
+		const companyIds = await this.getCompanyIdsByShopId(shopId);
+		if (companyIds.length === 0) {
+			return { ids: [], names: [] };
+		}
+		const companies = await this.companyRepository.find({
+			where: { id: In(companyIds) },
+			select: ['id', 'name'],
+		});
+		return {
+			ids: companyIds,
+			names: companies.map(c => c.name),
+		};
 	}
 
 	/**

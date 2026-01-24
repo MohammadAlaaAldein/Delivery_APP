@@ -197,11 +197,11 @@ export class ShopsService {
 
 			const shops = await qb.getRawMany();
 
-			// Fetch company_ids for each shop
+			// Fetch company_ids and company_names for each shop
 			const result = await Promise.all(shops.map(async (shop) => {
 				const { password, ...rest } = shop;
-				const company_ids = await this.companiesShopsService.getCompanyIdsByShopId(shop.id);
-				return { ...rest, company_ids };
+				const companies = await this.companiesShopsService.getCompaniesByShopId(shop.id);
+				return { ...rest, company_ids: companies.ids, company_names: companies.names };
 			}));
 
 			return result;

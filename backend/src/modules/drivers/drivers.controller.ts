@@ -31,6 +31,44 @@ export class DriversController {
         private readonly driversService: DriversService,
     ) { }
 
+    // ==================== MY DRIVER ENDPOINTS (for driver users) ====================
+
+    @UseGuards(JwtGuard)
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.DRIVER, { requireEntityOwnership: true }))
+    @Get('my')
+    async getMyDriver(
+        @Req() req: FastifyRequest,
+    ) {
+        const driverId = req.user.id;
+        const drivers = await this.driversService.getDrivers({ user_id: driverId });
+        if (!drivers.length)
+            return handleThrowApiError(this.THROW_API_MODULE, 'NOT_FOUND');
+
+        return handleSuccessApiResponse({ data: drivers[0] });
+    }
+
+    @UseGuards(JwtGuard)
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.DRIVER, { requireEntityOwnership: true }))
+    @Patch('my')
+    async updateMyDriver(
+        @Req() req: FastifyRequest,
+        @Body() updateDriverDto: UpdateDriverDto,
+    ) {
+        const driverId = req.user.id;
+
+        // Remove fields that drivers cannot modify themselves
+        const { is_active, company_id, ...allowedFields } = updateDriverDto;
+
+        const result = await this.driversService.update(driverId, allowedFields, { req });
+
+        if (result.err)
+            return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+        return handleSuccessApiResponse({ message: translate('drivers.driver_updated_successfully'), data: result.res });
+    }
+
+    // ==================== ADMIN ENDPOINTS ====================
+
     @UseGuards(JwtGuard)
     @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
     @Post('add')

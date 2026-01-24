@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Company } from './company.interface';
 import { Shop } from '../shops/shop.interface';
+import { Driver } from '../drivers/driver.interface';
 
 @Injectable({
 	providedIn: 'root'
@@ -38,6 +39,19 @@ export class CompaniesService {
 
 	listShops(filters?: { name?: string; id?: number; is_active?: boolean }) {
 		return this.http.get<{ data: Shop[] }>('/shops/list', { params: filters as any });
+	}
+
+	// My company endpoints (for company users)
+	getMyCompany() {
+		return this.http.get<{ data: Company }>(`${this.route}/my`);
+	}
+
+	updateMyCompany(company: Partial<Company>) {
+		return this.http.patch<{ data: any }>(`${this.route}/my`, company);
+	}
+
+	getMyCompanyDrivers() {
+		return this.http.get<{ data: Driver[] }>(`${this.route}/my/drivers`);
 	}
 
 }

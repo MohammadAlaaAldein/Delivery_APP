@@ -1,0 +1,97 @@
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>{{ 'drivers.my_profile' | translate }}</h5>
+                @if (driverName) {
+                <p class="text-muted mb-0">{{ driverName }}</p>
+                }
+            </div>
+            <div class="card-body">
+                @if (isLoading) {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                } @else {
+                <form [formGroup]="firstFormGroup" (ngSubmit)="onSubmit()">
+                    <!-- Personal Information Section -->
+                    <h6 class="mb-3 text-primary">{{ 'drivers.personal_info' | translate }}</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.national_id' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="national_id">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.birth_date' | translate }}</label>
+                            <input type="date" class="form-control" formControlName="birth_date">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.phone' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="phone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.city' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="city">
+                        </div>
+                    </div>
+
+                    <!-- License Information Section -->
+                    <h6 class="mb-3 text-primary">{{ 'drivers.license_info' | translate }}</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.license_number' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="license_number">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.license_expiry_date' | translate }}</label>
+                            <input type="date" class="form-control" formControlName="license_expiry_date">
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Information Section -->
+                    <h6 class="mb-3 text-primary">{{ 'drivers.vehicle_info' | translate }}</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.vehicle_type' | translate }}</label>
+                            <select class="form-select" formControlName="vehicle_type">
+                                <option [ngValue]="null">{{ 'g.select' | translate }}</option>
+                                @for (option of vehicleTypeOptions; track option.value) {
+                                <option [value]="option.value">{{ option.label }}</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.vehicle_brand' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="vehicle_brand">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.vehicle_model' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="vehicle_model">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.vehicle_year' | translate }}</label>
+                            <input type="number" class="form-control" formControlName="vehicle_year">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.vehicle_color' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="vehicle_color">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ 'drivers.plate_number' | translate }}</label>
+                            <input type="text" class="form-control" formControlName="plate_number">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary" [disabled]="firstFormGroup.pristine">
+                            {{ 'g.save' | translate }}
+                        </button>
+                    </div>
+                </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

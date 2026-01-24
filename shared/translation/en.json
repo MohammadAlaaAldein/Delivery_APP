@@ -17,6 +17,7 @@
 		"reset": "Reset",
 		"save": "Save",
 		"cancel": "Cancel",
+		"select": "Select",
 		"select_option": "Select Option",
 		"unauthorized_access": "Unauthorized Access",
 		"unauthorized_user": "Unauthorized User",
@@ -24,6 +25,7 @@
 		"global_err": "An error occurred!",
 		"global_auth_err": "Unauthorized access!",
 		"request_timed_out": "Your request has timed out!",
+		"no_changes": "No changes to save",
 		"invalid_captcha": "Invalid captcha!",
 		"no_changes_applied": "No changes were applied",
 		"search_by": "Search by",
@@ -212,6 +214,8 @@
 		"license_number": "License Number",
 		"license_type": "License Type",
 		"license_expiry_date": "License Expiry Date",
+		"my_shop": "My Shop",
+		"company_ids_readonly_info": "Associated companies are managed by administrator and cannot be modified here.",
 		"": ""
 	},
 	"companies": {
@@ -236,6 +240,11 @@
 		"company_type": "Company Type",
 		"license_number": "License Number",
 		"license_expiry_date": "License Expiry Date",
+		"shop_names": "Shops",
+		"my_company": "My Company",
+		"my_drivers": "My Drivers",
+		"no_drivers": "No drivers assigned to this company.",
+		"shop_ids_readonly_info": "Associated shops are managed by administrator and cannot be modified here.",
 		"": ""
 	},
 	"drivers": {
@@ -271,6 +280,7 @@
 		"personal_info": "Personal Information",
 		"license_info": "License Information",
 		"vehicle_info": "Vehicle Information",
+		"my_profile": "My Profile",
 		"vehicle_types": {
 			"car": "Car",
 			"motorcycle": "Motorcycle",
@@ -296,6 +306,13 @@
 	"nav": {
 		"users": "Users",
 		"home": "Home",
+		"dashboard": "Dashboard",
+		"panel": "Panel",
+		"my_panel": "My Panel",
+		"my_shop": "My Shop",
+		"my_company": "My Company",
+		"my_drivers": "My Drivers",
+		"my_profile": "My Profile",
 		"users_management": "Users Management",
 		"add_user": "Create User",
 		"users_list": "Users List",
@@ -394,6 +411,10 @@
 		"login_blocked_try_after_x_minutes": "Login for this account is temporarily blocked due to too many incorrect login attempts. Please try again after {{counter}} minutes",
 		"unblock_account_msg": "Your account has been temporarily blocked.",
 		"unblock_account_button": "Click the button below to unblock your account.",
+		"": ""
+	},
+	"auth": {
+		"user_not_active": "Your account is inactive. Please contact administrator.",
 		"": ""
 	},
 	"": ""

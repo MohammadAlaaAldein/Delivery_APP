@@ -2,7 +2,8 @@
 	<ul class="list-unstyled">
 		<li class="me-3">
 			<div class="dropdown pc-h-item pc-mega-menu" ngbDropdown>
-				<a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0" href="javascript:" ngbDropdownToggle>
+				<a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0" href="javascript:" ngbDropdownToggle
+					*ngIf="canAccessTheNavMenu()">
 					<i class="ti ti-menu-2"></i>
 				</a>
 				<div class="dropdown-menu pc-h-dropdown pc-mega-drop-menu" ngbDropdownMenu>
@@ -15,7 +16,7 @@
 						<div class="col-8">
 							<div class="row p-4">
 								@for (section of componentSections; track section) {
-									<div class="col">
+									<div class="col" *ngIf="canAccessSection(section.name)">
 										<h5 class="mx-3">{{ section.title }}</h5>
 										<ul class="pc-mega-list">
 											@for (item of section.items; track item) {

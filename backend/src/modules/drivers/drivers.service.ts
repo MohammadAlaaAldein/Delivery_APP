@@ -81,7 +81,7 @@ export class DriversService {
         }
     }
 
-    async update(id: number, fields: UpdateDriverDto, options?: { req?: FastifyRequest }): Promise<any> {
+    async update(userId: number, fields: UpdateDriverDto, options?: { req?: FastifyRequest }): Promise<any> {
         try {
             const allowedFields = [
                 'is_active',
@@ -102,7 +102,7 @@ export class DriversService {
                 'vehicle_image',
             ];
 
-            const driver = (await this.getDrivers({ id }))[0];
+            const driver = (await this.getDrivers({ user_id: userId }))[0];
 
             // Check uniqueness
             const uniqueFieldFound = await this.checkDriverUniqueFields(fields, driver);
@@ -117,7 +117,7 @@ export class DriversService {
             }
 
             if (Object.keys(updateFields).length) {
-                await this.driversRepository.createQueryBuilder().update().set(updateFields).where('id = :id', { id }).execute();
+                await this.driversRepository.createQueryBuilder().update().set(updateFields).where('user_id = :user_id', { user_id: userId }).execute();
             }
 
             return { err: null, res: updateFields };
