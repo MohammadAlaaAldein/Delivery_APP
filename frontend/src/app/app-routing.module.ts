@@ -113,6 +113,18 @@ const routes: Routes = [
 				data: { role: USER_ROLE.ADMIN }
 			},
 			{
+				path: 'drivers',
+				loadComponent: () => import('./dashboard/drivers/drivers.component').then((c) => c.DriversComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'drivers/edit/:id',
+				loadComponent: () => import('./dashboard/drivers/create-driver/create-driver.component').then((c) => c.CreateDriverComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
 				path: 'api-logs',
 				loadComponent: () => import('./dashboard/logs/api-logs/api-logs.component').then((c) => c.ApiLogsComponent),
 				canActivate: [RoleAccessGuard],

@@ -30,6 +30,7 @@ export class CompaniesComponent {
 	columnConfig: ColumnsConfig[] = [
 		{ key: 'name', name: this.translate.instant('companies.name'), type: 'string' },
 		{ key: 'shops', name: this.translate.instant('companies.shops'), type: 'string' },
+		{ key: 'is_active', name: this.translate.instant('g.status'), type: 'string' },
 		{ key: 'create_date', name: this.translate.instant('g.creation_date'), type: 'date' },
 		{ key: 'actions', name: this.translate.instant('g.actions'), type: 'dropdown' }
 	];
@@ -88,6 +89,11 @@ export class CompaniesComponent {
 			for (const company of companies) {
 				const options = [
 					{ text: this.translate.instant('g.edit'), action: () => { this.edit(company) } },
+					{ text: this.translate.instant('companies.drivers'), action: () => { this.viewDrivers(company) } },
+					{
+						text: company.is_active ? this.translate.instant('g.deactivate') : this.translate.instant('g.activate'),
+						action: () => { this.toggleActive(company) }
+					},
 					{ text: this.translate.instant('g.delete'), action: () => { this.confirmDeleteCompany(company) } },
 				];
 
@@ -100,6 +106,10 @@ export class CompaniesComponent {
 					id: company.id,
 					name: { value: company.name },
 					shops: { value: shopNames || '-' },
+					is_active: {
+						value: company.is_active ? this.translate.instant('g.active') : this.translate.instant('g.inactive'),
+						class: company.is_active ? 'badge bg-success' : 'badge bg-danger'
+					},
 					create_date: { value: moment(company.created_at).format('YYYY-MM-DD') },
 					actions: { value: null, options: options }
 				});
@@ -138,6 +148,17 @@ export class CompaniesComponent {
 
 	edit(company: Company) {
 		this.router.navigate(['/companies/edit', company.id]);
+	}
+
+	viewDrivers(company: Company) {
+		this.router.navigate(['/drivers'], { queryParams: { company_id: company.id } });
+	}
+
+	toggleActive(company: Company) {
+		this.companiesService.toggleActive(company.id).subscribe(() => {
+			this.notificationService.setMessage('globalSuccessMsg');
+			this.getCompaniesList(this.filters);
+		});
 	}
 
 	deleteCompany(company: Company) {

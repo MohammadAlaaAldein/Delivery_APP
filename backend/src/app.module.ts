@@ -25,6 +25,7 @@ import { MainRouteController } from './main-route/main-route.controller';
 import { AttachmentsModule } from './modules/attachments/attachments.module';
 import { ShopsModule } from './modules/shops/shops.module';
 import { CompaniesModule } from './modules/companies/companies.module';
+import { DriversModule } from './modules/drivers/drivers.module';
 
 @Module({
 	imports: [
@@ -46,6 +47,7 @@ import { CompaniesModule } from './modules/companies/companies.module';
 		UsersModule,
 		ShopsModule,
 		CompaniesModule,
+		DriversModule,
 		AuthModule,
 		// ActionLogModule,
 		// SentryModule.forRoot(),

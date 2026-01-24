@@ -8,6 +8,7 @@ export interface User {
 	entity_id?: number;
 	entity_name?: string;
 	// entity_type?: string;
+	is_active?: boolean;
 	created_at?: Date;
 	password?: string;
 	confirm_password?: string;

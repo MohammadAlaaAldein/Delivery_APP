@@ -12,6 +12,7 @@ import { JWT_SECRET_TOKEN, JWT_SECRET_TOKEN_TTL } from '../../common/constants';
 import { AuthCaptchaService } from './auth-captcha/auth-captcha.service';
 import { ShopsModule } from '../shops/shops.module';
 import { CompaniesModule } from '../companies/companies.module';
+import { DriversModule } from '../drivers/drivers.module';
 
 @Module({
 	providers: [
@@ -32,6 +33,7 @@ import { CompaniesModule } from '../companies/companies.module';
 		}),
 		ShopsModule,
 		CompaniesModule,
+		DriversModule,
 	],
 })
 export class AuthModule { }

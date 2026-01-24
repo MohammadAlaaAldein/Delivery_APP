@@ -99,6 +99,21 @@ export class UsersController {
 
 	@UseGuards(JwtGuard)
 	@UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+	@Patch(':id/toggle-active')
+	async toggleActive(
+		@Req() req: FastifyRequest,
+		@Param('id') id: number,
+	) {
+		const result = await this.usersService.toggleActive(id, { req });
+
+		if (result.err)
+			return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+		return handleSuccessApiResponse({ message: translate('users.user_status_updated_successfully'), data: result.res });
+	}
+
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
 	@Get('list')
 	async listUsers(
 		@Req() req: FastifyRequest,

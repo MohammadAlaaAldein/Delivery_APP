@@ -23,6 +23,21 @@ export class ShopsService {
 		return entityManager ? entityManager.getRepository(Shop) : this.connection.getRepository(Shop);
 	}
 
+	async toggleActive(id: number, options?: { req?: FastifyRequest }): Promise<any> {
+		try {
+			const shop = (await this.getShops({ id }))[0];
+			if (!shop)
+				return { err: ErrorKeys.NOT_FOUND };
+
+			const newStatus = !shop.is_active;
+			await this.shopsRepository.createQueryBuilder().update().set({ is_active: newStatus }).where('id = :id', { id }).execute();
+
+			return { err: null, res: { is_active: newStatus } };
+		} catch (ex) {
+			throw ex;
+		}
+	}
+
 	async create(createShopDto: CreateShopDto, options?: { req?: FastifyRequest }): Promise<any> {
 		try {
 			const { company_ids, ...shopData } = createShopDto;

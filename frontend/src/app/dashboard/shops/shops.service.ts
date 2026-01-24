@@ -24,16 +24,20 @@ export class ShopsService {
 		return this.http.post(route, params, { observe: 'body' });
 	}
 
-	list(filters?: { name?: string; email?: string; id?: number }) {
-		return this.http.get(`${this.route}/list`, { params: filters });
+	list(filters?: { name?: string; email?: string; id?: number; is_active?: boolean }) {
+		return this.http.get(`${this.route}/list`, { params: filters as any });
 	}
 
 	delete(shopId: number) {
 		return this.http.delete(`${this.route}/${shopId}`);
 	}
 
-	listCompanies(filters?: { name?: string; id?: number }) {
-		return this.http.get<{ data: Company[] }>('/companies/list', { params: filters });
+	toggleActive(shopId: number) {
+		return this.http.patch(`${this.route}/${shopId}/toggle-active`, {});
+	}
+
+	listCompanies(filters?: { name?: string; id?: number; is_active?: boolean }) {
+		return this.http.get<{ data: Company[] }>('/companies/list', { params: filters as any });
 	}
 
 }

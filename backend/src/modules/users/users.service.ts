@@ -20,6 +20,7 @@ import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { encrypt } from 'src/common/common';
 import { ShopsService } from '../shops/shops.service';
 import { CompaniesService } from '../companies/companies.service';
+import { DriversService } from '../drivers/drivers.service';
 import { keyBy } from 'lodash';
 
 export enum USER_ROLE {
@@ -45,6 +46,7 @@ export class UsersService {
 		private readonly eventEmitter: EventEmitter2,
 		private readonly shopsService: ShopsService,
 		private readonly companiesService: CompaniesService,
+		private readonly driversService: DriversService,
 	) { }
 
 	private getUserRepository(entityManager?: EntityManager): Repository<User> {
@@ -61,6 +63,11 @@ export class UsersService {
 
 			await this.usersRepository.save(user);
 			const { password, ...result } = user;
+
+			// If user is a driver, create driver record
+			if (user.role === USER_ROLE.DRIVER) {
+				await this.driversService.createForUser(user.id, user.entity_id || null);
+			}
 
 			// await this.eventEmitter.emitAsync('action.log', {
 			// 	old_values: {},
@@ -87,6 +94,8 @@ export class UsersService {
 			];
 
 			const user = (await this.getUsersInfo([id]))[0];
+			const oldRole = user.role;
+			const oldEntityId = user.entity_id;
 
 			// Check uniqueness
 			const uniqueFieldFound = await this.checkUserUniqueFields(fields, user);
@@ -107,6 +116,18 @@ export class UsersService {
 				return { err: 'no_changes', res: null };
 
 			await this.usersRepository.createQueryBuilder().update().set(updateFields).where('id = :id', { id }).execute();
+
+			// Handle driver role changes
+			const newRole = (updateFields.role || oldRole) as string;
+			const newEntityId = updateFields.entity_id !== undefined ? updateFields.entity_id : oldEntityId;
+
+			if (newRole === USER_ROLE.DRIVER) {
+				// User is now a driver - create or update driver record
+				await this.driversService.createForUser(id, newEntityId || null);
+			} else if (oldRole === USER_ROLE.DRIVER) {
+				// User was a driver but no longer is - remove company_id from driver record
+				await this.driversService.removeCompanyFromDriver(id);
+			}
 
 			// await this.eventEmitter.emitAsync('action.log', {
 			// 	old_values: user,
@@ -233,6 +254,21 @@ export class UsersService {
 		} catch (ex) {
 			throw ex;
 
+		}
+	}
+
+	async toggleActive(id: number, options?: { req?: FastifyRequest }): Promise<any> {
+		try {
+			const user = (await this.getUsersInfo([id]))[0];
+			if (!user)
+				return { err: ErrorKeys.INVALID_USER };
+
+			const newStatus = !user.is_active;
+			await this.usersRepository.createQueryBuilder().update().set({ is_active: newStatus }).where('id = :id', { id }).execute();
+
+			return { err: null, res: { is_active: newStatus } };
+		} catch (ex) {
+			throw ex;
 		}
 	}
 

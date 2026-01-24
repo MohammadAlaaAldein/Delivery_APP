@@ -43,6 +43,10 @@ export class UsersService {
 		return this.http.delete(`/users/${userId}`);
 	}
 
+	toggleActive(userId: number) {
+		return this.http.patch(`/users/${userId}/toggle-active`, {});
+	}
+
 	resetPasswordAdmin(userId) {
 		return this.http.post(`/users/resetPasswordAdmin`, { userId });
 	}

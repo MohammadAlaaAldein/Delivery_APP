@@ -112,7 +112,7 @@ export class CreateUserComponent {
 	}
 
 	getShopsList() {
-		this.shopsService.list().subscribe((shops: { data: Shop[] }) => {
+		this.shopsService.list({ is_active: true }).subscribe((shops: { data: Shop[] }) => {
 			this.shops = shops.data.map(shop => ({ label: shop.name, value: shop.id }));
 
 			this.getCompaniesList();
@@ -120,7 +120,7 @@ export class CreateUserComponent {
 	}
 
 	getCompaniesList() {
-		this.companiesService.list().subscribe((companies: { data: Company[] }) => {
+		this.companiesService.list({ is_active: true }).subscribe((companies: { data: Company[] }) => {
 			this.companies = companies.data.map(company => ({ label: company.name, value: company.id }));
 
 			this.checkAndFillUserData();

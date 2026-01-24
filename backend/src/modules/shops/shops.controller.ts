@@ -64,6 +64,21 @@ export class ShopsController {
 
 	@UseGuards(JwtGuard)
 	@UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+	@Patch(':id/toggle-active')
+	async toggleActive(
+		@Req() req: FastifyRequest,
+		@Param('id') id: number,
+	) {
+		const result = await this.shopsService.toggleActive(id, { req });
+
+		if (result.err)
+			return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+		return handleSuccessApiResponse({ message: translate('shops.shop_status_updated_successfully'), data: result.res });
+	}
+
+	@UseGuards(JwtGuard)
+	@UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
 	@Delete(':id')
 	async delete(
 		@Req() req: FastifyRequest,

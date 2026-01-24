@@ -28,6 +28,7 @@ export class UsersComponent {
 		{ key: 'email', name: this.translate.instant('users.email'), type: 'string' },
 		{ key: 'role', name: this.translate.instant('users.role'), type: 'string' },
 		{ key: 'entity_id', name: this.translate.instant('users.entity_id'), type: 'string' },
+		{ key: 'is_active', name: this.translate.instant('g.status'), type: 'string' },
 		{ key: 'create_date', name: this.translate.instant('g.creation_date'), type: 'date' },
 		{ key: 'actions', name: this.translate.instant('g.actions'), type: 'dropdown' }
 	];
@@ -92,6 +93,10 @@ export class UsersComponent {
 				const options = [
 					{ text: this.translate.instant('g.edit'), action: () => { this.edit(user) } },
 					{ text: this.translate.instant('users.change_user_password'), action: () => { this.confirmUpdateUserPassword(user) } },
+					{
+						text: user.is_active ? this.translate.instant('g.deactivate') : this.translate.instant('g.activate'),
+						action: () => { this.toggleActive(user) }
+					},
 					{ text: this.translate.instant('g.delete'), action: () => { this.confirmDeleteUser(user) } },
 				];
 
@@ -101,6 +106,10 @@ export class UsersComponent {
 					email: { value: user.email },
 					role: { value: this.translate.instant(`g.${user.role}`) },
 					entity_id: { value: user.entity_name },
+					is_active: {
+						value: user.is_active ? this.translate.instant('g.active') : this.translate.instant('g.inactive'),
+						class: user.is_active ? 'badge bg-success' : 'badge bg-danger'
+					},
 					// entity_type: { value: user.entity_type },
 					create_date: { value: moment(user.created_at).format('YYYY-MM-DD') },
 					actions: { value: null, options: options }
@@ -147,6 +156,13 @@ export class UsersComponent {
 		this.usersService.delete(user.id).subscribe(() => {
 			this.tableData = this.tableData.filter((u) => u['id'] !== user.id);
 			this.notificationService.setMessage('globalSuccessMsg');
+		});
+	}
+
+	toggleActive(user: User) {
+		this.usersService.toggleActive(user.id).subscribe(() => {
+			this.notificationService.setMessage('globalSuccessMsg');
+			this.getUserList(this.filters);
 		});
 	}
 

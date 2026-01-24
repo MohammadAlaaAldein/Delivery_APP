@@ -30,6 +30,7 @@ export class ShopsComponent {
 	columnConfig: ColumnsConfig[] = [
 		{ key: 'name', name: this.translate.instant('shops.name'), type: 'string' },
 		{ key: 'companies', name: this.translate.instant('shops.companies'), type: 'string' },
+		{ key: 'is_active', name: this.translate.instant('g.status'), type: 'string' },
 		{ key: 'create_date', name: this.translate.instant('g.creation_date'), type: 'date' },
 		{ key: 'actions', name: this.translate.instant('g.actions'), type: 'dropdown' }
 	];
@@ -89,6 +90,10 @@ export class ShopsComponent {
 			for (const shop of shops) {
 				const options = [
 					{ text: this.translate.instant('g.edit'), action: () => { this.edit(shop) } },
+					{
+						text: shop.is_active ? this.translate.instant('g.deactivate') : this.translate.instant('g.activate'),
+						action: () => { this.toggleActive(shop) }
+					},
 					{ text: this.translate.instant('g.delete'), action: () => { this.confirmDeleteShop(shop) } },
 				];
 
@@ -101,6 +106,10 @@ export class ShopsComponent {
 					id: shop.id,
 					name: { value: shop.name },
 					companies: { value: companyNames || '-' },
+					is_active: {
+						value: shop.is_active ? this.translate.instant('g.active') : this.translate.instant('g.inactive'),
+						class: shop.is_active ? 'badge bg-success' : 'badge bg-danger'
+					},
 					create_date: { value: moment(shop.created_at).format('YYYY-MM-DD') },
 					actions: { value: null, options: options }
 				});
@@ -139,6 +148,13 @@ export class ShopsComponent {
 
 	edit(shop: Shop) {
 		this.router.navigate(['/shops/edit', shop.id]);
+	}
+
+	toggleActive(shop: Shop) {
+		this.shopsService.toggleActive(shop.id).subscribe(() => {
+			this.notificationService.setMessage('globalSuccessMsg');
+			this.getShopsList(this.filters);
+		});
 	}
 
 	deleteShop(shop: Shop) {

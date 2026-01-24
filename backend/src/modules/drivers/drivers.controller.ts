@@ -1,0 +1,100 @@
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    UseGuards,
+    Req,
+    Query,
+    UseInterceptors,
+} from '@nestjs/common';
+import { DriversService } from './drivers.service';
+import { CreateDriverDto } from './dto/create-driver.dto';
+import { UpdateDriverDto } from './dto/update-driver.dto';
+import { JwtGuard } from '../auth/guards/jwt-auth.guard';
+import { FastifyRequest } from 'fastify';
+import { handleSuccessApiResponse, handleThrowApiError } from 'src/common/api-response';
+import { ListDriversDto } from './dto/list-drivers.dto';
+import { getControllersPrefixes, translate } from 'src/common/utilities';
+import { RoleInterceptor } from 'src/interceptors/role-interceptor';
+import { USER_ROLE } from '../users/users.service';
+
+@Controller(getControllersPrefixes('drivers'))
+export class DriversController {
+
+    readonly THROW_API_MODULE: string = 'drivers';
+
+    constructor(
+        private readonly driversService: DriversService,
+    ) { }
+
+    @UseGuards(JwtGuard)
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+    @Post('add')
+    async createDriver(
+        @Body() createDriverDto: CreateDriverDto,
+        @Req() req: FastifyRequest,
+    ) {
+        const result = await this.driversService.create(createDriverDto, { req });
+        if (result.err)
+            return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+        return result;
+    }
+
+    @UseGuards(JwtGuard)
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+    @Patch(':id')
+    async update(
+        @Req() req: FastifyRequest,
+        @Param('id') id: number,
+        @Body() updateDriverDto: UpdateDriverDto,
+    ) {
+        const result = await this.driversService.update(id, updateDriverDto, { req });
+
+        if (result.err)
+            return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+        return handleSuccessApiResponse({ message: translate('drivers.driver_updated_successfully'), data: result.res });
+    }
+
+    @UseGuards(JwtGuard)
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+    @Patch(':id/toggle-active')
+    async toggleActive(
+        @Req() req: FastifyRequest,
+        @Param('id') id: number,
+    ) {
+        const result = await this.driversService.toggleActive(id, { req });
+
+        if (result.err)
+            return handleThrowApiError(this.THROW_API_MODULE, result.err);
+
+        return handleSuccessApiResponse({ message: translate('drivers.driver_status_updated_successfully'), data: result.res });
+    }
+
+    @UseGuards(JwtGuard)
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+    @Delete(':id')
+    async delete(
+        @Req() req: FastifyRequest,
+        @Param('id') id: number,
+    ) {
+        await this.driversService.deleteDriver(+id, { req });
+        return handleSuccessApiResponse({ message: translate('drivers.driver_deleted_successfully') });
+    }
+
+    @UseGuards(JwtGuard)
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+    @Get('list')
+    async listDrivers(
+        @Req() req: FastifyRequest,
+        @Query() listDriversDto: ListDriversDto,
+    ) {
+        const drivers = await this.driversService.getDrivers(listDriversDto);
+        return handleSuccessApiResponse({ data: drivers });
+    }
+}

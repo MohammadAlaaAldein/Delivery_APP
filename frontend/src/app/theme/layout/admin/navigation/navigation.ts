@@ -65,6 +65,75 @@ const NavigationItems: NavigationItem[] = [
 				]
 			},
 			{
+				id: 'shops',
+				title: 'nav.shops_list',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/shops',
+				icon: 'ti ti-building-store',
+				breadcrumbs: true,
+				children: [
+					{
+						id: 'add-shop',
+						title: 'shops.add_shop',
+						type: 'item',
+						url: '/shops/create'
+					},
+					{
+						id: 'edit-shop',
+						title: 'shops.edit_shop',
+						type: 'item',
+						urlPattern: '^/shops/edit/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'companies',
+				title: 'nav.companies_list',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/companies',
+				icon: 'ti ti-building',
+				breadcrumbs: true,
+				children: [
+					{
+						id: 'add-company',
+						title: 'companies.add_company',
+						type: 'item',
+						url: '/companies/create'
+					},
+					{
+						id: 'edit-company',
+						title: 'companies.edit_company',
+						type: 'item',
+						urlPattern: '^/companies/edit/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'drivers',
+				title: 'nav.drivers_list',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/drivers',
+				icon: 'ti ti-car',
+				breadcrumbs: true,
+				children: [
+					{
+						id: 'add-driver',
+						title: 'drivers.add_driver',
+						type: 'item',
+						url: '/drivers/create'
+					},
+					{
+						id: 'edit-driver',
+						title: 'drivers.edit_driver',
+						type: 'item',
+						urlPattern: '^/drivers/edit/\\d+$'
+					}
+				]
+			},
+			{
 				id: 'action-log',
 				title: 'nav.action_log',
 				type: 'item',

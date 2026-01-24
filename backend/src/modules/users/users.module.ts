@@ -7,6 +7,7 @@ import { AuthCaptchaService } from '../auth/auth-captcha/auth-captcha.service';
 import { RolesService } from './roles.service';
 import { ShopsModule } from '../shops/shops.module';
 import { CompaniesModule } from '../companies/companies.module';
+import { DriversModule } from '../drivers/drivers.module';
 
 @Module({
 	imports: [
@@ -15,6 +16,7 @@ import { CompaniesModule } from '../companies/companies.module';
 		]),
 		ShopsModule,
 		CompaniesModule,
+		DriversModule,
 	],
 	controllers: [UsersController],
 	providers: [UsersService, RolesService, AuthCaptchaService],

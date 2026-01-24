@@ -73,6 +73,16 @@ export class NavRightComponent implements OnInit {
 				},
 			]
 		},
+		{
+			title: this.translate.instant('nav.drivers_management'),
+			items: [
+				{
+					title: this.translate.instant('nav.drivers_list'),
+					url: '/drivers',
+					role: USER_ROLE.ADMIN,
+				},
+			]
+		},
 		// {
 		// 	title: this.translate.instant('nav.admin_tools'),
 		// 	items: [

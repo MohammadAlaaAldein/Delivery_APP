@@ -55,7 +55,7 @@ export class CreateCompanyComponent {
 	}
 
 	loadShops() {
-		this.companiesService.listShops({}).subscribe((res: { data: Shop[] }) => {
+		this.companiesService.listShops({ is_active: true }).subscribe((res: { data: Shop[] }) => {
 			this.shops = res.data;
 			this.fields = {
 				...this.fields,

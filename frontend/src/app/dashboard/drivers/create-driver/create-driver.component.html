@@ -1,0 +1,46 @@
+<div>
+    <div class="row">
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body custom-table-style">
+                    <h5 class="mb-3">{{ 'drivers.personal_info' | translate }}</h5>
+
+                    <!-- Driver Name (read-only, from users table) -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ 'drivers.name' | translate }}</label>
+                            <input type="text" class="form-control" [value]="driverName" disabled readonly>
+                        </div>
+                    </div>
+
+                    <app-form-builder [formGroup]="firstFormGroup"
+                        [formFieldsList]="['national_id', 'birth_date', 'phone', 'city']" [fields]="fields"
+                        [translationKey]="'drivers'" [hasButtons]="false"></app-form-builder>
+
+                    <hr class="my-4">
+
+                    <h5 class="mb-3">{{ 'drivers.license_info' | translate }}</h5>
+                    <app-form-builder [formGroup]="firstFormGroup"
+                        [formFieldsList]="['license_number', 'license_expiry_date']" [fields]="fields"
+                        [translationKey]="'drivers'" [hasButtons]="false"></app-form-builder>
+
+                    <hr class="my-4">
+
+                    <h5 class="mb-3">{{ 'drivers.vehicle_info' | translate }}</h5>
+                    <app-form-builder [formGroup]="firstFormGroup"
+                        [formFieldsList]="['vehicle_type', 'vehicle_brand', 'vehicle_model', 'vehicle_year', 'vehicle_color', 'plate_number']"
+                        [fields]="fields" [translationKey]="'drivers'" [hasButtons]="false"></app-form-builder>
+
+                    <div class="mt-4 d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" (click)="onCancel()">
+                            {{ 'g.cancel' | translate }}
+                        </button>
+                        <button type="button" class="btn btn-primary" (click)="onSubmit()">
+                            {{ 'g.save' | translate }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

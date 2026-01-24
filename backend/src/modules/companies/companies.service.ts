@@ -23,6 +23,21 @@ export class CompaniesService {
 		return entityManager ? entityManager.getRepository(Company) : this.connection.getRepository(Company);
 	}
 
+	async toggleActive(id: number, options?: { req?: FastifyRequest }): Promise<any> {
+		try {
+			const company = (await this.getCompanies({ id }))[0];
+			if (!company)
+				return { err: ErrorKeys.NOT_FOUND };
+
+			const newStatus = !company.is_active;
+			await this.companiesRepository.createQueryBuilder().update().set({ is_active: newStatus }).where('id = :id', { id }).execute();
+
+			return { err: null, res: { is_active: newStatus } };
+		} catch (ex) {
+			throw ex;
+		}
+	}
+
 	async create(createCompanyDto: CreateCompanyDto, options?: { req?: FastifyRequest }): Promise<any> {
 		try {
 			const { shop_ids, ...companyData } = createCompanyDto;

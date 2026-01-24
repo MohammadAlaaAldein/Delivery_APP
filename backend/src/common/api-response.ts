@@ -11,6 +11,10 @@ export enum ErrorKeys {
 	RESET_PASSWORD_LINK_EXPIRED = 'invalid_reset_password_link',
 	UNIQUE_VIOLATION_NAME = 'unique_violation_name',
 	NO_CHANGES = 'no_changes',
+	NOT_FOUND = 'not_found',
+	UNIQUE_VIOLATION_NATIONAL_ID = 'unique_violation_national_id',
+	UNIQUE_VIOLATION_LICENSE_NUMBER = 'unique_violation_license_number',
+	UNIQUE_VIOLATION_PLATE_NUMBER = 'unique_violation_plate_number',
 }
 
 const errorMap = {
@@ -73,6 +77,33 @@ const errorMap = {
 			status: HttpStatus.CONFLICT,
 			message: translate('companies.name_is_already_in_use'),
 			error: 'Conflict'
+		},
+		[ErrorKeys.NO_CHANGES]: {
+			status: HttpStatus.UNPROCESSABLE_ENTITY,
+			message: translate('g.no_changes_applied'),
+			error: 'Bad Request'
+		},
+	},
+	drivers: {
+		[ErrorKeys.UNIQUE_VIOLATION_NATIONAL_ID]: {
+			status: HttpStatus.CONFLICT,
+			message: translate('drivers.national_id_is_already_in_use'),
+			error: 'Conflict'
+		},
+		[ErrorKeys.UNIQUE_VIOLATION_LICENSE_NUMBER]: {
+			status: HttpStatus.CONFLICT,
+			message: translate('drivers.license_number_is_already_in_use'),
+			error: 'Conflict'
+		},
+		[ErrorKeys.UNIQUE_VIOLATION_PLATE_NUMBER]: {
+			status: HttpStatus.CONFLICT,
+			message: translate('drivers.plate_number_is_already_in_use'),
+			error: 'Conflict'
+		},
+		[ErrorKeys.NOT_FOUND]: {
+			status: HttpStatus.NOT_FOUND,
+			message: translate('drivers.driver_not_found'),
+			error: 'Not Found'
 		},
 		[ErrorKeys.NO_CHANGES]: {
 			status: HttpStatus.UNPROCESSABLE_ENTITY,
