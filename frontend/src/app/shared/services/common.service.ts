@@ -29,6 +29,28 @@ export class CommonService {
 		FW_VERSION: '0.5.0'
 	};
 
+	getCityOptions(): { value: string, label: string }[] {
+		return [
+			{ value: 'amman', label: this.translate.instant('g.cities.amman') },
+			{ value: 'irbid', label: this.translate.instant('g.cities.irbid') },
+			{ value: 'zarqa', label: this.translate.instant('g.cities.zarqa') },
+			{ value: 'balqa', label: this.translate.instant('g.cities.balqa') },
+			{ value: 'mafraq', label: this.translate.instant('g.cities.mafraq') },
+			{ value: 'jerash', label: this.translate.instant('g.cities.jerash') },
+			{ value: 'ajloun', label: this.translate.instant('g.cities.ajloun') },
+			{ value: 'madaba', label: this.translate.instant('g.cities.madaba') },
+			{ value: 'karak', label: this.translate.instant('g.cities.karak') },
+			{ value: 'tafilah', label: this.translate.instant('g.cities.tafilah') },
+			{ value: 'maan', label: this.translate.instant('g.cities.maan') },
+			{ value: 'aqaba', label: this.translate.instant('g.cities.aqaba') },
+		];
+	}
+
+	formatDateForInput(dateString: string): string {
+		if (!dateString) return '';
+		return moment(dateString).format('YYYY-MM-DD');
+	}
+
 	getDomainName() {
 		console.log('getDomainName');
 

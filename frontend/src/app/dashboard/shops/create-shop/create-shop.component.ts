@@ -21,13 +21,41 @@ export class CreateShopComponent {
 		id: null,
 		name: "",
 		company_ids: [],
+		city: "",
+		area: "",
+		street: "",
+		building: "",
+		latitude: null,
+		longitude: null,
+		address: "",
+		phone: "",
+		whatsapp: "",
+		email: "",
+		license_number: "",
+		license_type: "",
+		license_expiry_date: "",
 	}
 
 	companies: Company[] = [];
 
+	cityOptions: { value: string, label: string }[] = [];
+
 	fields: any = {
 		name: { type: "text", is_required: true },
 		company_ids: { type: "multi-select", items: [], bindLabel: 'name', bindValue: 'id', addTag: false },
+		city: { type: "select", options: [], section: 'location_info' },
+		area: { type: "text", section: 'location_info' },
+		street: { type: "text", section: 'location_info' },
+		building: { type: "text", section: 'location_info' },
+		latitude: { type: "number", section: 'location_info' },
+		longitude: { type: "number", section: 'location_info' },
+		address: { type: "textarea", section: 'location_info' },
+		phone: { type: "text", section: 'contact_info' },
+		whatsapp: { type: "text", section: 'contact_info' },
+		email: { type: "email", section: 'contact_info' },
+		license_number: { type: "text", section: 'license_info' },
+		license_type: { type: "text", section: 'license_info' },
+		license_expiry_date: { type: "date", section: 'license_info' },
 	}
 	formFieldsList = [];
 
@@ -44,14 +72,37 @@ export class CreateShopComponent {
 	) { }
 
 	ngOnInit() {
+		this.initCityOptions();
+
 		this.firstFormGroup = this._formBuilder.group({
 			name: ['', [Validators.required, Validators.minLength(2)]],
 			company_ids: [[]],
+			city: [''],
+			area: [''],
+			street: [''],
+			building: [''],
+			latitude: [null],
+			longitude: [null],
+			address: [''],
+			phone: [''],
+			whatsapp: [''],
+			email: ['', [Validators.email]],
+			license_number: [''],
+			license_type: [''],
+			license_expiry_date: [''],
 		}, { validator: '' });
 
 		this.formFieldsList = Object.keys(this.fields);
 		this.loadCompanies();
 		this.checkAndFillShopData();
+	}
+
+	initCityOptions() {
+		this.cityOptions = this.commonService.getCityOptions();
+		this.fields = {
+			...this.fields,
+			city: { ...this.fields.city, options: this.cityOptions }
+		};
 	}
 
 	loadCompanies() {
@@ -74,6 +125,19 @@ export class CreateShopComponent {
 					this.firstFormGroup.patchValue({
 						name: this.shop.name,
 						company_ids: this.shop.company_ids || [],
+						city: this.shop.city || '',
+						area: this.shop.area || '',
+						street: this.shop.street || '',
+						building: this.shop.building || '',
+						latitude: this.shop.latitude || null,
+						longitude: this.shop.longitude || null,
+						address: this.shop.address || '',
+						phone: this.shop.phone || '',
+						whatsapp: this.shop.whatsapp || '',
+						email: this.shop.email || '',
+						license_number: this.shop.license_number || '',
+						license_type: this.shop.license_type || '',
+						license_expiry_date: this.commonService.formatDateForInput(this.shop.license_expiry_date),
 					});
 
 					this.firstFormGroup.markAsPristine();
@@ -104,13 +168,30 @@ export class CreateShopComponent {
 		if (shopId) {
 			Object.keys(form.controls).forEach(key => {
 				const control = form.get(key);
-				if (control?.dirty)
-					shop[key] = control.value;
+				if (control?.dirty) {
+					if (key === 'latitude' || key === 'longitude') {
+						shop[key] = control.value !== '' && control.value !== null ? parseFloat(control.value) : null;
+					} else {
+						shop[key] = control.value;
+					}
+				}
 			});
 
 			return shop;
-		} else
-			shop = this.firstFormGroup.value as Shop;
+		} else {
+			shop = { ...this.firstFormGroup.value } as Shop;
+			// Convert latitude/longitude to numbers
+			if (shop.latitude !== null && shop.latitude !== undefined && shop.latitude !== '') {
+				shop.latitude = parseFloat(shop.latitude as any);
+			} else {
+				delete shop.latitude;
+			}
+			if (shop.longitude !== null && shop.longitude !== undefined && shop.longitude !== '') {
+				shop.longitude = parseFloat(shop.longitude as any);
+			} else {
+				delete shop.longitude;
+			}
+		}
 
 		return shop;
 	}

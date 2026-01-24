@@ -21,13 +21,31 @@ export class CreateCompanyComponent {
 		id: null,
 		name: "",
 		shop_ids: [],
+		city: "",
+		address: "",
+		phone: "",
+		email: "",
+		website: "",
+		company_type: "",
+		license_number: "",
+		license_expiry_date: "",
 	}
 
 	shops: Shop[] = [];
 
+	cityOptions: { value: string, label: string }[] = [];
+
 	fields: any = {
 		name: { type: "text", is_required: true },
 		shop_ids: { type: "multi-select", items: [], bindLabel: 'name', bindValue: 'id', addTag: false },
+		city: { type: "select", options: [], section: 'location_info' },
+		address: { type: "textarea", section: 'location_info' },
+		phone: { type: "text", section: 'contact_info' },
+		email: { type: "email", section: 'contact_info' },
+		website: { type: "text", section: 'contact_info' },
+		company_type: { type: "text", section: 'company_info' },
+		license_number: { type: "text", section: 'license_info' },
+		license_expiry_date: { type: "date", section: 'license_info' },
 	}
 	formFieldsList = [];
 
@@ -44,14 +62,32 @@ export class CreateCompanyComponent {
 	) { }
 
 	ngOnInit() {
+		this.initCityOptions();
+
 		this.firstFormGroup = this._formBuilder.group({
 			name: ['', [Validators.required, Validators.minLength(2)]],
 			shop_ids: [[]],
+			city: [''],
+			address: [''],
+			phone: [''],
+			email: ['', [Validators.email]],
+			website: [''],
+			company_type: [''],
+			license_number: [''],
+			license_expiry_date: [''],
 		}, { validator: '' });
 
 		this.formFieldsList = Object.keys(this.fields);
 		this.loadShops();
 		this.checkAndFillCompanyData();
+	}
+
+	initCityOptions() {
+		this.cityOptions = this.commonService.getCityOptions();
+		this.fields = {
+			...this.fields,
+			city: { ...this.fields.city, options: this.cityOptions }
+		};
 	}
 
 	loadShops() {
@@ -74,6 +110,14 @@ export class CreateCompanyComponent {
 					this.firstFormGroup.patchValue({
 						name: this.company.name,
 						shop_ids: this.company.shop_ids || [],
+						city: this.company.city || '',
+						address: this.company.address || '',
+						phone: this.company.phone || '',
+						email: this.company.email || '',
+						website: this.company.website || '',
+						company_type: this.company.company_type || '',
+						license_number: this.company.license_number || '',
+						license_expiry_date: this.commonService.formatDateForInput(this.company.license_expiry_date),
 					});
 
 					this.firstFormGroup.markAsPristine();

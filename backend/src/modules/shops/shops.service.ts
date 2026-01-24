@@ -66,6 +66,19 @@ export class ShopsService {
 			const { company_ids, ...updateData } = fields;
 			const allowedFields = [
 				'name',
+				'city',
+				'area',
+				'street',
+				'building',
+				'latitude',
+				'longitude',
+				'address',
+				'phone',
+				'whatsapp',
+				'email',
+				'license_number',
+				'license_type',
+				'license_expiry_date',
 			];
 
 			const shop = (await this.getShops({ id }))[0];
