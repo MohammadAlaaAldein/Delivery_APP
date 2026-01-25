@@ -343,4 +343,49 @@ export class OrdersController {
         await this.ordersService.deleteOrder(id);
         return { message: 'Order deleted successfully' };
     }
+
+    // ==================== ORDER HISTORY ENDPOINTS ====================
+
+    // Admin gets all order history
+    @Get('history/list')
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+    async getAllOrdersHistory(
+        @Query('shop_id') shopId?: string,
+        @Query('company_id') companyId?: string,
+        @Query('driver_id') driverId?: string,
+    ) {
+        const filters: any = {};
+        if (shopId) filters.shop_id = parseInt(shopId, 10);
+        if (companyId) filters.company_id = parseInt(companyId, 10);
+        if (driverId) filters.driver_id = parseInt(driverId, 10);
+
+        const orders = await this.ordersService.getAllOrdersHistory(filters);
+        return { data: orders };
+    }
+
+    // Admin gets a specific order from history
+    @Get('history/:id')
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
+    async getOrderHistory(@Param('id', ParseIntPipe) id: number) {
+        const order = await this.ordersService.getOrderHistory(id);
+        return { data: order };
+    }
+
+    // Shop gets their order history
+    @Get('shop/history')
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.SHOP, { requireEntityOwnership: true }))
+    async getShopOrdersHistory(@Req() req) {
+        const shopId = await this.getShopId(req.user.id);
+        const orders = await this.ordersService.getShopOrdersHistory(shopId);
+        return { data: orders };
+    }
+
+    // Company gets their order history
+    @Get('company/history')
+    @UseInterceptors(new RoleInterceptor(USER_ROLE.COMPANY, { requireEntityOwnership: true }))
+    async getCompanyOrdersHistory(@Req() req) {
+        const companyId = await this.getCompanyId(req.user.id);
+        const orders = await this.ordersService.getCompanyOrdersHistory(companyId);
+        return { data: orders };
+    }
 }

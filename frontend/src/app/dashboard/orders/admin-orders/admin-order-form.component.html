@@ -16,7 +16,7 @@
                         <hr />
                         <div class="row">
                             <div class="col-md-4">
-                                <h6>{{ 'orders.order_info' | translate }}</h6>
+                                <h3>{{ 'orders.order_info' | translate }}</h3>
                                 <p><strong>{{ 'orders.order_number' | translate }}:</strong> {{ order.order_number }}
                                 </p>
                                 <p><strong>{{ 'g.status' | translate }}:</strong>
@@ -28,7 +28,7 @@
                                     number:'1.2-2' }}</p>
                             </div>
                             <div class="col-md-4">
-                                <h6>{{ 'orders.assignment_info' | translate }}</h6>
+                                <h3>{{ 'orders.assignment_info' | translate }}</h3>
                                 <p><strong>{{ 'orders.shop' | translate }}:</strong> {{ order.shop?.name || '-' }}</p>
                                 <p><strong>{{ 'orders.company' | translate }}:</strong> {{ order.company?.name || '-' }}
                                 </p>
@@ -36,7 +36,7 @@
                                     '-' }}</p>
                             </div>
                             <div class="col-md-4">
-                                <h6>{{ 'orders.timeline' | translate }}</h6>
+                                <h3>{{ 'orders.timeline' | translate }}</h3>
                                 <p><strong>{{ 'g.creation_date' | translate }}:</strong> {{ order.created_at |
                                     date:'medium' }}</p>
                                 <p *ngIf="order.company_assigned_at"><strong>{{ 'orders.company_assigned_at' | translate

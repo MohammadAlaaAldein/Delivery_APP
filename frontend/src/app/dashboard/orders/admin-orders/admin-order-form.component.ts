@@ -136,7 +136,7 @@ export class AdminOrderFormComponent {
 
         this.paymentStatusOptions = this.paymentStatusOptions.map(opt => ({
             ...opt,
-            label: this.translate.instant(`orders.payment_status.${opt.value}`)
+            label: this.translate.instant(`orders.payment_statuses.${opt.value}`)
         }));
 
         this.statusOptions = this.statusOptions.map(opt => ({

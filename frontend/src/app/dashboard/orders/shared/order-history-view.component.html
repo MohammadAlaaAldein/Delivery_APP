@@ -2,7 +2,9 @@
     <div class="col-sm-12 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5>{{ 'orders.view_order' | translate }}: {{ order?.order_number }}</h5>
+                <h5>{{ 'orders.view_order' | translate }}: {{ order?.order_number }}
+                    <span class="badge bg-secondary ms-2">{{ 'orders.history' | translate }}</span>
+                </h5>
                 <button class="btn btn-outline-secondary" (click)="goBack()">
                     <i class="feather icon-arrow-left me-1"></i>
                     {{ 'g.back' | translate }}
@@ -53,8 +55,6 @@
                                         }}:</strong> {{ order.delivery_building }}</p>
                                 <p *ngIf="order.delivery_address"><strong>{{ 'orders.delivery_address' | translate
                                         }}:</strong> {{ order.delivery_address }}</p>
-                                <p *ngIf="order.delivery_notes"><strong>{{ 'orders.delivery_notes' | translate
-                                        }}:</strong> {{ order.delivery_notes }}</p>
                             </div>
                         </div>
                     </div>
@@ -106,52 +106,59 @@
                                 <p><strong>{{ 'g.name' | translate }}:</strong> {{ order.shop?.name || '-' }}</p>
                                 <p *ngIf="order.shop?.phone"><strong>{{ 'g.phone' | translate }}:</strong> {{
                                     order.shop?.phone }}</p>
-                                <p *ngIf="order.shop?.address"><strong>{{ 'g.address' | translate }}:</strong> {{
-                                    order.shop?.address }}</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Scheduling Info -->
-                    <div class="col-md-6 mb-4" *ngIf="order.scheduled_pickup_time || order.scheduled_delivery_time">
+                    <!-- Timeline Info -->
+                    <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0">{{ 'orders.scheduling' | translate }}</h6>
+                                <h6 class="mb-0">{{ 'orders.timeline' | translate }}</h6>
                             </div>
                             <div class="card-body">
-                                <p *ngIf="order.scheduled_pickup_time"><strong>{{ 'orders.scheduled_pickup_time' |
-                                        translate }}:</strong> {{ order.scheduled_pickup_time | date:'medium' }}</p>
-                                <p *ngIf="order.scheduled_delivery_time"><strong>{{ 'orders.scheduled_delivery_time' |
-                                        translate }}:</strong> {{ order.scheduled_delivery_time | date:'medium' }}</p>
-                                <p *ngIf="order.priority > 0"><strong>{{ 'orders.priority' | translate }}:</strong>
-                                    <span class="badge bg-danger">{{ order.priority }}</span></p>
+                                <p><strong>{{ 'orders.created_at' | translate }}:</strong> {{ order.order_created_at |
+                                    date:'medium' }}</p>
+                                <p *ngIf="order.picked_up_at"><strong>{{ 'orders.picked_up_at' | translate }}:</strong>
+                                    {{ order.picked_up_at | date:'medium' }}</p>
+                                <p *ngIf="order.delivered_at"><strong>{{ 'orders.delivered_at' | translate }}:</strong>
+                                    {{ order.delivered_at | date:'medium' }}</p>
+                                <p *ngIf="order.cancelled_at"><strong>{{ 'orders.cancelled_at' | translate }}:</strong>
+                                    {{ order.cancelled_at | date:'medium' }}</p>
+                                <p><strong>{{ 'orders.archived_at' | translate }}:</strong> {{ order.archived_at |
+                                    date:'medium' }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Notes -->
-                    <div class="col-md-12 mb-4" *ngIf="order.shop_notes">
+                    <div class="col-md-12 mb-4" *ngIf="order.shop_notes || order.company_notes || order.driver_notes">
                         <div class="card">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0">{{ 'orders.shop_notes' | translate }}</h6>
+                                <h6 class="mb-0">{{ 'g.notes' | translate }}</h6>
                             </div>
                             <div class="card-body">
-                                <p>{{ order.shop_notes }}</p>
+                                <p *ngIf="order.shop_notes"><strong>{{ 'orders.shop_notes' | translate }}:</strong> {{
+                                    order.shop_notes }}</p>
+                                <p *ngIf="order.company_notes"><strong>{{ 'orders.company_notes' | translate
+                                        }}:</strong> {{ order.company_notes }}</p>
+                                <p *ngIf="order.driver_notes"><strong>{{ 'orders.driver_notes' | translate }}:</strong>
+                                    {{ order.driver_notes }}</p>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Action Buttons -->
-                <div class="mt-4">
-                    <button class="btn btn-success me-2" *ngIf="canTakeOrder()" (click)="takeOrder()">
-                        <i class="feather icon-check me-1"></i>
-                        {{ 'orders.take_order' | translate }}
-                    </button>
-                    <button class="btn btn-primary me-2" *ngIf="canAssignDriver()" (click)="assignDriver()">
-                        <i class="feather icon-user me-1"></i>
-                        {{ 'orders.assign_driver' | translate }}
-                    </button>
+                    <!-- Cancellation Reason -->
+                    <div class="col-md-12 mb-4" *ngIf="order.cancellation_reason">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0">{{ 'orders.cancellation_reason' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ order.cancellation_reason }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

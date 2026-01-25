@@ -7,16 +7,22 @@ import { NotificationMessageService } from 'src/app/shared/notification-message/
 import { Order, OrderStatus } from '../order.interface';
 import Swal from 'sweetalert2';
 
+export type ViewerRole = 'company' | 'driver';
+
 @Component({
-    selector: 'app-driver-order-view',
+    selector: 'app-order-view',
     standalone: true,
     imports: [CommonModule, TranslateModule],
-    templateUrl: './driver-order-view.component.html'
+    templateUrl: './order-view.component.html'
 })
-export class DriverOrderViewComponent {
+export class OrderViewComponent {
 
     order: Order | null = null;
     orderId: number | null = null;
+
+    // Role-based behavior
+    viewerRole: ViewerRole = 'company';
+    isAvailableOrder: boolean = false;
 
     constructor(
         private ordersService: OrdersService,
@@ -28,19 +34,51 @@ export class DriverOrderViewComponent {
 
     ngOnInit() {
         this.orderId = +this.route.snapshot.paramMap.get('id');
+
+        // Determine role based on route
+        const url = this.route.snapshot.url.map(s => s.path).join('/');
+        if (url.includes('my-deliveries') || this.route.snapshot.data['viewerRole'] === 'driver') {
+            this.viewerRole = 'driver';
+        } else {
+            this.viewerRole = 'company';
+            this.isAvailableOrder = url.includes('available-orders');
+        }
+
         this.loadOrder();
     }
 
     loadOrder() {
-        this.ordersService.getDriverOrder(this.orderId).subscribe({
-            next: (res) => {
-                this.order = res.data;
-            },
-            error: () => {
-                this.notificationService.setMessage('g.global_err');
-                this.goBack();
-            }
-        });
+        if (this.viewerRole === 'driver') {
+            this.ordersService.getDriverOrder(this.orderId).subscribe({
+                next: (res) => {
+                    this.order = res.data;
+                },
+                error: () => {
+                    this.notificationService.setMessage('g.global_err');
+                    this.goBack();
+                }
+            });
+        } else if (this.isAvailableOrder) {
+            this.ordersService.getAvailableOrders().subscribe({
+                next: (res) => {
+                    this.order = res.data.find(o => o.id === this.orderId) || null;
+                },
+                error: () => {
+                    this.notificationService.setMessage('g.global_err');
+                    this.goBack();
+                }
+            });
+        } else {
+            this.ordersService.getCompanyOrder(this.orderId).subscribe({
+                next: (res) => {
+                    this.order = res.data;
+                },
+                error: () => {
+                    this.notificationService.setMessage('g.global_err');
+                    this.goBack();
+                }
+            });
+        }
     }
 
     getStatusClass(status: OrderStatus): string {
@@ -56,16 +94,65 @@ export class DriverOrderViewComponent {
         }
     }
 
+    // ==================== COMPANY ACTIONS ====================
+
+    canTakeOrder(): boolean {
+        return this.viewerRole === 'company' && this.isAvailableOrder && this.order?.status === OrderStatus.PENDING;
+    }
+
+    canAssignDriver(): boolean {
+        return this.viewerRole === 'company' && !this.isAvailableOrder &&
+            (this.order?.status === OrderStatus.ASSIGNED_TO_COMPANY || this.order?.status === OrderStatus.ASSIGNED_TO_DRIVER);
+    }
+
+    takeOrder() {
+        Swal.fire({
+            title: this.translate.instant('orders.take_order'),
+            text: this.translate.instant('orders.confirm_take_order'),
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: this.translate.instant('g.confirm'),
+            cancelButtonText: this.translate.instant('g.cancel')
+        }).then(result => {
+            if (result.isConfirmed) {
+                this.ordersService.takeOrder(this.orderId).subscribe({
+                    next: () => {
+                        Swal.fire({
+                            title: this.translate.instant('g.global_success_msg'),
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        this.router.navigate(['/company-orders']);
+                    },
+                    error: (err) => {
+                        Swal.fire({
+                            title: this.translate.instant('g.global_err'),
+                            text: err.error?.message || '',
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    assignDriver() {
+        this.router.navigate(['/company-orders/assign-driver', this.orderId]);
+    }
+
+    // ==================== DRIVER ACTIONS ====================
+
     canPickup(): boolean {
-        return this.order?.status === OrderStatus.ASSIGNED_TO_DRIVER;
+        return this.viewerRole === 'driver' && this.order?.status === OrderStatus.ASSIGNED_TO_DRIVER;
     }
 
     canStartDelivery(): boolean {
-        return this.order?.status === OrderStatus.PICKED_UP;
+        return this.viewerRole === 'driver' && this.order?.status === OrderStatus.PICKED_UP;
     }
 
     canDeliver(): boolean {
-        return this.order?.status === OrderStatus.IN_TRANSIT;
+        return this.viewerRole === 'driver' && this.order?.status === OrderStatus.IN_TRANSIT;
     }
 
     pickupOrder() {
@@ -164,7 +251,15 @@ export class DriverOrderViewComponent {
         });
     }
 
+    // ==================== NAVIGATION ====================
+
     goBack() {
-        this.router.navigate(['/my-deliveries']);
+        if (this.viewerRole === 'driver') {
+            this.router.navigate(['/my-deliveries']);
+        } else if (this.isAvailableOrder) {
+            this.router.navigate(['/available-orders']);
+        } else {
+            this.router.navigate(['/company-orders']);
+        }
     }
 }

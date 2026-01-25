@@ -6,7 +6,7 @@ import { SCTTableModule } from 'sct-custom-table/sct-table/projects/sct-table/sr
 import { ColumnsConfig, TableConfig, TableData } from 'sct-custom-table/sct-table/projects/sct-table/src/lib/custom-table-interface';
 import moment from 'moment';
 import { Router } from '@angular/router';
-import { Order, OrderStatus } from '../order.interface';
+import { OrderHistory, OrderStatus } from '../order.interface';
 
 @Component({
     selector: 'app-driver-history',
@@ -86,11 +86,13 @@ export class DriverHistoryComponent {
         }
     }
 
-    viewOrder(order: Order) {
-        this.router.navigate(['/driver-orders/view', order.id]);
+    viewOrder(order: OrderHistory) {
+        // Note: For history orders, we may need a separate view route
+        // For now, we'll show a message that this is a completed order
+        this.router.navigate(['/delivery-history/view', order.id]);
     }
 
     goBack() {
-        this.router.navigate(['/driver-orders']);
+        this.router.navigate(['/my-deliveries']);
     }
 }

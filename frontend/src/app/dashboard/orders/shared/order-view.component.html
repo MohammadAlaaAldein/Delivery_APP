@@ -30,6 +30,8 @@
                                     }}</p>
                                 <p *ngIf="order.customer_phone_alt"><strong>{{ 'orders.customer_phone_alt' | translate
                                         }}:</strong> {{ order.customer_phone_alt }}</p>
+                                <p *ngIf="order.customer_email && viewerRole === 'company'"><strong>{{
+                                        'orders.customer_email' | translate }}:</strong> {{ order.customer_email }}</p>
                             </div>
                         </div>
                     </div>
@@ -67,6 +69,13 @@
                                 <p *ngIf="order.order_description"><strong>{{ 'orders.order_description' | translate
                                         }}:</strong> {{ order.order_description }}</p>
                                 <p><strong>{{ 'orders.items_count' | translate }}:</strong> {{ order.items_count }}</p>
+                                <!-- Company sees full breakdown -->
+                                <ng-container *ngIf="viewerRole === 'company'">
+                                    <p><strong>{{ 'orders.order_amount' | translate }}:</strong> {{ order.order_amount |
+                                        number:'1.2-2' }}</p>
+                                    <p><strong>{{ 'orders.delivery_fee' | translate }}:</strong> {{ order.delivery_fee |
+                                        number:'1.2-2' }}</p>
+                                </ng-container>
                                 <p><strong>{{ 'orders.total_amount' | translate }}:</strong> <strong
                                         class="text-primary">{{ order.total_amount | number:'1.2-2' }}</strong></p>
                             </div>
@@ -82,6 +91,10 @@
                             <div class="card-body">
                                 <p><strong>{{ 'orders.payment_method' | translate }}:</strong> {{
                                     'orders.payment_methods.' + order.payment_method | translate }}</p>
+                                <!-- Company sees payment status -->
+                                <p *ngIf="viewerRole === 'company'"><strong>{{ 'orders.payment_status' | translate
+                                        }}:</strong> {{ 'orders.payment_statuses.' + order.payment_status | translate
+                                    }}</p>
                                 <p><strong>{{ 'orders.is_paid' | translate }}:</strong> {{ order.is_paid ? ('g.yes' |
                                     translate) : ('g.no' | translate) }}</p>
                             </div>
@@ -115,26 +128,45 @@
                                         translate }}:</strong> {{ order.scheduled_pickup_time | date:'medium' }}</p>
                                 <p *ngIf="order.scheduled_delivery_time"><strong>{{ 'orders.scheduled_delivery_time' |
                                         translate }}:</strong> {{ order.scheduled_delivery_time | date:'medium' }}</p>
+                                <p *ngIf="order.priority > 0 && viewerRole === 'company'"><strong>{{ 'orders.priority' |
+                                        translate }}:</strong>
+                                    <span class="badge bg-danger">{{ order.priority }}</span>
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Driver Notes -->
-                    <div class="col-md-12 mb-4" *ngIf="order.driver_notes || order.company_notes">
+                    <!-- Notes - Different based on role -->
+                    <div class="col-md-12 mb-4"
+                        *ngIf="(viewerRole === 'company' && order.shop_notes) || (viewerRole === 'driver' && (order.company_notes || order.driver_notes))">
                         <div class="card">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0">{{ 'orders.company_notes' | translate }}</h6>
+                                <h6 class="mb-0">{{ (viewerRole === 'company' ? 'orders.shop_notes' :
+                                    'orders.company_notes') | translate }}</h6>
                             </div>
                             <div class="card-body">
-                                <p *ngIf="order.company_notes">{{ order.company_notes }}</p>
-                                <p *ngIf="order.driver_notes">{{ order.driver_notes }}</p>
+                                <p *ngIf="viewerRole === 'company' && order.shop_notes">{{ order.shop_notes }}</p>
+                                <p *ngIf="viewerRole === 'driver' && order.company_notes">{{ order.company_notes }}</p>
+                                <p *ngIf="viewerRole === 'driver' && order.driver_notes">{{ order.driver_notes }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="mt-4">
+                <!-- Action Buttons - Company -->
+                <div class="mt-4" *ngIf="viewerRole === 'company'">
+                    <button class="btn btn-success me-2" *ngIf="canTakeOrder()" (click)="takeOrder()">
+                        <i class="feather icon-check me-1"></i>
+                        {{ 'orders.take_order' | translate }}
+                    </button>
+                    <button class="btn btn-primary me-2" *ngIf="canAssignDriver()" (click)="assignDriver()">
+                        <i class="feather icon-user me-1"></i>
+                        {{ 'orders.assign_driver' | translate }}
+                    </button>
+                </div>
+
+                <!-- Action Buttons - Driver -->
+                <div class="mt-4" *ngIf="viewerRole === 'driver'">
                     <button class="btn btn-warning me-2" *ngIf="canPickup()" (click)="pickupOrder()">
                         <i class="feather icon-package me-1"></i>
                         {{ 'orders.pickup_order' | translate }}

@@ -107,6 +107,14 @@ export interface Order {
     updated_at: string;
 }
 
+export interface OrderHistory extends Omit<Order, 'id' | 'created_at' | 'updated_at'> {
+    id: number;
+    original_order_id: number;
+    order_created_at: string;
+    order_updated_at: string;
+    archived_at: string;
+}
+
 export interface OrderStatistics {
     total: number;
     pending: number;

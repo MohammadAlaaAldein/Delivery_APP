@@ -10,6 +10,7 @@
 		"number": "No.",
 		"refresh": "Refresh",
 		"name": "Name",
+		"notes": "Notes",
 		"no_results_found": "No results found",
 		"total_items": "Total Items",
 		"items_per_page": "Items per page",
@@ -569,6 +570,8 @@
 		"scheduling": "Scheduling",
 		"pickup": "Pickup",
 		"deliver": "Deliver",
+		"company_assigned_at": "Company Assigned At",
+		"driver_assigned_at": "Driver Assigned At",
 		"status": {
 			"pending": "Pending",
 			"assigned_to_company": "Assigned to Company",
@@ -692,6 +695,12 @@
 			"deliver": "Mark Delivered",
 			"cancel": "Cancel Order"
 		},
+		"history": "Order History",
+		"archived_at": "Archived At",
+		"notes": "Notes",
+		"original_order_id": "Original Order ID",
+		"order_created_at": "Order Created At",
+		"order_updated_at": "Order Updated At",
 		"": ""
 	},
 	"": ""

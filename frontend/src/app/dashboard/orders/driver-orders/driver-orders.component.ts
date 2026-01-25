@@ -114,7 +114,7 @@ export class DriverOrdersComponent {
     }
 
     viewOrder(order: Order) {
-        this.router.navigate(['/driver-orders/view', order.id]);
+        this.router.navigate(['/my-deliveries/view', order.id]);
     }
 
     pickupOrder(order: Order) {
@@ -211,6 +211,6 @@ export class DriverOrdersComponent {
     }
 
     viewHistory() {
-        this.router.navigate(['/driver-orders/history']);
+        this.router.navigate(['/delivery-history']);
     }
 }

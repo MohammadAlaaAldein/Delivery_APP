@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, NotFoundException, ForbiddenException 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, IsNull } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
+import { OrderHistory } from './entities/order-history.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { TakeOrderDto, AssignDriverDto, CancelOrderDto } from './dto/order-actions.dto';
@@ -13,6 +14,8 @@ export class OrdersService {
     constructor(
         @InjectRepository(Order)
         private ordersRepository: Repository<Order>,
+        @InjectRepository(OrderHistory)
+        private ordersHistoryRepository: Repository<OrderHistory>,
         private companiesShopsService: CompaniesShopsService,
         private driversService: DriversService,
     ) { }
@@ -353,8 +356,8 @@ export class OrdersService {
         return await this.ordersRepository.save(order);
     }
 
-    // Driver marks order as delivered
-    async deliverOrder(driverId: number, orderId: number, notes?: string): Promise<Order> {
+    // Driver marks order as delivered - moves order to history table
+    async deliverOrder(driverId: number, orderId: number, notes?: string): Promise<OrderHistory> {
         const order = await this.getDriverOrder(driverId, orderId);
 
         if (![OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(order.status)) {
@@ -367,15 +370,68 @@ export class OrdersService {
             order.driver_notes = notes;
         }
 
-        return await this.ordersRepository.save(order);
+        // Move to history table
+        const historyRecord = await this.moveOrderToHistory(order);
+
+        // Delete from orders table
+        await this.ordersRepository.remove(order);
+
+        return historyRecord;
     }
 
-    // Driver gets their delivery history
-    async getDriverHistory(driverId: number): Promise<Order[]> {
-        return await this.ordersRepository.find({
+    // Move order to history table
+    private async moveOrderToHistory(order: Order): Promise<OrderHistory> {
+        const historyRecord = this.ordersHistoryRepository.create({
+            original_order_id: order.id,
+            order_number: order.order_number,
+            shop_id: order.shop_id,
+            company_id: order.company_id,
+            driver_id: order.driver_id,
+            status: order.status,
+            customer_name: order.customer_name,
+            customer_phone: order.customer_phone,
+            customer_phone_alt: order.customer_phone_alt,
+            customer_email: order.customer_email,
+            delivery_city: order.delivery_city,
+            delivery_area: order.delivery_area,
+            delivery_street: order.delivery_street,
+            delivery_building: order.delivery_building,
+            delivery_address: order.delivery_address,
+            delivery_latitude: order.delivery_latitude,
+            delivery_longitude: order.delivery_longitude,
+            delivery_notes: order.delivery_notes,
+            order_description: order.order_description,
+            items_count: order.items_count,
+            order_amount: order.order_amount,
+            delivery_fee: order.delivery_fee,
+            total_amount: order.total_amount,
+            payment_method: order.payment_method,
+            payment_status: order.payment_status,
+            is_paid: order.is_paid,
+            priority: order.priority,
+            scheduled_pickup_time: order.scheduled_pickup_time,
+            scheduled_delivery_time: order.scheduled_delivery_time,
+            company_assigned_at: order.company_assigned_at,
+            driver_assigned_at: order.driver_assigned_at,
+            picked_up_at: order.picked_up_at,
+            delivered_at: order.delivered_at,
+            cancelled_at: order.cancelled_at,
+            cancellation_reason: order.cancellation_reason,
+            shop_notes: order.shop_notes,
+            company_notes: order.company_notes,
+            driver_notes: order.driver_notes,
+            order_created_at: order.created_at,
+            order_updated_at: order.updated_at,
+        });
+
+        return await this.ordersHistoryRepository.save(historyRecord);
+    }
+
+    // Driver gets their delivery history (from history table)
+    async getDriverHistory(driverId: number): Promise<OrderHistory[]> {
+        return await this.ordersHistoryRepository.find({
             where: {
                 driver_id: driverId,
-                status: In([OrderStatus.DELIVERED, OrderStatus.CANCELLED]),
             },
             relations: ['shop', 'company'],
             order: { delivered_at: 'DESC' },
@@ -492,7 +548,7 @@ export class OrdersService {
     async adminAssignDriver(orderId: number, driverId: number): Promise<Order> {
         const order = await this.getOrder(orderId);
 
-        const driver = await this.driversService.findById(driverId);
+        const driver = await this.driversService.findByUserId(driverId);
         if (!driver) {
             throw new BadRequestException('Driver not found');
         }
@@ -564,5 +620,72 @@ export class OrdersService {
             totalRevenue,
             deliveryRate: total > 0 ? ((delivered / total) * 100).toFixed(2) : 0,
         };
+    }
+
+    // ==================== ORDER HISTORY ENDPOINTS ====================
+
+    // Admin gets all order history
+    async getAllOrdersHistory(filters?: {
+        shop_id?: number;
+        company_id?: number;
+        driver_id?: number;
+    }): Promise<OrderHistory[]> {
+        const where: any = {};
+
+        if (filters?.shop_id) where.shop_id = filters.shop_id;
+        if (filters?.company_id) where.company_id = filters.company_id;
+        if (filters?.driver_id) where.driver_id = filters.driver_id;
+
+        return await this.ordersHistoryRepository.find({
+            where,
+            relations: ['shop', 'company', 'driver', 'driver.user'],
+            order: { archived_at: 'DESC' },
+        });
+    }
+
+    // Admin gets a specific order from history
+    async getOrderHistory(historyId: number): Promise<OrderHistory> {
+        const order = await this.ordersHistoryRepository.findOne({
+            where: { id: historyId },
+            relations: ['shop', 'company', 'driver', 'driver.user'],
+        });
+
+        if (!order) {
+            throw new NotFoundException('Order history not found');
+        }
+
+        return order;
+    }
+
+    // Get order history by original order ID
+    async getOrderHistoryByOriginalId(originalOrderId: number): Promise<OrderHistory> {
+        const order = await this.ordersHistoryRepository.findOne({
+            where: { original_order_id: originalOrderId },
+            relations: ['shop', 'company', 'driver', 'driver.user'],
+        });
+
+        if (!order) {
+            throw new NotFoundException('Order history not found');
+        }
+
+        return order;
+    }
+
+    // Shop gets their order history
+    async getShopOrdersHistory(shopId: number): Promise<OrderHistory[]> {
+        return await this.ordersHistoryRepository.find({
+            where: { shop_id: shopId },
+            relations: ['company', 'driver', 'driver.user'],
+            order: { archived_at: 'DESC' },
+        });
+    }
+
+    // Company gets their order history
+    async getCompanyOrdersHistory(companyId: number): Promise<OrderHistory[]> {
+        return await this.ordersHistoryRepository.find({
+            where: { company_id: companyId },
+            relations: ['shop', 'driver', 'driver.user'],
+            order: { archived_at: 'DESC' },
+        });
     }
 }

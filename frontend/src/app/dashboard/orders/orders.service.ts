@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Order, OrderStatistics, OrderStatus } from './order.interface';
+import { Order, OrderHistory, OrderStatistics, OrderStatus } from './order.interface';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -110,8 +110,8 @@ export class OrdersService {
         return this.http.post<{ data: Order }>(`${this.baseUrl}/orders/driver/my/${id}/deliver`, { notes });
     }
 
-    getDriverHistory(): Observable<{ data: Order[] }> {
-        return this.http.get<{ data: Order[] }>(`${this.baseUrl}/orders/driver/history`);
+    getDriverHistory(): Observable<{ data: OrderHistory[] }> {
+        return this.http.get<{ data: OrderHistory[] }>(`${this.baseUrl}/orders/driver/history`);
     }
 
     getDriverStatistics(): Observable<{ data: OrderStatistics }> {
@@ -163,5 +163,38 @@ export class OrdersService {
 
     deleteOrder(id: number): Observable<{ message: string }> {
         return this.http.delete<{ message: string }>(`${this.baseUrl}/orders/${id}`);
+    }
+
+    // ==================== HISTORY ENDPOINTS ====================
+
+    getShopOrdersHistory(): Observable<{ data: OrderHistory[] }> {
+        return this.http.get<{ data: OrderHistory[] }>(`${this.baseUrl}/orders/shop/history`);
+    }
+
+    getCompanyOrdersHistory(): Observable<{ data: OrderHistory[] }> {
+        return this.http.get<{ data: OrderHistory[] }>(`${this.baseUrl}/orders/company/history`);
+    }
+
+    getAllOrdersHistory(filters?: {
+        shop_id?: number;
+        company_id?: number;
+        driver_id?: number;
+    }): Observable<{ data: OrderHistory[] }> {
+        let url = `${this.baseUrl}/orders/history/list`;
+        const params: string[] = [];
+
+        if (filters?.shop_id) params.push(`shop_id=${filters.shop_id}`);
+        if (filters?.company_id) params.push(`company_id=${filters.company_id}`);
+        if (filters?.driver_id) params.push(`driver_id=${filters.driver_id}`);
+
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+
+        return this.http.get<{ data: OrderHistory[] }>(url);
+    }
+
+    getOrderHistoryById(id: number): Observable<{ data: OrderHistory }> {
+        return this.http.get<{ data: OrderHistory }>(`${this.baseUrl}/orders/history/${id}`);
     }
 }
