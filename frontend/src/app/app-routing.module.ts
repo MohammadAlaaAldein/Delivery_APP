@@ -197,7 +197,7 @@ const routes: Routes = [
 			},
 			{
 				path: 'my-deliveries/view/:id',
-				loadComponent: () => import('./dashboard/orders/driver-orders/driver-orders.component').then((c) => c.DriverOrdersComponent),
+				loadComponent: () => import('./dashboard/orders/driver-orders/driver-order-view.component').then((c) => c.DriverOrderViewComponent),
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.DRIVER }
 			},
