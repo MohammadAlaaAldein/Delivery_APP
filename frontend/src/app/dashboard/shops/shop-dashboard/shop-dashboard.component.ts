@@ -178,4 +178,8 @@ export class ShopDashboardComponent implements OnInit {
 
         return shop;
     }
+
+    onCancel() {
+        this.router.navigate(['/']);
+    }
 }

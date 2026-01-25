@@ -142,7 +142,7 @@ export class DriversComponent implements OnInit {
                 ];
 
                 data.push({
-                    id: driver.id,
+                    id: driver.user_id,
                     name: { value: driver.name },
                     company: { value: this.companiesMap[driver.company_id]?.name || '-' },
                     phone: { value: driver.phone || '-' },
@@ -192,19 +192,19 @@ export class DriversComponent implements OnInit {
     }
 
     edit(driver: Driver) {
-        this.router.navigate(['/drivers/edit', driver.id]);
+        this.router.navigate(['/drivers/edit', driver.user_id]);
     }
 
     toggleActive(driver: Driver) {
-        this.driversService.toggleActive(driver.id).subscribe(() => {
+        this.driversService.toggleActive(driver.user_id).subscribe(() => {
             this.notificationService.setMessage('globalSuccessMsg');
             this.getDriversList(this.filters);
         });
     }
 
     deleteDriver(driver: Driver) {
-        this.driversService.delete(driver.id).subscribe(() => {
-            this.tableData = this.tableData.filter((u) => u['id'] !== driver.id);
+        this.driversService.delete(driver.user_id).subscribe(() => {
+            this.tableData = this.tableData.filter((u) => u['id'] !== driver.user_id);
             this.notificationService.setMessage('globalSuccessMsg');
         });
     }

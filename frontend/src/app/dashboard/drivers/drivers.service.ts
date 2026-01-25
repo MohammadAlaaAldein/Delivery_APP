@@ -32,7 +32,7 @@ export class DriversService {
         return this.http.post(route, params, { observe: 'body' });
     }
 
-    list(filters?: { name?: string; id?: number; company_id?: number; is_active?: boolean }) {
+    list(filters?: { name?: string; user_id?: number; company_id?: number; is_active?: boolean }) {
         return this.http.get<{ data: Driver[] }>(`${this.route}/list`, { params: filters as any });
     }
 

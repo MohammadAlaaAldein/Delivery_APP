@@ -1,0 +1,109 @@
+<div>
+    <div class="row">
+        <div class="col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 *ngIf="isCreateMode">{{ 'orders.create_order' | translate }}</h5>
+                    <h5 *ngIf="!isCreateMode && !isViewMode">{{ 'orders.edit_order' | translate }}: {{
+                        order?.order_number }}</h5>
+                    <h5 *ngIf="isViewMode">{{ 'orders.view_order' | translate }}: {{ order?.order_number }}</h5>
+                </div>
+                <div class="card-body custom-table-style">
+                    <app-form-builder [formGroup]="orderForm" [formFieldsList]="formFieldsList" [fields]="fields"
+                        (submit)="onSubmit()" [translationKey]="'orders'" (backClicked)="onCancel()"
+                        [isReadonly]="!canEdit()" [hasButtons]="false"></app-form-builder>
+
+                    <!-- Pickup Type Selector -->
+                    <div class="mt-4" *ngIf="canEdit()">
+                        <hr />
+                        <h6>{{ 'orders.pickup_type' | translate }}</h6>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="pickupType" id="pickupNow" value="now"
+                                [(ngModel)]="pickupType" (change)="onPickupTypeChange()">
+                            <label class="form-check-label" for="pickupNow">{{ 'orders.pickup_now' | translate
+                                }}</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="pickupType" id="pickupScheduled"
+                                value="scheduled" [(ngModel)]="pickupType" (change)="onPickupTypeChange()">
+                            <label class="form-check-label" for="pickupScheduled">{{ 'orders.pickup_scheduled' |
+                                translate }}</label>
+                        </div>
+
+                        <!-- Scheduled Pickup Time -->
+                        <div class="mt-3" *ngIf="pickupType === 'scheduled'">
+                            <label class="form-label">{{ 'orders.scheduled_pickup_time' | translate }} <span
+                                    class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control"
+                                [formControl]="orderForm.controls['scheduled_pickup_time']" />
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="mt-4" *ngIf="canEdit()">
+                        <button class="btn btn-primary me-2" (click)="onSubmit()">
+                            <i class="feather icon-save me-1"></i>
+                            {{ 'g.save' | translate }}
+                        </button>
+                        <button class="btn btn-secondary" (click)="onCancel()">
+                            {{ 'g.cancel' | translate }}
+                        </button>
+                    </div>
+
+                    <!-- Order Status Info -->
+                    <div class="mt-4" *ngIf="!isCreateMode && order">
+                        <hr />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>{{ 'orders.order_info' | translate }}</h6>
+                                <p><strong>{{ 'orders.order_number' | translate }}:</strong> {{ order.order_number }}
+                                </p>
+                                <p><strong>{{ 'g.status' | translate }}:</strong>
+                                    <span [class]="getStatusClass(order.status)">
+                                        {{ 'orders.status.' + order.status | translate }}
+                                    </span>
+                                </p>
+                                <p><strong>{{ 'orders.total_amount' | translate }}:</strong> {{ order.total_amount |
+                                    number:'1.2-2' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>{{ 'orders.assignment_info' | translate }}</h6>
+                                <p><strong>{{ 'orders.company' | translate }}:</strong> {{ order.company?.name || '-' }}
+                                </p>
+                                <p><strong>{{ 'orders.driver' | translate }}:</strong> {{ order.driver?.user?.name ||
+                                    '-' }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Timestamps -->
+                        <div class="row mt-3" *ngIf="order.picked_up_at || order.delivered_at || order.cancelled_at">
+                            <div class="col-12">
+                                <h6>{{ 'orders.timeline' | translate }}</h6>
+                                <p *ngIf="order.company_assigned_at"><strong>{{ 'orders.company_assigned_at' | translate
+                                        }}:</strong> {{ order.company_assigned_at | date:'medium' }}</p>
+                                <p *ngIf="order.driver_assigned_at"><strong>{{ 'orders.driver_assigned_at' | translate
+                                        }}:</strong> {{ order.driver_assigned_at | date:'medium' }}</p>
+                                <p *ngIf="order.picked_up_at"><strong>{{ 'orders.picked_up_at' | translate }}:</strong>
+                                    {{ order.picked_up_at | date:'medium' }}</p>
+                                <p *ngIf="order.delivered_at"><strong>{{ 'orders.delivered_at' | translate }}:</strong>
+                                    {{ order.delivered_at | date:'medium' }}</p>
+                                <p *ngIf="order.cancelled_at"><strong>{{ 'orders.cancelled_at' | translate }}:</strong>
+                                    {{ order.cancelled_at | date:'medium' }}</p>
+                                <p *ngIf="order.cancellation_reason"><strong>{{ 'orders.cancellation_reason' | translate
+                                        }}:</strong> {{ order.cancellation_reason }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cancel button -->
+                    <div class="mt-3" *ngIf="!isCreateMode && canCancel()">
+                        <button class="btn btn-danger" (click)="cancelOrder()">
+                            <i class="feather icon-x me-1"></i>
+                            {{ 'orders.cancel_order' | translate }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

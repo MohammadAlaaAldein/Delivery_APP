@@ -44,6 +44,36 @@ const NavigationItems: NavigationItem[] = [
 				role_ids: [3] // SHOP role
 			},
 			{
+				id: 'my-orders',
+				title: 'nav.my_orders',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-orders',
+				icon: 'ti ti-package',
+				breadcrumbs: true,
+				role_ids: [3], // SHOP role
+				children: [
+					{
+						id: 'create-order',
+						title: 'orders.create_order',
+						type: 'item',
+						url: '/my-orders/create'
+					},
+					{
+						id: 'view-order',
+						title: 'orders.view_order',
+						type: 'item',
+						urlPattern: '^/my-orders/view/\\d+$'
+					},
+					{
+						id: 'edit-order',
+						title: 'orders.edit_order',
+						type: 'item',
+						urlPattern: '^/my-orders/edit/\\d+$'
+					}
+				]
+			},
+			{
 				id: 'my-company',
 				title: 'nav.my_company',
 				type: 'item',
@@ -112,12 +142,74 @@ const NavigationItems: NavigationItem[] = [
 				]
 			},
 			{
+				id: 'available-orders',
+				title: 'nav.available_orders',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/available-orders',
+				icon: 'ti ti-package-import',
+				breadcrumbs: true,
+				role_ids: [2] // COMPANY role
+			},
+			{
+				id: 'company-orders',
+				title: 'nav.company_orders',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/company-orders',
+				icon: 'ti ti-package',
+				breadcrumbs: true,
+				role_ids: [2], // COMPANY role
+				children: [
+					{
+						id: 'view-company-order',
+						title: 'orders.view_order',
+						type: 'item',
+						urlPattern: '^/company-orders/view/\\d+$'
+					},
+					{
+						id: 'assign-driver',
+						title: 'orders.assign_driver',
+						type: 'item',
+						urlPattern: '^/company-orders/assign-driver/\\d+$'
+					}
+				]
+			},
+			{
 				id: 'my-profile',
 				title: 'nav.my_profile',
 				type: 'item',
 				classes: 'nav-item',
 				url: '/my-profile',
 				icon: 'ti ti-user',
+				breadcrumbs: true,
+				role_ids: [4] // DRIVER role
+			},
+			{
+				id: 'my-deliveries',
+				title: 'nav.my_deliveries',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/my-deliveries',
+				icon: 'ti ti-package',
+				breadcrumbs: true,
+				role_ids: [4], // DRIVER role
+				children: [
+					{
+						id: 'view-delivery',
+						title: 'orders.view_order',
+						type: 'item',
+						urlPattern: '^/my-deliveries/view/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'delivery-history',
+				title: 'nav.delivery_history',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/delivery-history',
+				icon: 'ti ti-history',
 				breadcrumbs: true,
 				role_ids: [4] // DRIVER role
 			}
@@ -264,6 +356,29 @@ const NavigationItems: NavigationItem[] = [
 						title: 'driver_requests.view_request',
 						type: 'item',
 						urlPattern: '^/driver-requests/view/\\d+$'
+					}
+				]
+			},
+			{
+				id: 'orders',
+				title: 'nav.orders',
+				type: 'item',
+				classes: 'nav-item',
+				url: '/orders',
+				icon: 'ti ti-package',
+				breadcrumbs: true,
+				children: [
+					{
+						id: 'view-admin-order',
+						title: 'orders.view_order',
+						type: 'item',
+						urlPattern: '^/orders/view/\\d+$'
+					},
+					{
+						id: 'edit-admin-order',
+						title: 'orders.edit_order',
+						type: 'item',
+						urlPattern: '^/orders/edit/\\d+$'
 					}
 				]
 			},

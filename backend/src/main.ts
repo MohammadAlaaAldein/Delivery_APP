@@ -9,6 +9,7 @@ import Redis from 'ioredis';
 import fastifyRedis from '@fastify/redis';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import multipart from '@fastify/multipart';
+import cors from '@fastify/cors';
 import { getGitBranchInfo } from './common/utilities';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -31,6 +32,16 @@ async function bootstrap() {
 			bodyLimit: 50 * 1024 * 1024, // 50MB,
 		}),
 	);
+
+	// Enable CORS using Fastify plugin
+	await app.register(cors as any, {
+		origin: true, // Allow all origins in development
+		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+		credentials: true,
+		preflight: true,
+		preflightContinue: false,
+	});
 
 	ServeStaticModule.forRoot({
 		rootPath: join(__dirname, '..', '..', '..', 'frontend', 'dist'),

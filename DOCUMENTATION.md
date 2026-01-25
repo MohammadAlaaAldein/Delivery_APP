@@ -674,7 +674,7 @@ Create a `.env` file in the backend folder:
 # Server
 SERVER=development
 SERVER_PRETTY_NAME=Development
-BASE_URL=http://localhost:3000
+BASE_URL=http://localhost:1000
 
 # Database
 DB_HOST=localhost

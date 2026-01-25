@@ -1,0 +1,21 @@
+<div class="row">
+    <div class="col-sm-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>{{ 'orders.my_deliveries' | translate }}</h5>
+                <button class="btn btn-outline-secondary" (click)="viewHistory()">
+                    <i class="feather icon-clock me-1"></i>
+                    {{ 'orders.view_history' | translate }}
+                </button>
+            </div>
+            <div class="card-body custom-table-style">
+                <div class="alert alert-info mb-3" *ngIf="tableData.length === 0">
+                    <i class="feather icon-info me-2"></i>
+                    {{ 'orders.no_assigned_orders' | translate }}
+                </div>
+                <sct-custom-table [columnsConfig]="columnConfig" [data]="tableData"
+                    [config]="tableConfig"></sct-custom-table>
+            </div>
+        </div>
+    </div>
+</div>

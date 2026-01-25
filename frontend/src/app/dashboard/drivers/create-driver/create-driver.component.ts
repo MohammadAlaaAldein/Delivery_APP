@@ -18,7 +18,6 @@ import { Company } from '../../companies/company.interface';
 export class CreateDriverComponent implements OnInit {
 
     driver: Driver = {
-        id: null,
         user_id: null,
         is_active: true,
         company_id: null,
@@ -113,7 +112,7 @@ export class CreateDriverComponent implements OnInit {
         const driverId = this.route.snapshot.paramMap.get('id');
 
         if (driverId) {
-            this.driversService.list({ id: parseInt(driverId) }).subscribe((res: { data: Driver[] }) => {
+            this.driversService.list({ user_id: parseInt(driverId) }).subscribe((res: { data: Driver[] }) => {
                 if (res.data.length) {
                     this.driver = res.data[0];
                     this.driverName = this.driver.name || ''; // Name from users table
@@ -140,8 +139,8 @@ export class CreateDriverComponent implements OnInit {
 
     onSubmit() {
         if (this.firstFormGroup.valid) {
-            const driver: Partial<Driver> = this.getDriverDirtyFields(this.driver.id, this.firstFormGroup);
-            this.driversService.addDriver(this.driver.id, driver).subscribe((res) => {
+            const driver: Partial<Driver> = this.getDriverDirtyFields(this.driver.user_id, this.firstFormGroup);
+            this.driversService.addDriver(this.driver.user_id, driver).subscribe((res) => {
                 this.notificationMessageService.setMessage('globalSuccessMsg', { clearOnXTimeNavigate: 1 });
                 this.router.navigate(['/drivers']);
             });
@@ -155,9 +154,9 @@ export class CreateDriverComponent implements OnInit {
         this.router.navigate(['/drivers']);
     }
 
-    getDriverDirtyFields(driverId: number, form: FormGroup) {
+    getDriverDirtyFields(driverUserId: number, form: FormGroup) {
         let driver: Partial<Driver> = {};
-        if (driverId) {
+        if (driverUserId) {
             Object.keys(form.controls).forEach(key => {
                 const control = form.get(key);
                 if (control?.dirty) {

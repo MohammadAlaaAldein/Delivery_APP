@@ -39,6 +39,11 @@ export class NavRightComponent implements OnInit {
 					url: '/my-shop',
 					role: USER_ROLE.SHOP,
 				},
+				{
+					title: this.translate.instant('nav.my_orders'),
+					url: '/my-orders',
+					role: USER_ROLE.SHOP,
+				},
 			]
 		},
 		// ==================== COMPANY USER SECTIONS ====================
@@ -55,6 +60,16 @@ export class NavRightComponent implements OnInit {
 				{
 					title: this.translate.instant('nav.my_drivers'),
 					url: '/my-drivers',
+					role: USER_ROLE.COMPANY,
+				},
+				{
+					title: this.translate.instant('nav.available_orders'),
+					url: '/available-orders',
+					role: USER_ROLE.COMPANY,
+				},
+				{
+					title: this.translate.instant('nav.company_orders'),
+					url: '/company-orders',
 					role: USER_ROLE.COMPANY,
 				},
 				{
@@ -78,6 +93,16 @@ export class NavRightComponent implements OnInit {
 				{
 					title: this.translate.instant('nav.my_profile'),
 					url: '/my-profile',
+					role: USER_ROLE.DRIVER,
+				},
+				{
+					title: this.translate.instant('nav.my_deliveries'),
+					url: '/my-deliveries',
+					role: USER_ROLE.DRIVER,
+				},
+				{
+					title: this.translate.instant('nav.delivery_history'),
+					url: '/delivery-history',
 					role: USER_ROLE.DRIVER,
 				},
 			]
@@ -148,6 +173,17 @@ export class NavRightComponent implements OnInit {
 				{
 					title: this.translate.instant('nav.driver_requests'),
 					url: '/driver-requests',
+					role: USER_ROLE.ADMIN,
+				},
+			]
+		},
+		{
+			name: 'orders_management',
+			title: this.translate.instant('nav.orders'),
+			items: [
+				{
+					title: this.translate.instant('nav.orders'),
+					url: '/orders',
 					role: USER_ROLE.ADMIN,
 				},
 			]

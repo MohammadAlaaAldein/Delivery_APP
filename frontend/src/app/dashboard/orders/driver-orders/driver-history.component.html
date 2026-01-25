@@ -1,0 +1,17 @@
+<div class="row">
+    <div class="col-sm-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>{{ 'orders.delivery_history' | translate }}</h5>
+                <button class="btn btn-outline-secondary" (click)="goBack()">
+                    <i class="feather icon-arrow-left me-1"></i>
+                    {{ 'g.back' | translate }}
+                </button>
+            </div>
+            <div class="card-body custom-table-style">
+                <sct-custom-table [columnsConfig]="columnConfig" [data]="tableData"
+                    [config]="tableConfig"></sct-custom-table>
+            </div>
+        </div>
+    </div>
+</div>

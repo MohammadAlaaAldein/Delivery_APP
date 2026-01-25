@@ -28,7 +28,7 @@ export class DriversService {
             if (existingDriver) {
                 // Update company_id if different
                 if (existingDriver.company_id !== companyId) {
-                    await this.driversRepository.update(existingDriver.id, { company_id: companyId });
+                    await this.driversRepository.update({ user_id: userId }, { company_id: companyId });
                     existingDriver.company_id = companyId;
                 }
                 return existingDriver;
@@ -63,7 +63,7 @@ export class DriversService {
     }
 
     async findByUserId(userId: number): Promise<Driver | null> {
-        return this.driversRepository.findOne({ where: { user_id: userId } });
+        return this.driversRepository.findOne({ where: { user_id: userId }, relations: ['user'] });
     }
 
     async create(createDriverDto: CreateDriverDto, options?: { req?: FastifyRequest }): Promise<any> {
@@ -126,14 +126,14 @@ export class DriversService {
         }
     }
 
-    async toggleActive(id: number, options?: { req?: FastifyRequest }): Promise<any> {
+    async toggleActive(userId: number, options?: { req?: FastifyRequest }): Promise<any> {
         try {
-            const driver = (await this.getDrivers({ id }))[0];
+            const driver = (await this.getDrivers({ user_id: userId }))[0];
             if (!driver)
                 return { err: ErrorKeys.NOT_FOUND };
 
             const newStatus = !driver.is_active;
-            await this.driversRepository.createQueryBuilder().update().set({ is_active: newStatus }).where('id = :id', { id }).execute();
+            await this.driversRepository.createQueryBuilder().update().set({ is_active: newStatus }).where('user_id = :user_id', { user_id: userId }).execute();
 
             return { err: null, res: { is_active: newStatus } };
         } catch (ex) {
@@ -192,9 +192,6 @@ export class DriversService {
         const queryBuilder = this.driversRepository.createQueryBuilder('driver')
             .leftJoinAndSelect('driver.user', 'user');
 
-        if (filter?.id)
-            queryBuilder.andWhere('driver.id = :id', { id: filter.id });
-
         if (filter?.user_id)
             queryBuilder.andWhere('driver.user_id = :user_id', { user_id: filter.user_id });
 
@@ -231,7 +228,7 @@ export class DriversService {
         }));
     }
 
-    async deleteDriver(id: number, options?: { req?: FastifyRequest }): Promise<void> {
-        await this.driversRepository.softDelete(id);
+    async deleteDriver(userId: number, options?: { req?: FastifyRequest }): Promise<void> {
+        await this.driversRepository.softDelete({ user_id: userId });
     }
 }

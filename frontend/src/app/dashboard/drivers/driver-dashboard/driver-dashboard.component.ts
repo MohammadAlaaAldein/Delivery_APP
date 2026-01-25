@@ -7,17 +7,17 @@ import { Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
 import { Driver } from '../driver.interface';
 import { CommonService } from 'src/app/shared/services/common.service';
+import { FormBuilderComponent } from 'src/app/shared/form-builder/form-builder.component';
 
 @Component({
     selector: 'app-driver-dashboard',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+    imports: [CommonModule, ReactiveFormsModule, TranslateModule, FormBuilderComponent],
     templateUrl: './driver-dashboard.component.html',
 })
 export class DriverDashboardComponent implements OnInit {
 
     driver: Driver = {
-        id: null,
         user_id: null,
         is_active: true,
         company_id: null,
@@ -29,23 +29,26 @@ export class DriverDashboardComponent implements OnInit {
     vehicleTypeOptions = [];
 
     fields: any = {
-        // Personal Information
-        national_id: { type: "text", label: 'drivers.national_id' },
-        birth_date: { type: "date", label: 'drivers.birth_date' },
-        phone: { type: "text", label: 'drivers.phone' },
-        city: { type: "text", label: 'drivers.city' },
+        // Personal Information Section
+        personal_info: { type: "label" },
+        national_id: { type: "text" },
+        birth_date: { type: "date" },
+        phone: { type: "text" },
+        city: { type: "text" },
 
-        // License Information
-        license_number: { type: "text", label: 'drivers.license_number' },
-        license_expiry_date: { type: "date", label: 'drivers.license_expiry_date' },
+        // License Information Section
+        license_info: { type: "label" },
+        license_number: { type: "text" },
+        license_expiry_date: { type: "date" },
 
-        // Vehicle Information
-        vehicle_type: { type: "select", options: [], label: 'drivers.vehicle_type' },
-        vehicle_brand: { type: "text", label: 'drivers.vehicle_brand' },
-        vehicle_model: { type: "text", label: 'drivers.vehicle_model' },
-        vehicle_year: { type: "number", label: 'drivers.vehicle_year' },
-        vehicle_color: { type: "text", label: 'drivers.vehicle_color' },
-        plate_number: { type: "text", label: 'drivers.plate_number' },
+        // Vehicle Information Section
+        vehicle_info: { type: "label" },
+        vehicle_type: { type: "select", options: [] },
+        vehicle_brand: { type: "text" },
+        vehicle_model: { type: "text" },
+        vehicle_year: { type: "number" },
+        vehicle_color: { type: "text" },
+        plate_number: { type: "text" },
     }
     formFieldsList = [];
 
@@ -164,5 +167,9 @@ export class DriverDashboardComponent implements OnInit {
         });
 
         return driver;
+    }
+
+    onCancel() {
+        this.router.navigate(['/']);
     }
 }

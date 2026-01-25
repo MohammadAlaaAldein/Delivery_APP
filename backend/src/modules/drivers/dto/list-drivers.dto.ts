@@ -5,11 +5,6 @@ export class ListDriversDto {
     @IsOptional()
     @IsNumber()
     @Transform(({ value }) => parseInt(value))
-    id?: number;
-
-    @IsOptional()
-    @IsNumber()
-    @Transform(({ value }) => parseInt(value))
     user_id?: number;
 
     @IsOptional()

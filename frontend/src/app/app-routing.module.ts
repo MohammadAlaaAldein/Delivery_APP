@@ -65,6 +65,30 @@ const routes: Routes = [
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.SHOP }
 			},
+			{
+				path: 'my-orders',
+				loadComponent: () => import('./dashboard/orders/shop-orders/shop-orders.component').then((c) => c.ShopOrdersComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.SHOP }
+			},
+			{
+				path: 'my-orders/create',
+				loadComponent: () => import('./dashboard/orders/shop-orders/shop-order-form.component').then((c) => c.ShopOrderFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.SHOP }
+			},
+			{
+				path: 'my-orders/view/:id',
+				loadComponent: () => import('./dashboard/orders/shop-orders/shop-order-form.component').then((c) => c.ShopOrderFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.SHOP }
+			},
+			{
+				path: 'my-orders/edit/:id',
+				loadComponent: () => import('./dashboard/orders/shop-orders/shop-order-form.component').then((c) => c.ShopOrderFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.SHOP }
+			},
 			// ==================== COMPANY USER ROUTES ====================
 			{
 				path: 'my-company',
@@ -127,10 +151,59 @@ const routes: Routes = [
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.COMPANY }
 			},
+			// ==================== COMPANY ORDER ROUTES ====================
+			{
+				path: 'available-orders',
+				loadComponent: () => import('./dashboard/orders/company-orders/company-available-orders.component').then((c) => c.CompanyAvailableOrdersComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'available-orders/view/:id',
+				loadComponent: () => import('./dashboard/orders/company-orders/company-order-view.component').then((c) => c.CompanyOrderViewComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'company-orders',
+				loadComponent: () => import('./dashboard/orders/company-orders/company-my-orders.component').then((c) => c.CompanyMyOrdersComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'company-orders/view/:id',
+				loadComponent: () => import('./dashboard/orders/company-orders/company-order-view.component').then((c) => c.CompanyOrderViewComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
+			{
+				path: 'company-orders/assign-driver/:id',
+				loadComponent: () => import('./dashboard/orders/company-orders/company-assign-driver.component').then((c) => c.CompanyAssignDriverComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY }
+			},
 			// ==================== DRIVER USER ROUTES ====================
 			{
 				path: 'my-profile',
 				loadComponent: () => import('./dashboard/drivers/driver-dashboard/driver-dashboard.component').then((c) => c.DriverDashboardComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.DRIVER }
+			},
+			{
+				path: 'my-deliveries',
+				loadComponent: () => import('./dashboard/orders/driver-orders/driver-orders.component').then((c) => c.DriverOrdersComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.DRIVER }
+			},
+			{
+				path: 'my-deliveries/view/:id',
+				loadComponent: () => import('./dashboard/orders/driver-orders/driver-orders.component').then((c) => c.DriverOrdersComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.DRIVER }
+			},
+			{
+				path: 'delivery-history',
+				loadComponent: () => import('./dashboard/orders/driver-orders/driver-history.component').then((c) => c.DriverHistoryComponent),
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.DRIVER }
 			},
@@ -248,6 +321,25 @@ const routes: Routes = [
 			{
 				path: 'driver-requests/view/:id',
 				loadComponent: () => import('./dashboard/driver-requests/driver-request-form/driver-request-form.component').then((c) => c.DriverRequestFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			// ==================== ORDERS (ADMIN) ====================
+			{
+				path: 'orders',
+				loadComponent: () => import('./dashboard/orders/admin-orders/admin-orders.component').then((c) => c.AdminOrdersComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'orders/view/:id',
+				loadComponent: () => import('./dashboard/orders/admin-orders/admin-order-form.component').then((c) => c.AdminOrderFormComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.ADMIN }
+			},
+			{
+				path: 'orders/edit/:id',
+				loadComponent: () => import('./dashboard/orders/admin-orders/admin-order-form.component').then((c) => c.AdminOrderFormComponent),
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.ADMIN }
 			},

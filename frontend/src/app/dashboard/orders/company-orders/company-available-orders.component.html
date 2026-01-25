@@ -1,0 +1,21 @@
+<div class="row">
+    <div class="col-sm-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>{{ 'orders.available_orders' | translate }}</h5>
+                <button class="btn btn-outline-secondary" (click)="refresh()">
+                    <i class="feather icon-refresh-cw me-1"></i>
+                    {{ 'g.refresh' | translate }}
+                </button>
+            </div>
+            <div class="card-body custom-table-style">
+                <div class="alert alert-info mb-3" *ngIf="tableData.length === 0">
+                    <i class="feather icon-info me-2"></i>
+                    {{ 'orders.no_available_orders' | translate }}
+                </div>
+                <sct-custom-table [columnsConfig]="columnConfig" [data]="tableData"
+                    [config]="tableConfig"></sct-custom-table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -85,13 +85,13 @@ export class DriversController {
 
     @UseGuards(JwtGuard)
     @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
-    @Patch(':id')
+    @Patch(':userId')
     async update(
         @Req() req: FastifyRequest,
-        @Param('id') id: number,
+        @Param('userId') userId: number,
         @Body() updateDriverDto: UpdateDriverDto,
     ) {
-        const result = await this.driversService.update(id, updateDriverDto, { req });
+        const result = await this.driversService.update(userId, updateDriverDto, { req });
 
         if (result.err)
             return handleThrowApiError(this.THROW_API_MODULE, result.err);
@@ -101,12 +101,12 @@ export class DriversController {
 
     @UseGuards(JwtGuard)
     @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
-    @Patch(':id/toggle-active')
+    @Patch(':userId/toggle-active')
     async toggleActive(
         @Req() req: FastifyRequest,
-        @Param('id') id: number,
+        @Param('userId') userId: number,
     ) {
-        const result = await this.driversService.toggleActive(id, { req });
+        const result = await this.driversService.toggleActive(userId, { req });
 
         if (result.err)
             return handleThrowApiError(this.THROW_API_MODULE, result.err);
@@ -116,12 +116,12 @@ export class DriversController {
 
     @UseGuards(JwtGuard)
     @UseInterceptors(new RoleInterceptor(USER_ROLE.ADMIN))
-    @Delete(':id')
+    @Delete(':userId')
     async delete(
         @Req() req: FastifyRequest,
-        @Param('id') id: number,
+        @Param('userId') userId: number,
     ) {
-        await this.driversService.deleteDriver(+id, { req });
+        await this.driversService.deleteDriver(+userId, { req });
         return handleSuccessApiResponse({ message: translate('drivers.driver_deleted_successfully') });
     }
 

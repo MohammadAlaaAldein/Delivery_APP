@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../../users/entities/user.entity";
 
 export enum VehicleType {
@@ -11,13 +11,10 @@ export enum VehicleType {
 
 @Entity('drivers')
 export class Driver {
-    @PrimaryGeneratedColumn()
-    id: number;
-
-    @Column({ type: 'integer', unique: true })
+    @PrimaryColumn({ type: 'integer' })
     user_id: number;
 
-    @ManyToOne(() => User)
+    @OneToOne(() => User)
     @JoinColumn({ name: 'user_id' })
     user: User;
 

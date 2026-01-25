@@ -1,0 +1,40 @@
+<div class="row">
+    <div class="col-sm-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>{{ 'orders.assign_driver' | translate }}: {{ order?.order_number }}</h5>
+            </div>
+            <div class="card-body">
+                <!-- Order Summary -->
+                <div class="row mb-4" *ngIf="order">
+                    <div class="col-md-6">
+                        <h6>{{ 'orders.order_info' | translate }}</h6>
+                        <p><strong>{{ 'orders.order_number' | translate }}:</strong> {{ order.order_number }}</p>
+                        <p><strong>{{ 'orders.shop' | translate }}:</strong> {{ order.shop?.name }}</p>
+                        <p><strong>{{ 'g.status' | translate }}:</strong>
+                            <span [class]="getStatusClass(order.status)">
+                                {{ 'orders.status.' + order.status | translate }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>{{ 'orders.customer_info' | translate }}</h6>
+                        <p><strong>{{ 'orders.customer_name' | translate }}:</strong> {{ order.customer_name }}</p>
+                        <p><strong>{{ 'orders.customer_phone' | translate }}:</strong> {{ order.customer_phone }}</p>
+                        <p><strong>{{ 'orders.delivery_city' | translate }}:</strong> {{ order.delivery_city || '-' }}
+                        </p>
+                        <p><strong>{{ 'orders.delivery_address' | translate }}:</strong> {{ order.delivery_address ||
+                            '-' }}</p>
+                    </div>
+                </div>
+
+                <hr />
+
+                <!-- Assign Driver Form -->
+                <app-form-builder [formGroup]="assignForm" [formFieldsList]="formFieldsList" [fields]="fields"
+                    (submit)="onSubmit()" [translationKey]="'orders'" (backClicked)="onCancel()">
+                </app-form-builder>
+            </div>
+        </div>
+    </div>
+</div>

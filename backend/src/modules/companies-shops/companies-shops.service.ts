@@ -130,4 +130,14 @@ export class CompaniesShopsService {
 	async deleteByShopId(shopId: number): Promise<void> {
 		await this.companyShopRepository.delete({ shop_id: shopId });
 	}
+
+	/**
+	 * Check if a company is connected to a shop
+	 */
+	async isCompanyConnectedToShop(companyId: number, shopId: number): Promise<boolean> {
+		const relation = await this.companyShopRepository.findOne({
+			where: { company_id: companyId, shop_id: shopId },
+		});
+		return !!relation;
+	}
 }

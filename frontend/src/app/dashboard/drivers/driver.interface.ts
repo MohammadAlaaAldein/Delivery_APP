@@ -1,7 +1,6 @@
 import { VehicleType } from "./drivers.service";
 
 export interface Driver {
-    id: number;
     user_id: number;
     is_active: boolean;
     company_id?: number;

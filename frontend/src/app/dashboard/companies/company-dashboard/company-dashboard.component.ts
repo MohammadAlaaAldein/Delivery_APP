@@ -154,4 +154,8 @@ export class CompanyDashboardComponent implements OnInit {
 
         return company;
     }
+
+    onCancel() {
+        this.router.navigate(['/']);
+    }
 }

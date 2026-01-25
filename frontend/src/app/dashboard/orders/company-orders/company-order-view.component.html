@@ -1,0 +1,159 @@
+<div class="row">
+    <div class="col-sm-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>{{ 'orders.view_order' | translate }}: {{ order?.order_number }}</h5>
+                <button class="btn btn-outline-secondary" (click)="goBack()">
+                    <i class="feather icon-arrow-left me-1"></i>
+                    {{ 'g.back' | translate }}
+                </button>
+            </div>
+            <div class="card-body" *ngIf="order">
+                <!-- Status Badge -->
+                <div class="mb-4">
+                    <span [class]="getStatusClass(order.status)" style="font-size: 1rem; padding: 8px 16px;">
+                        {{ 'orders.statuses.' + order.status | translate }}
+                    </span>
+                </div>
+
+                <div class="row">
+                    <!-- Customer Info -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">{{ 'orders.customer_info' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>{{ 'orders.customer_name' | translate }}:</strong> {{ order.customer_name }}
+                                </p>
+                                <p><strong>{{ 'orders.customer_phone' | translate }}:</strong> {{ order.customer_phone
+                                    }}</p>
+                                <p *ngIf="order.customer_phone_alt"><strong>{{ 'orders.customer_phone_alt' | translate
+                                        }}:</strong> {{ order.customer_phone_alt }}</p>
+                                <p *ngIf="order.customer_email"><strong>{{ 'orders.customer_email' | translate
+                                        }}:</strong> {{ order.customer_email }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">{{ 'orders.delivery_info' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p *ngIf="order.delivery_city"><strong>{{ 'orders.delivery_city' | translate
+                                        }}:</strong> {{ order.delivery_city }}</p>
+                                <p *ngIf="order.delivery_area"><strong>{{ 'orders.delivery_area' | translate
+                                        }}:</strong> {{ order.delivery_area }}</p>
+                                <p *ngIf="order.delivery_street"><strong>{{ 'orders.delivery_street' | translate
+                                        }}:</strong> {{ order.delivery_street }}</p>
+                                <p *ngIf="order.delivery_building"><strong>{{ 'orders.delivery_building' | translate
+                                        }}:</strong> {{ order.delivery_building }}</p>
+                                <p *ngIf="order.delivery_address"><strong>{{ 'orders.delivery_address' | translate
+                                        }}:</strong> {{ order.delivery_address }}</p>
+                                <p *ngIf="order.delivery_notes"><strong>{{ 'orders.delivery_notes' | translate
+                                        }}:</strong> {{ order.delivery_notes }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">{{ 'orders.order_details' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p *ngIf="order.order_description"><strong>{{ 'orders.order_description' | translate
+                                        }}:</strong> {{ order.order_description }}</p>
+                                <p><strong>{{ 'orders.items_count' | translate }}:</strong> {{ order.items_count }}</p>
+                                <p><strong>{{ 'orders.order_amount' | translate }}:</strong> {{ order.order_amount |
+                                    number:'1.2-2' }}</p>
+                                <p><strong>{{ 'orders.delivery_fee' | translate }}:</strong> {{ order.delivery_fee |
+                                    number:'1.2-2' }}</p>
+                                <p><strong>{{ 'orders.total_amount' | translate }}:</strong> <strong
+                                        class="text-primary">{{ order.total_amount | number:'1.2-2' }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Info -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">{{ 'orders.financial_info' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>{{ 'orders.payment_method' | translate }}:</strong> {{
+                                    'orders.payment_methods.' + order.payment_method | translate }}</p>
+                                <p><strong>{{ 'orders.payment_status' | translate }}:</strong> {{
+                                    'orders.payment_statuses.' + order.payment_status | translate }}</p>
+                                <p><strong>{{ 'orders.is_paid' | translate }}:</strong> {{ order.is_paid ? ('g.yes' |
+                                    translate) : ('g.no' | translate) }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shop Info -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">{{ 'orders.shop' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>{{ 'g.name' | translate }}:</strong> {{ order.shop?.name || '-' }}</p>
+                                <p *ngIf="order.shop?.phone"><strong>{{ 'g.phone' | translate }}:</strong> {{
+                                    order.shop?.phone }}</p>
+                                <p *ngIf="order.shop?.address"><strong>{{ 'g.address' | translate }}:</strong> {{
+                                    order.shop?.address }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scheduling Info -->
+                    <div class="col-md-6 mb-4" *ngIf="order.scheduled_pickup_time || order.scheduled_delivery_time">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">{{ 'orders.scheduling' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p *ngIf="order.scheduled_pickup_time"><strong>{{ 'orders.scheduled_pickup_time' |
+                                        translate }}:</strong> {{ order.scheduled_pickup_time | date:'medium' }}</p>
+                                <p *ngIf="order.scheduled_delivery_time"><strong>{{ 'orders.scheduled_delivery_time' |
+                                        translate }}:</strong> {{ order.scheduled_delivery_time | date:'medium' }}</p>
+                                <p *ngIf="order.priority > 0"><strong>{{ 'orders.priority' | translate }}:</strong>
+                                    <span class="badge bg-danger">{{ order.priority }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="col-md-12 mb-4" *ngIf="order.shop_notes">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">{{ 'orders.shop_notes' | translate }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ order.shop_notes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4">
+                    <button class="btn btn-success me-2" *ngIf="canTakeOrder()" (click)="takeOrder()">
+                        <i class="feather icon-check me-1"></i>
+                        {{ 'orders.take_order' | translate }}
+                    </button>
+                    <button class="btn btn-primary me-2" *ngIf="canAssignDriver()" (click)="assignDriver()">
+                        <i class="feather icon-user me-1"></i>
+                        {{ 'orders.assign_driver' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
