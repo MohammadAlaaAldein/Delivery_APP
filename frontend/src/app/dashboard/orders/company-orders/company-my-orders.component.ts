@@ -8,7 +8,7 @@ import moment from 'moment';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
-import { Order, OrderStatus } from '../order.interface';
+import { Order, OrderHistory, OrderStatus } from '../order.interface';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -68,50 +68,67 @@ export class CompanyMyOrdersComponent {
 
     getOrdersList() {
         const status = this.selectedStatus as OrderStatus || undefined;
-        this.ordersService.getCompanyOrders(status).subscribe((res) => {
-            const orders = res.data;
-            const data = [];
-            for (const order of orders) {
-                const options = this.getActionOptions(order);
-
-                data.push({
-                    id: order.id,
-                    order_number: { value: order.order_number },
-                    shop: { value: order.shop?.name || '-' },
-                    customer_name: { value: order.customer_name },
-                    delivery_city: { value: order.delivery_city || '-' },
-                    total_amount: { value: order.total_amount },
-                    status: {
-                        value: this.translate.instant(`orders.status.${order.status}`),
-                        class: this.getStatusClass(order.status)
-                    },
-                    driver: { value: order.driver?.user?.name || '-' },
-                    created_at: { value: moment(order.created_at).format('YYYY-MM-DD HH:mm') },
-                    actions: { value: null, options: options }
-                });
-            }
-
-            this.tableData = data;
-        });
+        
+        // Fetch from history table for DELIVERED or CANCELLED status
+        if (status === OrderStatus.DELIVERED || status === OrderStatus.CANCELLED) {
+            this.ordersService.getCompanyOrdersHistory().subscribe((res) => {
+                // Filter by the selected status
+                const filteredOrders = res.data.filter(order => order.status === status);
+                this.processOrdersData(filteredOrders, true);
+            });
+        } else {
+            this.ordersService.getCompanyOrders(status).subscribe((res) => {
+                this.processOrdersData(res.data, false);
+            });
+        }
     }
 
-    getActionOptions(order: Order) {
+    private processOrdersData(orders: (Order | OrderHistory)[], isHistory: boolean) {
+        const data = [];
+        for (const order of orders) {
+            const options = this.getActionOptions(order as Order, isHistory);
+
+            data.push({
+                id: order.id,
+                order_number: { value: order.order_number },
+                shop: { value: order.shop?.name || '-' },
+                customer_name: { value: order.customer_name },
+                delivery_city: { value: order.delivery_city || '-' },
+                total_amount: { value: order.total_amount },
+                status: {
+                    value: this.translate.instant(`orders.status.${order.status}`),
+                    class: this.getStatusClass(order.status)
+                },
+                driver: { value: order.driver?.user?.name || '-' },
+                created_at: { value: moment(order.created_at).format('YYYY-MM-DD HH:mm') },
+                actions: { value: null, options: options },
+                isHistory: isHistory
+            });
+        }
+
+        this.tableData = data;
+    }
+
+    getActionOptions(order: Order, isHistory: boolean = false) {
         const options = [];
 
-        options.push({ text: this.translate.instant('g.view'), action: () => { this.viewOrder(order) } });
+        options.push({ text: this.translate.instant('g.view'), action: () => { this.viewOrder(order, isHistory) } });
 
-        // Assign/Unassign driver for company-level orders
-        if (order.status === OrderStatus.ASSIGNED_TO_COMPANY) {
-            options.push({ text: this.translate.instant('orders.assign_driver'), action: () => { this.assignDriver(order) } });
-        }
+        // History orders (delivered/cancelled) have no action options
+        if (!isHistory) {
+            // Assign/Unassign driver for company-level orders
+            if (order.status === OrderStatus.ASSIGNED_TO_COMPANY) {
+                options.push({ text: this.translate.instant('orders.assign_driver'), action: () => { this.assignDriver(order) } });
+            }
 
-        if (order.status === OrderStatus.ASSIGNED_TO_DRIVER) {
-            options.push({ text: this.translate.instant('orders.unassign_driver'), action: () => { this.unassignDriver(order) } });
-        }
+            if (order.status === OrderStatus.ASSIGNED_TO_DRIVER) {
+                options.push({ text: this.translate.instant('orders.unassign_driver'), action: () => { this.unassignDriver(order) } });
+            }
 
-        // Release order (return to available pool)
-        if ([OrderStatus.ASSIGNED_TO_COMPANY, OrderStatus.ASSIGNED_TO_DRIVER].includes(order.status)) {
-            options.push({ text: this.translate.instant('orders.release_order'), action: () => { this.releaseOrder(order) } });
+            // Release order (return to available pool)
+            if ([OrderStatus.ASSIGNED_TO_COMPANY, OrderStatus.ASSIGNED_TO_DRIVER].includes(order.status)) {
+                options.push({ text: this.translate.instant('orders.release_order'), action: () => { this.releaseOrder(order) } });
+            }
         }
 
         return options;
@@ -130,8 +147,12 @@ export class CompanyMyOrdersComponent {
         }
     }
 
-    viewOrder(order: Order) {
-        this.router.navigate(['/company-orders/view', order.id]);
+    viewOrder(order: Order, isHistory: boolean = false) {
+        if (isHistory) {
+            this.router.navigate(['/company-orders/history', order.id]);
+        } else {
+            this.router.navigate(['/company-orders/view', order.id]);
+        }
     }
 
     assignDriver(order: Order) {

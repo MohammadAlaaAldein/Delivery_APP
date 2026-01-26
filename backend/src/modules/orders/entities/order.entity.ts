@@ -12,6 +12,24 @@ import { Shop } from '../../shops/entities/shop.entity';
 import { Company } from '../../companies/entities/company.entity';
 import { Driver } from '../../drivers/entities/driver.entity';
 
+// Order item types
+export enum OrderItemType {
+    BAG = 'bag',
+    ENVELOPE = 'envelope',
+    SMALL_BOX = 'small_box',
+    MEDIUM_BOX = 'medium_box',
+    LARGE_BOX = 'large_box',
+    CUSTOM = 'custom',
+}
+
+// Order item interface for JSON column
+export interface OrderItem {
+    type: OrderItemType | string;
+    count: number;
+    size?: string;       // e.g., "30cm x 50cm"
+    description?: string; // additional notes for this item
+}
+
 export enum OrderStatus {
     PENDING = 'pending',                           // Created by shop, not assigned to any company
     ASSIGNED_TO_COMPANY = 'assigned_to_company',   // Taken/assigned to a company
@@ -112,12 +130,13 @@ export class Order {
     @Column({ type: 'text', nullable: true })
     delivery_notes: string;
 
-    // Order Details
-    @Column({ type: 'text', nullable: true })
-    order_description: string;
+    // Order Items (JSON array)
+    @Column({ type: 'jsonb', nullable: true })
+    order_items: OrderItem[];
 
-    @Column({ type: 'int', default: 1 })
-    items_count: number;
+    // Flag for large vehicle requirement
+    @Column({ type: 'boolean', default: false })
+    requires_large_vehicle: boolean;
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     order_amount: number;

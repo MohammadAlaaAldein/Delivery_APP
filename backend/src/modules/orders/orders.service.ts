@@ -125,8 +125,8 @@ export class OrdersService {
         return await this.ordersRepository.save(order);
     }
 
-    // Shop cancels their order
-    async cancelShopOrder(shopId: number, orderId: number, cancelDto: CancelOrderDto): Promise<Order> {
+    // Shop cancels their order - moves to history table
+    async cancelShopOrder(shopId: number, orderId: number, cancelDto: CancelOrderDto): Promise<OrderHistory> {
         const order = await this.getShopOrder(shopId, orderId);
 
         // Can only cancel if not already picked up or delivered
@@ -138,7 +138,13 @@ export class OrdersService {
         order.cancelled_at = new Date();
         order.cancellation_reason = cancelDto.cancellation_reason;
 
-        return await this.ordersRepository.save(order);
+        // Move to history table
+        const historyRecord = await this.moveOrderToHistory(order);
+
+        // Delete from orders table
+        await this.ordersRepository.remove(order);
+
+        return historyRecord;
     }
 
     // ==================== COMPANY ENDPOINTS ====================
@@ -382,7 +388,6 @@ export class OrdersService {
     // Move order to history table
     private async moveOrderToHistory(order: Order): Promise<OrderHistory> {
         const historyRecord = this.ordersHistoryRepository.create({
-            original_order_id: order.id,
             order_number: order.order_number,
             shop_id: order.shop_id,
             company_id: order.company_id,
@@ -400,8 +405,8 @@ export class OrdersService {
             delivery_latitude: order.delivery_latitude,
             delivery_longitude: order.delivery_longitude,
             delivery_notes: order.delivery_notes,
-            order_description: order.order_description,
-            items_count: order.items_count,
+            order_items: order.order_items,
+            requires_large_vehicle: order.requires_large_vehicle,
             order_amount: order.order_amount,
             delivery_fee: order.delivery_fee,
             total_amount: order.total_amount,
@@ -420,8 +425,7 @@ export class OrdersService {
             shop_notes: order.shop_notes,
             company_notes: order.company_notes,
             driver_notes: order.driver_notes,
-            order_created_at: order.created_at,
-            order_updated_at: order.updated_at,
+            archived_at: new Date(),
         });
 
         return await this.ordersHistoryRepository.save(historyRecord);
@@ -647,20 +651,6 @@ export class OrdersService {
     async getOrderHistory(historyId: number): Promise<OrderHistory> {
         const order = await this.ordersHistoryRepository.findOne({
             where: { id: historyId },
-            relations: ['shop', 'company', 'driver', 'driver.user'],
-        });
-
-        if (!order) {
-            throw new NotFoundException('Order history not found');
-        }
-
-        return order;
-    }
-
-    // Get order history by original order ID
-    async getOrderHistoryByOriginalId(originalOrderId: number): Promise<OrderHistory> {
-        const order = await this.ordersHistoryRepository.findOne({
-            where: { original_order_id: originalOrderId },
             relations: ['shop', 'company', 'driver', 'driver.user'],
         });
 

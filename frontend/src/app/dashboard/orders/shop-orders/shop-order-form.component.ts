@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { OrdersService } from '../orders.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
-import { Order, OrderStatus, PaymentMethod } from '../order.interface';
+import { Order, OrderStatus, PaymentMethod, OrderItemType, OrderItem } from '../order.interface';
 import { CommonService } from 'src/app/shared/services/common.service';
 import { FormBuilderComponent } from 'src/app/shared/form-builder/form-builder.component';
 import { CommonModule } from '@angular/common';
@@ -35,6 +35,14 @@ export class ShopOrderFormComponent {
         { value: 'now', label: 'Pickup Now' },
         { value: 'scheduled', label: 'Scheduled Pickup' },
     ];
+    itemTypeOptions = [
+        { value: OrderItemType.BAG, label: 'Bag' },
+        { value: OrderItemType.ENVELOPE, label: 'Envelope' },
+        { value: OrderItemType.SMALL_BOX, label: 'Small Box' },
+        { value: OrderItemType.MEDIUM_BOX, label: 'Medium Box' },
+        { value: OrderItemType.LARGE_BOX, label: 'Large Box' },
+        { value: OrderItemType.CUSTOM, label: 'Custom' },
+    ];
     pickupType: string = 'now';
 
     fields: any = {
@@ -50,11 +58,10 @@ export class ShopOrderFormComponent {
         delivery_building: { type: "text", section: 'delivery_address' },
         delivery_address: { type: "textarea", section: 'delivery_address' },
         delivery_notes: { type: "textarea", section: 'delivery_address' },
-        // Order Details
-        order_description: { type: "textarea", section: 'order_details' },
-        items_count: { type: "number", section: 'order_details' },
+        // Order Details - simplified
         order_amount: { type: "number", section: 'order_details' },
         delivery_fee: { type: "number", section: 'order_details' },
+        requires_large_vehicle: { type: "checkbox", section: 'order_details' },
         // Payment
         payment_method: { type: "select", options: [], section: 'payment' },
         // Priority
@@ -88,23 +95,26 @@ export class ShopOrderFormComponent {
             customer_name: ['', [Validators.required, Validators.minLength(2)]],
             customer_phone: ['', [Validators.required]],
             customer_phone_alt: [''],
-            customer_email: ['', [Validators.email]],
+            customer_email: [''],
             delivery_city: [''],
             delivery_area: [''],
             delivery_street: [''],
             delivery_building: [''],
             delivery_address: [''],
             delivery_notes: [''],
-            order_description: [''],
-            items_count: [1, [Validators.min(1)]],
-            order_amount: [0, [Validators.min(0)]],
-            delivery_fee: [0, [Validators.min(0)]],
+            order_items: this._formBuilder.array([]),
+            requires_large_vehicle: [false],
+            order_amount: [null],
+            delivery_fee: [null],
             payment_method: [PaymentMethod.CASH],
             scheduled_pickup_time: [''],
             priority: [0],
             company_id: [null],
             shop_notes: [''],
         });
+
+        // Add one empty item by default
+        this.addOrderItem();
 
         this.formFieldsList = Object.keys(this.fields);
 
@@ -126,6 +136,15 @@ export class ShopOrderFormComponent {
         this.pickupTypeOptions = [
             { value: 'now', label: this.translate.instant('orders.pickup_now') },
             { value: 'scheduled', label: this.translate.instant('orders.pickup_scheduled') },
+        ];
+
+        this.itemTypeOptions = [
+            { value: OrderItemType.BAG, label: this.translate.instant('orders.item_types.bag') },
+            { value: OrderItemType.ENVELOPE, label: this.translate.instant('orders.item_types.envelope') },
+            { value: OrderItemType.SMALL_BOX, label: this.translate.instant('orders.item_types.small_box') },
+            { value: OrderItemType.MEDIUM_BOX, label: this.translate.instant('orders.item_types.medium_box') },
+            { value: OrderItemType.LARGE_BOX, label: this.translate.instant('orders.item_types.large_box') },
+            { value: OrderItemType.CUSTOM, label: this.translate.instant('orders.item_types.custom') },
         ];
 
         this.fields = {
@@ -184,8 +203,7 @@ export class ShopOrderFormComponent {
                     delivery_building: this.order.delivery_building || '',
                     delivery_address: this.order.delivery_address || '',
                     delivery_notes: this.order.delivery_notes || '',
-                    order_description: this.order.order_description || '',
-                    items_count: this.order.items_count || 1,
+                    requires_large_vehicle: this.order.requires_large_vehicle || false,
                     order_amount: this.order.order_amount || 0,
                     delivery_fee: this.order.delivery_fee || 0,
                     payment_method: this.order.payment_method || PaymentMethod.CASH,
@@ -194,6 +212,9 @@ export class ShopOrderFormComponent {
                     company_id: this.order.company_id || null,
                     shop_notes: this.order.shop_notes || '',
                 });
+
+                // Load order items
+                this.loadOrderItems(this.order.order_items || []);
 
                 // Set pickup type based on existing data
                 this.pickupType = this.order.scheduled_pickup_time ? 'scheduled' : 'now';
@@ -223,9 +244,42 @@ export class ShopOrderFormComponent {
 
             const data = { ...this.orderForm.value };
 
-            // Clean up null company_id
+            // Clean up empty/null optional fields
             if (!data.company_id) {
                 delete data.company_id;
+            }
+            if (!data.customer_email || data.customer_email.trim() === '') {
+                delete data.customer_email;
+            }
+            if (data.order_amount === null || data.order_amount === '' || data.order_amount === undefined) {
+                delete data.order_amount;
+            }
+            if (data.delivery_fee === null || data.delivery_fee === '' || data.delivery_fee === undefined) {
+                delete data.delivery_fee;
+            }
+            if (!data.customer_phone_alt || data.customer_phone_alt.trim() === '') {
+                delete data.customer_phone_alt;
+            }
+            if (!data.delivery_city) {
+                delete data.delivery_city;
+            }
+            if (!data.delivery_area || data.delivery_area.trim() === '') {
+                delete data.delivery_area;
+            }
+            if (!data.delivery_street || data.delivery_street.trim() === '') {
+                delete data.delivery_street;
+            }
+            if (!data.delivery_building || data.delivery_building.trim() === '') {
+                delete data.delivery_building;
+            }
+            if (!data.delivery_address || data.delivery_address.trim() === '') {
+                delete data.delivery_address;
+            }
+            if (!data.delivery_notes || data.delivery_notes.trim() === '') {
+                delete data.delivery_notes;
+            }
+            if (!data.shop_notes || data.shop_notes.trim() === '') {
+                delete data.shop_notes;
             }
 
             // Clear scheduled time if pickup now
@@ -342,5 +396,55 @@ export class ShopOrderFormComponent {
             case OrderStatus.CANCELLED: return 'badge bg-danger';
             default: return 'badge bg-secondary';
         }
+    }
+
+    // Order Items Management
+    get orderItems(): FormArray {
+        return this.orderForm.get('order_items') as FormArray;
+    }
+
+    addOrderItem() {
+        const itemForm = this._formBuilder.group({
+            type: [OrderItemType.BAG],
+            count: [1, [Validators.required, Validators.min(1)]],
+            size: [''],
+            description: [''],
+        });
+        this.orderItems.push(itemForm);
+    }
+
+    removeOrderItem(index: number) {
+        if (this.orderItems.length > 1) {
+            this.orderItems.removeAt(index);
+        }
+    }
+
+    loadOrderItems(items: OrderItem[]) {
+        // Clear existing items
+        while (this.orderItems.length > 0) {
+            this.orderItems.removeAt(0);
+        }
+
+        // Add items from order
+        if (items && items.length > 0) {
+            items.forEach(item => {
+                const itemForm = this._formBuilder.group({
+                    type: [item.type || OrderItemType.BAG],
+                    count: [item.count || 1, [Validators.required, Validators.min(1)]],
+                    size: [item.size || ''],
+                    description: [item.description || ''],
+                });
+                this.orderItems.push(itemForm);
+            });
+        } else {
+            // Add default empty item
+            this.addOrderItem();
+        }
+    }
+
+    getTotalItemsCount(): number {
+        return this.orderItems.controls.reduce((total, item) => {
+            return total + (item.get('count')?.value || 0);
+        }, 0);
     }
 }

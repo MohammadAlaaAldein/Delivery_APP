@@ -3,22 +3,19 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
+    UpdateDateColumn,
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
 import { Shop } from '../../shops/entities/shop.entity';
 import { Company } from '../../companies/entities/company.entity';
 import { Driver } from '../../drivers/entities/driver.entity';
-import { OrderStatus, PaymentMethod, PaymentStatus } from './order.entity';
+import { OrderStatus, PaymentMethod, PaymentStatus, OrderItem } from './order.entity';
 
 @Entity('orders_history')
 export class OrderHistory {
     @PrimaryGeneratedColumn()
     id: number;
-
-    // Original order ID for reference
-    @Column({ type: 'int' })
-    original_order_id: number;
 
     // Order number for display (e.g., ORD-2024-0001)
     @Column({ type: 'varchar', length: 50 })
@@ -91,12 +88,13 @@ export class OrderHistory {
     @Column({ type: 'text', nullable: true })
     delivery_notes: string;
 
-    // Order Details
-    @Column({ type: 'text', nullable: true })
-    order_description: string;
+    // Order Items (JSON array)
+    @Column({ type: 'jsonb', nullable: true })
+    order_items: OrderItem[];
 
-    @Column({ type: 'int', default: 1 })
-    items_count: number;
+    // Flag for large vehicle requirement
+    @Column({ type: 'boolean', default: false })
+    requires_large_vehicle: boolean;
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     order_amount: number;
@@ -164,14 +162,14 @@ export class OrderHistory {
     @Column({ type: 'text', nullable: true })
     driver_notes: string;
 
-    // Original order timestamps
-    @Column({ type: 'timestamp' })
-    order_created_at: Date;
-
-    @Column({ type: 'timestamp' })
-    order_updated_at: Date;
-
-    // History record timestamp
+    // Timestamps (same as Order)
     @CreateDateColumn()
+    created_at: Date;
+
+    @UpdateDateColumn()
+    updated_at: Date;
+
+    // Archive timestamp (replaces deleted_at from Order)
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     archived_at: Date;
 }

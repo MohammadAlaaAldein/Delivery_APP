@@ -8,7 +8,7 @@ import moment from 'moment';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
-import { Order, OrderStatus } from '../order.interface';
+import { Order, OrderHistory, OrderStatus } from '../order.interface';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -69,46 +69,63 @@ export class ShopOrdersComponent {
 
     getOrdersList() {
         const status = this.selectedStatus as OrderStatus || undefined;
-        this.ordersService.getShopOrders(status).subscribe((res) => {
-            const orders = res.data;
-            const data = [];
-            for (const order of orders) {
-                const options = this.getActionOptions(order);
-
-                data.push({
-                    id: order.id,
-                    order_number: { value: order.order_number },
-                    customer_name: { value: order.customer_name },
-                    delivery_city: { value: order.delivery_city || '-' },
-                    total_amount: { value: order.total_amount },
-                    status: {
-                        value: this.translate.instant(`orders.status.${order.status}`),
-                        class: this.getStatusClass(order.status)
-                    },
-                    company: { value: order.company?.name || '-' },
-                    driver: { value: order.driver?.user?.name || '-' },
-                    created_at: { value: moment(order.created_at).format('YYYY-MM-DD HH:mm') },
-                    actions: { value: null, options: options }
-                });
-            }
-
-            this.tableData = data;
-        });
+        
+        // Fetch from history table for DELIVERED or CANCELLED status
+        if (status === OrderStatus.DELIVERED || status === OrderStatus.CANCELLED) {
+            this.ordersService.getShopOrdersHistory().subscribe((res) => {
+                // Filter by the selected status
+                const filteredOrders = res.data.filter(order => order.status === status);
+                this.processOrdersData(filteredOrders, true);
+            });
+        } else {
+            this.ordersService.getShopOrders(status).subscribe((res) => {
+                this.processOrdersData(res.data, false);
+            });
+        }
     }
 
-    getActionOptions(order: Order) {
-        const options = [];
+    private processOrdersData(orders: (Order | OrderHistory)[], isHistory: boolean) {
+        const data = [];
+        for (const order of orders) {
+            const options = this.getActionOptions(order as Order, isHistory);
 
-        options.push({ text: this.translate.instant('g.view'), action: () => { this.view(order) } });
-
-        // Can only edit if pending or assigned to company
-        if ([OrderStatus.PENDING, OrderStatus.ASSIGNED_TO_COMPANY].includes(order.status)) {
-            options.push({ text: this.translate.instant('g.edit'), action: () => { this.edit(order) } });
+            data.push({
+                id: order.id,
+                order_number: { value: order.order_number },
+                customer_name: { value: order.customer_name },
+                delivery_city: { value: order.delivery_city || '-' },
+                total_amount: { value: order.total_amount },
+                status: {
+                    value: this.translate.instant(`orders.status.${order.status}`),
+                    class: this.getStatusClass(order.status)
+                },
+                company: { value: order.company?.name || '-' },
+                driver: { value: order.driver?.user?.name || '-' },
+                created_at: { value: moment(order.created_at).format('YYYY-MM-DD HH:mm') },
+                actions: { value: null, options: options },
+                isHistory: isHistory
+            });
         }
 
-        // Can cancel if not yet picked up or delivered
-        if (![OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(order.status)) {
-            options.push({ text: this.translate.instant('g.cancel'), action: () => { this.cancelOrder(order) } });
+        this.tableData = data;
+    }
+
+    getActionOptions(order: Order, isHistory: boolean = false) {
+        const options = [];
+
+        options.push({ text: this.translate.instant('g.view'), action: () => { this.view(order, isHistory) } });
+
+        // History orders (delivered/cancelled) have no edit or cancel actions
+        if (!isHistory) {
+            // Can only edit if pending or assigned to company
+            if ([OrderStatus.PENDING, OrderStatus.ASSIGNED_TO_COMPANY].includes(order.status)) {
+                options.push({ text: this.translate.instant('g.edit'), action: () => { this.edit(order) } });
+            }
+
+            // Can cancel if not yet picked up or delivered
+            if (![OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(order.status)) {
+                options.push({ text: this.translate.instant('g.cancel'), action: () => { this.cancelOrder(order) } });
+            }
         }
 
         return options;
@@ -127,8 +144,12 @@ export class ShopOrdersComponent {
         }
     }
 
-    view(order: Order) {
-        this.router.navigate(['/my-orders/view', order.id]);
+    view(order: Order, isHistory: boolean = false) {
+        if (isHistory) {
+            this.router.navigate(['/my-orders/history', order.id]);
+        } else {
+            this.router.navigate(['/my-orders/view', order.id]);
+        }
     }
 
     edit(order: Order) {

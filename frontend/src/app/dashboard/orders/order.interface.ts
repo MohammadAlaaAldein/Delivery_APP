@@ -21,6 +21,24 @@ export enum PaymentStatus {
     REFUNDED = 'refunded',
 }
 
+// Order item types
+export enum OrderItemType {
+    BAG = 'bag',
+    ENVELOPE = 'envelope',
+    SMALL_BOX = 'small_box',
+    MEDIUM_BOX = 'medium_box',
+    LARGE_BOX = 'large_box',
+    CUSTOM = 'custom',
+}
+
+// Order item interface
+export interface OrderItem {
+    type: OrderItemType | string;
+    count: number;
+    size?: string;
+    description?: string;
+}
+
 export interface Order {
     id: number;
     order_number: string;
@@ -72,9 +90,9 @@ export interface Order {
     delivery_longitude?: number;
     delivery_notes?: string;
 
-    // Order Details
-    order_description?: string;
-    items_count: number;
+    // Order Items (JSON array)
+    order_items?: OrderItem[];
+    requires_large_vehicle?: boolean;
     order_amount: number;
     delivery_fee: number;
     total_amount: number;
@@ -109,9 +127,8 @@ export interface Order {
 
 export interface OrderHistory extends Omit<Order, 'id' | 'created_at' | 'updated_at'> {
     id: number;
-    original_order_id: number;
-    order_created_at: string;
-    order_updated_at: string;
+    created_at: string;
+    updated_at: string;
     archived_at: string;
 }
 

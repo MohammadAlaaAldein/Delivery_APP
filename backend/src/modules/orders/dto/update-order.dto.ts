@@ -1,5 +1,7 @@
-import { IsOptional, IsNumber, IsString, IsEnum, IsEmail, Min, IsDateString, IsBoolean } from 'class-validator';
+import { IsOptional, IsNumber, IsString, IsEnum, IsEmail, Min, IsDateString, IsBoolean, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PaymentMethod, PaymentStatus, OrderStatus } from '../entities/order.entity';
+import { OrderItemDto } from './create-order.dto';
 
 export class UpdateOrderDto {
     // Customer Information
@@ -52,15 +54,17 @@ export class UpdateOrderDto {
     @IsString()
     delivery_notes?: string;
 
-    // Order Details
+    // Order Items (JSON array)
     @IsOptional()
-    @IsString()
-    order_description?: string;
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => OrderItemDto)
+    order_items?: OrderItemDto[];
 
+    // Large vehicle requirement
     @IsOptional()
-    @IsNumber()
-    @Min(1)
-    items_count?: number;
+    @IsBoolean()
+    requires_large_vehicle?: boolean;
 
     @IsOptional()
     @IsNumber()

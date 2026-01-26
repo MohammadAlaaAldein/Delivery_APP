@@ -66,9 +66,20 @@
                                 <h6 class="mb-0">{{ 'orders.order_details' | translate }}</h6>
                             </div>
                             <div class="card-body">
-                                <p *ngIf="order.order_description"><strong>{{ 'orders.order_description' | translate
-                                        }}:</strong> {{ order.order_description }}</p>
-                                <p><strong>{{ 'orders.items_count' | translate }}:</strong> {{ order.items_count }}</p>
+                                <!-- Order Items -->
+                                <div *ngIf="order.order_items && order.order_items.length > 0" class="mb-3">
+                                    <strong>{{ 'orders.order_items' | translate }}:</strong>
+                                    <ul class="list-unstyled mt-2">
+                                        <li *ngFor="let item of order.order_items" class="mb-1">
+                                            <i class="feather icon-package me-1 text-muted"></i>
+                                            {{ 'orders.item_types.' + item.type | translate }} x {{ item.count }}
+                                            <span *ngIf="item.size" class="text-muted">({{ item.size }})</span>
+                                            <span *ngIf="item.description" class="text-muted">- {{ item.description }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <p *ngIf="order.requires_large_vehicle"><span class="badge bg-warning">{{ 'orders.requires_large_vehicle' | translate
+                                        }}</span></p>
                                 <!-- Company sees full breakdown -->
                                 <ng-container *ngIf="viewerRole === 'company'">
                                     <p><strong>{{ 'orders.order_amount' | translate }}:</strong> {{ order.order_amount |

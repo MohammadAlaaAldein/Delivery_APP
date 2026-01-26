@@ -89,6 +89,12 @@ const routes: Routes = [
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.SHOP }
 			},
+			{
+				path: 'my-orders/history/:id',
+				loadComponent: () => import('./dashboard/orders/shared/order-history-view.component').then((c) => c.OrderHistoryViewComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.SHOP, viewerRole: 'shop' }
+			},
 			// ==================== COMPANY USER ROUTES ====================
 			{
 				path: 'my-company',
@@ -173,6 +179,12 @@ const routes: Routes = [
 			{
 				path: 'company-orders/view/:id',
 				loadComponent: () => import('./dashboard/orders/shared/order-view.component').then((c) => c.OrderViewComponent),
+				canActivate: [RoleAccessGuard],
+				data: { role: USER_ROLE.COMPANY, viewerRole: 'company' }
+			},
+			{
+				path: 'company-orders/history/:id',
+				loadComponent: () => import('./dashboard/orders/shared/order-history-view.component').then((c) => c.OrderHistoryViewComponent),
 				canActivate: [RoleAccessGuard],
 				data: { role: USER_ROLE.COMPANY, viewerRole: 'company' }
 			},

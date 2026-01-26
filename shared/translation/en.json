@@ -220,6 +220,7 @@
 		"license_expiry_date": "License Expiry Date",
 		"my_shop": "My Shop",
 		"company_ids_readonly_info": "Associated companies are managed by administrator and cannot be modified here.",
+		"company_names": "Companies",
 		"": ""
 	},
 	"companies": {
@@ -572,6 +573,8 @@
 		"deliver": "Deliver",
 		"company_assigned_at": "Company Assigned At",
 		"driver_assigned_at": "Driver Assigned At",
+		"my_company_orders": "My Company Orders",
+		"my_deliveries": "My Deliveries",
 		"status": {
 			"pending": "Pending",
 			"assigned_to_company": "Assigned to Company",
@@ -603,8 +606,22 @@
 		"order_amount": "Order Amount",
 		"delivery_fee": "Delivery Fee",
 		"total_amount": "Total Amount",
-		"items_count": "Items Count",
-		"order_description": "Order Description",
+		"order_items": "Order Items",
+		"items_total": "item(s) total",
+		"add_item": "Add Item",
+		"item_type": "Type",
+		"item_count": "Count",
+		"item_size": "Size",
+		"item_description": "Description",
+		"requires_large_vehicle": "Requires Large Vehicle (Van/Truck)",
+		"item_types": {
+			"bag": "Bag",
+			"envelope": "Envelope",
+			"small_box": "Small Box",
+			"medium_box": "Medium Box",
+			"large_box": "Large Box",
+			"custom": "Custom"
+		},
 		"payment_method": "Payment Method",
 		"payment_status": "Payment Status",
 		"is_paid": "Is Paid",
@@ -698,9 +715,6 @@
 		"history": "Order History",
 		"archived_at": "Archived At",
 		"notes": "Notes",
-		"original_order_id": "Original Order ID",
-		"order_created_at": "Order Created At",
-		"order_updated_at": "Order Updated At",
 		"": ""
 	},
 	"": ""

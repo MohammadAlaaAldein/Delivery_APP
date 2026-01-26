@@ -375,7 +375,7 @@ export class OrdersController {
     @Get('shop/history')
     @UseInterceptors(new RoleInterceptor(USER_ROLE.SHOP, { requireEntityOwnership: true }))
     async getShopOrdersHistory(@Req() req) {
-        const shopId = await this.getShopId(req.user.id);
+        const shopId = req.user.entity_id;
         const orders = await this.ordersService.getShopOrdersHistory(shopId);
         return { data: orders };
     }
@@ -384,7 +384,7 @@ export class OrdersController {
     @Get('company/history')
     @UseInterceptors(new RoleInterceptor(USER_ROLE.COMPANY, { requireEntityOwnership: true }))
     async getCompanyOrdersHistory(@Req() req) {
-        const companyId = await this.getCompanyId(req.user.id);
+        const companyId = req.user.entity_id;
         const orders = await this.ordersService.getCompanyOrdersHistory(companyId);
         return { data: orders };
     }

@@ -4,7 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { OrdersService } from '../orders.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
-import { Order, OrderStatus, PaymentMethod, PaymentStatus } from '../order.interface';
+import { Order, OrderStatus, PaymentMethod, PaymentStatus, OrderItem } from '../order.interface';
 import { CommonService } from 'src/app/shared/services/common.service';
 import { FormBuilderComponent } from 'src/app/shared/form-builder/form-builder.component';
 import { CommonModule } from '@angular/common';
@@ -58,8 +58,7 @@ export class AdminOrderFormComponent {
         delivery_address: { type: "textarea", section: 'delivery_address' },
         delivery_notes: { type: "textarea", section: 'delivery_address' },
         // Order Details
-        order_description: { type: "textarea", section: 'order_details' },
-        items_count: { type: "number", section: 'order_details' },
+        requires_large_vehicle: { type: "checkbox", section: 'order_details' },
         order_amount: { type: "number", section: 'order_details' },
         delivery_fee: { type: "number", section: 'order_details' },
         // Payment
@@ -106,8 +105,7 @@ export class AdminOrderFormComponent {
             delivery_building: [''],
             delivery_address: [''],
             delivery_notes: [''],
-            order_description: [''],
-            items_count: [1, [Validators.min(1)]],
+            requires_large_vehicle: [false],
             order_amount: [0, [Validators.min(0)]],
             delivery_fee: [0, [Validators.min(0)]],
             payment_method: [PaymentMethod.CASH],
@@ -170,8 +168,7 @@ export class AdminOrderFormComponent {
                     delivery_building: this.order.delivery_building || '',
                     delivery_address: this.order.delivery_address || '',
                     delivery_notes: this.order.delivery_notes || '',
-                    order_description: this.order.order_description || '',
-                    items_count: this.order.items_count || 1,
+                    requires_large_vehicle: this.order.requires_large_vehicle || false,
                     order_amount: this.order.order_amount || 0,
                     delivery_fee: this.order.delivery_fee || 0,
                     payment_method: this.order.payment_method || PaymentMethod.CASH,

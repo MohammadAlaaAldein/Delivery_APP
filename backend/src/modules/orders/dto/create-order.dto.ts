@@ -1,5 +1,26 @@
-import { IsNotEmpty, IsOptional, IsNumber, IsString, IsEnum, IsEmail, Min, IsDateString } from 'class-validator';
-import { PaymentMethod } from '../entities/order.entity';
+import { IsNotEmpty, IsOptional, IsNumber, IsString, IsEnum, IsEmail, Min, IsDateString, IsBoolean, IsArray, ValidateNested, ValidateIf } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { PaymentMethod, OrderItemType } from '../entities/order.entity';
+
+// DTO for individual order items
+export class OrderItemDto {
+    @IsNotEmpty()
+    @IsString()
+    type: OrderItemType | string;
+
+    @IsNotEmpty()
+    @IsNumber()
+    @Min(1)
+    count: number;
+
+    @IsOptional()
+    @IsString()
+    size?: string;
+
+    @IsOptional()
+    @IsString()
+    description?: string;
+}
 
 export class CreateOrderDto {
     // Customer Information (required)
@@ -16,10 +37,12 @@ export class CreateOrderDto {
     customer_phone_alt?: string;
 
     @IsOptional()
+    @ValidateIf((o) => o.customer_email !== '' && o.customer_email !== null && o.customer_email !== undefined)
     @IsEmail()
+    @Transform(({ value }) => value === '' ? undefined : value)
     customer_email?: string;
 
-    // Delivery Address
+    // Delivery Address (all optional for flexibility)
     @IsOptional()
     @IsString()
     delivery_city?: string;
@@ -52,24 +75,30 @@ export class CreateOrderDto {
     @IsString()
     delivery_notes?: string;
 
-    // Order Details
+    // Order Items (JSON array) - simplified order details
     @IsOptional()
-    @IsString()
-    order_description?: string;
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => OrderItemDto)
+    order_items?: OrderItemDto[];
+
+    // Large vehicle requirement
+    @IsOptional()
+    @IsBoolean()
+    requires_large_vehicle?: boolean;
 
     @IsOptional()
-    @IsNumber()
-    @Min(1)
-    items_count?: number;
-
-    @IsOptional()
+    @ValidateIf((o) => o.order_amount !== '' && o.order_amount !== null && o.order_amount !== undefined)
     @IsNumber()
     @Min(0)
+    @Transform(({ value }) => (value === '' || value === null || value === undefined) ? undefined : Number(value))
     order_amount?: number;
 
     @IsOptional()
+    @ValidateIf((o) => o.delivery_fee !== '' && o.delivery_fee !== null && o.delivery_fee !== undefined)
     @IsNumber()
     @Min(0)
+    @Transform(({ value }) => (value === '' || value === null || value === undefined) ? undefined : Number(value))
     delivery_fee?: number;
 
     // Payment
