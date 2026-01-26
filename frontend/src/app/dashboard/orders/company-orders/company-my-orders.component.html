@@ -10,6 +10,9 @@
                             {{ opt.value ? ('orders.status.' + opt.value | translate) : ('g.all' | translate) }}
                         </option>
                     </select>
+                    <button class="btn btn-outline-secondary" (click)="getOrdersList()" title="{{ 'g.refresh' | translate }}">
+                        <i class="feather icon-rotate-cw"></i>
+                    </button>
                 </div>
             </div>
             <div class="card-body custom-table-style">

@@ -3,10 +3,15 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5>{{ 'orders.my_deliveries' | translate }}</h5>
-                <button class="btn btn-outline-secondary" (click)="viewHistory()">
-                    <i class="feather icon-clock me-1"></i>
-                    {{ 'orders.view_history' | translate }}
-                </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" (click)="getOrdersList()" title="{{ 'g.refresh' | translate }}">
+                        <i class="feather icon-rotate-cw"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" (click)="viewHistory()">
+                        <i class="feather icon-clock me-1"></i>
+                        {{ 'orders.view_history' | translate }}
+                    </button>
+                </div>
             </div>
             <div class="card-body custom-table-style">
                 <div class="alert alert-info mb-3" *ngIf="tableData.length === 0">

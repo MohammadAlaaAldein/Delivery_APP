@@ -10,6 +10,9 @@
                             {{ opt.value ? ('orders.status.' + opt.value | translate) : ('g.all' | translate) }}
                         </option>
                     </select>
+                    <button class="btn btn-outline-secondary" (click)="getOrdersList()" title="{{ 'g.refresh' | translate }}">
+                        <i class="feather icon-rotate-cw"></i>
+                    </button>
                     <button class="btn btn-primary" (click)="createOrder()">
                         <i class="feather icon-plus me-1"></i>
                         {{ 'orders.create_order' | translate }}

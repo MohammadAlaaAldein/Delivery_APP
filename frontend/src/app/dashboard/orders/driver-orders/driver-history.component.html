@@ -3,10 +3,15 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5>{{ 'orders.delivery_history' | translate }}</h5>
-                <button class="btn btn-outline-secondary" (click)="goBack()">
-                    <i class="feather icon-arrow-left me-1"></i>
-                    {{ 'g.back' | translate }}
-                </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" (click)="getHistory()" title="{{ 'g.refresh' | translate }}">
+                        <i class="feather icon-rotate-cw"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" (click)="goBack()">
+                        <i class="feather icon-arrow-left me-1"></i>
+                        {{ 'g.back' | translate }}
+                    </button>
+                </div>
             </div>
             <div class="card-body custom-table-style">
                 <sct-custom-table [columnsConfig]="columnConfig" [data]="tableData"
