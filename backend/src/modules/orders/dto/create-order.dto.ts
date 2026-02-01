@@ -126,6 +126,7 @@ export class CreateOrderDto {
 
     // Optional: Specify company (if shop wants specific company)
     @IsOptional()
+    @Transform(({ value }) => (value === null || value === undefined || value === '') ? undefined : Number(value))
     @IsNumber()
     company_id?: number;
 }

@@ -66,6 +66,41 @@ export class DriversService {
         return this.driversRepository.findOne({ where: { user_id: userId }, relations: ['user'] });
     }
 
+    /**
+     * Update driver's current location for live tracking
+     */
+    async updateLocation(driverId: number, location: {
+        latitude: number;
+        longitude: number;
+        speed?: number;
+        heading?: number;
+        accuracy?: number;
+        orderId?: number;
+    }): Promise<void> {
+        console.log(`[DriversService] Updating location for driver ${driverId}:`, location);
+        const result = await this.driversRepository.update(
+            { user_id: driverId },
+            {
+                current_location: {
+                    ...location,
+                    updatedAt: new Date(),
+                },
+            }
+        );
+        console.log(`[DriversService] Update result:`, result.affected, 'rows affected');
+    }
+
+    
+    /**
+     * Clear driver's current location (called when order is delivered)
+     */
+    async clearLocation(driverId: number): Promise<void> {
+        await this.driversRepository.update(
+            { user_id: driverId },
+            { current_location: null }
+        );
+    }
+
     async create(createDriverDto: CreateDriverDto, options?: { req?: FastifyRequest }): Promise<any> {
         try {
             const driver = this.driversRepository.create(createDriverDto);

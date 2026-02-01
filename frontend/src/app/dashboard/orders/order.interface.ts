@@ -69,6 +69,19 @@ export interface Order {
         };
         phone?: string;
         vehicle_type?: string;
+        vehicle_brand?: string;
+        vehicle_model?: string;
+        vehicle_color?: string;
+        plate_number?: string;
+        current_location?: {
+            latitude: number;
+            longitude: number;
+            speed?: number;
+            heading?: number;
+            accuracy?: number;
+            orderId?: number;
+            updatedAt?: Date;
+        };
     };
 
     // Status

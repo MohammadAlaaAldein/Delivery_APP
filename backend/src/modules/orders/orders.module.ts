@@ -6,6 +6,7 @@ import { Order } from './entities/order.entity';
 import { OrderHistory } from './entities/order-history.entity';
 import { CompaniesShopsModule } from '../companies-shops/companies-shops.module';
 import { DriversModule } from '../drivers/drivers.module';
+import { OrdersGateway } from './orders.gateway';
 
 @Module({
     imports: [
@@ -14,7 +15,7 @@ import { DriversModule } from '../drivers/drivers.module';
         DriversModule,
     ],
     controllers: [OrdersController],
-    providers: [OrdersService],
-    exports: [OrdersService],
+    providers: [OrdersService, OrdersGateway],
+    exports: [OrdersService, OrdersGateway],
 })
 export class OrdersModule { }

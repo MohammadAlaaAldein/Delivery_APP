@@ -13,6 +13,7 @@ import cors from '@fastify/cors';
 import { getGitBranchInfo } from './common/utilities';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
 	// Sentry.init({
@@ -50,6 +51,9 @@ async function bootstrap() {
 
 	// Enable validation globally
 	app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+	// Enable WebSocket adapter for Socket.IO
+	app.useWebSocketAdapter(new IoAdapter(app));
 
 	const redis = app.get(RedisService);
 	const redisClient: Redis = redis.newRedisClient('write');

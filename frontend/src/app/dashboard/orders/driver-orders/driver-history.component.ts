@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { OrdersService } from '../orders.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -7,6 +7,8 @@ import { ColumnsConfig, TableConfig, TableData } from 'sct-custom-table/sct-tabl
 import moment from 'moment';
 import { Router } from '@angular/router';
 import { OrderHistory, OrderStatus } from '../order.interface';
+import { SocketService, OrderEventPayload } from 'src/app/shared/services/socket.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-driver-history',
@@ -14,7 +16,9 @@ import { OrderHistory, OrderStatus } from '../order.interface';
     imports: [CommonModule, SCTTableModule, TranslateModule],
     templateUrl: './driver-history.component.html'
 })
-export class DriverHistoryComponent {
+export class DriverHistoryComponent implements OnInit, OnDestroy {
+
+    private destroy$ = new Subject<void>();
 
     columnConfig: ColumnsConfig[] = [
         { key: 'order_number', name: this.translate.instant('orders.order_number'), type: 'string' },
@@ -42,10 +46,35 @@ export class DriverHistoryComponent {
         private ordersService: OrdersService,
         private translate: TranslateService,
         private router: Router,
+        private socketService: SocketService,
     ) { }
 
     ngOnInit() {
         this.getHistory();
+        this.subscribeToRealTimeUpdates();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    private subscribeToRealTimeUpdates() {
+        // Listen for delivered orders
+        this.socketService.onOrderDelivered()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Driver History] Order delivered:', payload.eventType);
+                this.getHistory();
+            });
+
+        // Listen for cancelled orders
+        this.socketService.onOrderCancelled()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Driver History] Order cancelled:', payload.eventType);
+                this.getHistory();
+            });
     }
 
     getHistory() {

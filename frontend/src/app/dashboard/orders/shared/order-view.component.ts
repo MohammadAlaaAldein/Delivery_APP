@@ -1,24 +1,30 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OrdersService } from '../orders.service';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
 import { Order, OrderStatus } from '../order.interface';
+import { OrderTrackingMapComponent } from 'src/app/shared/components/order-tracking-map/order-tracking-map.component';
+import { SocketService, OrderEventPayload } from 'src/app/shared/services/socket.service';
+import { Subject, takeUntil } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import Swal from 'sweetalert2';
 
-export type ViewerRole = 'company' | 'driver';
+export type ViewerRole = 'company' | 'driver' | 'shop';
 
 @Component({
     selector: 'app-order-view',
     standalone: true,
-    imports: [CommonModule, TranslateModule],
+    imports: [CommonModule, TranslateModule, OrderTrackingMapComponent],
     templateUrl: './order-view.component.html'
 })
-export class OrderViewComponent {
+export class OrderViewComponent implements OnInit, OnDestroy {
 
+    private destroy$ = new Subject<void>();
     order: Order | null = null;
     orderId: number | null = null;
+    googleMapsApiKey: string = environment.googleMapsApiKey || '';
 
     // Role-based behavior
     viewerRole: ViewerRole = 'company';
@@ -30,6 +36,7 @@ export class OrderViewComponent {
         private router: Router,
         private notificationService: NotificationMessageService,
         private translate: TranslateService,
+        private socketService: SocketService,
     ) { }
 
     ngOnInit() {
@@ -39,17 +46,47 @@ export class OrderViewComponent {
         const url = this.route.snapshot.url.map(s => s.path).join('/');
         if (url.includes('my-deliveries') || this.route.snapshot.data['viewerRole'] === 'driver') {
             this.viewerRole = 'driver';
+        } else if (url.includes('shop-orders') || url.includes('my-orders') || this.route.snapshot.data['viewerRole'] === 'shop') {
+            this.viewerRole = 'shop';
         } else {
             this.viewerRole = 'company';
             this.isAvailableOrder = url.includes('available-orders');
         }
 
         this.loadOrder();
+        this.subscribeToRealTimeUpdates();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    private subscribeToRealTimeUpdates() {
+        this.socketService.onOrderUpdate()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                // Only reload if this is the order being viewed
+                if (payload.orderId === this.orderId) {
+                    console.log('[Order View] Real-time update received:', payload.eventType);
+                    this.loadOrder();
+                }
+            });
     }
 
     loadOrder() {
         if (this.viewerRole === 'driver') {
             this.ordersService.getDriverOrder(this.orderId).subscribe({
+                next: (res) => {
+                    this.order = res.data;
+                },
+                error: () => {
+                    this.notificationService.setMessage('g.global_err');
+                    this.goBack();
+                }
+            });
+        } else if (this.viewerRole === 'shop') {
+            this.ordersService.getShopOrder(this.orderId).subscribe({
                 next: (res) => {
                     this.order = res.data;
                 },
@@ -256,10 +293,24 @@ export class OrderViewComponent {
     goBack() {
         if (this.viewerRole === 'driver') {
             this.router.navigate(['/my-deliveries']);
+        } else if (this.viewerRole === 'shop') {
+            this.router.navigate(['/my-orders']);
         } else if (this.isAvailableOrder) {
             this.router.navigate(['/available-orders']);
         } else {
             this.router.navigate(['/company-orders']);
         }
+    }
+
+    // ==================== TRACKING ====================
+
+    /**
+     * Check if tracking map should be shown
+     * Show for PICKED_UP and IN_TRANSIT statuses
+     */
+    canShowTracking(): boolean {
+        return this.order &&
+            [OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(this.order.status) &&
+            (this.viewerRole === 'company' || this.viewerRole === 'shop');
     }
 }

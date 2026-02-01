@@ -162,6 +162,21 @@
                             </div>
                         </div>
                     </div>
+<!-- Live Tracking Map - Show for company/shop when order is being delivered -->
+<div class="col-md-12 mb-4" *ngIf="canShowTracking()">
+    <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+                <i class="feather icon-map-pin me-2"></i>
+                {{ 'tracking.live' | translate }}
+            </h6>
+        </div>
+        <div class="card-body p-0">
+            <app-order-tracking-map [order]="order" [apiKey]="googleMapsApiKey">
+            </app-order-tracking-map>
+        </div>
+    </div>
+</div>
                 </div>
 
                 <!-- Action Buttons - Company -->

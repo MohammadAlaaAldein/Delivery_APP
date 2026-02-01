@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { OrdersService } from '../orders.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,6 +9,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
 import { Order, OrderStatus } from '../order.interface';
+import { SocketService, OrderEventPayload } from 'src/app/shared/services/socket.service';
+import { DriverLocationService } from 'src/app/shared/services/driver-location.service';
+import { Subject, takeUntil } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -17,8 +20,9 @@ import Swal from 'sweetalert2';
     imports: [CommonModule, SCTTableModule, TranslateModule, FormsModule],
     templateUrl: './driver-orders.component.html'
 })
-export class DriverOrdersComponent {
+export class DriverOrdersComponent implements OnInit, OnDestroy {
 
+    private destroy$ = new Subject<void>();
     orders: Order[] = [];
 
     columnConfig: ColumnsConfig[] = [
@@ -48,10 +52,63 @@ export class DriverOrdersComponent {
         private translate: TranslateService,
         private router: Router,
         private notificationService: NotificationMessageService,
+        private socketService: SocketService,
+        private driverLocationService: DriverLocationService,
     ) { }
 
     ngOnInit() {
         this.getOrdersList();
+        this.subscribeToRealTimeUpdates();
+        this.checkAndStartTracking();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+        // Don't stop tracking on destroy - it should continue in background
+    }
+
+    /**
+     * Check if there's an active order that needs tracking
+     */
+    private checkAndStartTracking() {
+        this.ordersService.getDriverOrders().subscribe((res) => {
+            const activeOrder = res.data.find(order =>
+                [OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(order.status)
+            );
+
+            if (activeOrder && !this.driverLocationService.isTracking) {
+                this.startLocationTracking(activeOrder);
+            }
+        });
+    }
+
+    /**
+     * Start location tracking for an order
+     */
+    private startLocationTracking(order: Order) {
+        this.driverLocationService.startTracking({
+            id: order.id,
+            order_number: order.order_number,
+            shop_id: order.shop_id,
+            company_id: order.company_id,
+        });
+    }
+
+    /**
+     * Stop location tracking
+     */
+    private stopLocationTracking() {
+        this.driverLocationService.stopTracking();
+    }
+
+    private subscribeToRealTimeUpdates() {
+        this.socketService.onOrderUpdate()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Driver Orders] Real-time update received:', payload.eventType);
+                this.getOrdersList();
+            });
     }
 
     getOrdersList() {
@@ -134,6 +191,8 @@ export class DriverOrdersComponent {
                             icon: 'success',
                             timer: 2000
                         });
+                        // Start location tracking when order is picked up
+                        this.startLocationTracking(order);
                         this.getOrdersList();
                     },
                     error: (err) => {
@@ -165,6 +224,10 @@ export class DriverOrdersComponent {
                             icon: 'success',
                             timer: 2000
                         });
+                        // Continue tracking (should already be tracking from pickup)
+                        if (!this.driverLocationService.isTracking) {
+                            this.startLocationTracking(order);
+                        }
                         this.getOrdersList();
                     },
                     error: (err) => {
@@ -196,6 +259,8 @@ export class DriverOrdersComponent {
                             icon: 'success',
                             timer: 2000
                         });
+                        // Stop location tracking when order is delivered
+                        this.stopLocationTracking();
                         this.getOrdersList();
                     },
                     error: (err) => {

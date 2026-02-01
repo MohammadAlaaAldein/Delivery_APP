@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { OrdersService } from '../orders.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,6 +9,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
 import { Order, OrderHistory, OrderStatus } from '../order.interface';
+import { SocketService, OrderEventPayload } from 'src/app/shared/services/socket.service';
+import { Subject, takeUntil } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -17,8 +19,9 @@ import Swal from 'sweetalert2';
     imports: [CommonModule, SCTTableModule, TranslateModule, FormsModule],
     templateUrl: './shop-orders.component.html'
 })
-export class ShopOrdersComponent {
+export class ShopOrdersComponent implements OnInit, OnDestroy {
 
+    private destroy$ = new Subject<void>();
     orders: Order[] = [];
     selectedStatus: string = '';
 
@@ -61,10 +64,26 @@ export class ShopOrdersComponent {
         private translate: TranslateService,
         private router: Router,
         private notificationService: NotificationMessageService,
+        private socketService: SocketService,
     ) { }
 
     ngOnInit() {
         this.getOrdersList();
+        this.subscribeToRealTimeUpdates();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    private subscribeToRealTimeUpdates() {
+        this.socketService.onOrderUpdate()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Shop Orders] Real-time update received:', payload.eventType);
+                this.getOrdersList();
+            });
     }
 
     getOrdersList() {

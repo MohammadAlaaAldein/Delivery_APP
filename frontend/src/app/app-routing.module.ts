@@ -79,9 +79,9 @@ const routes: Routes = [
 			},
 			{
 				path: 'my-orders/view/:id',
-				loadComponent: () => import('./dashboard/orders/shop-orders/shop-order-form.component').then((c) => c.ShopOrderFormComponent),
+				loadComponent: () => import('./dashboard/orders/shared/order-view.component').then((c) => c.OrderViewComponent),
 				canActivate: [RoleAccessGuard],
-				data: { role: USER_ROLE.SHOP }
+				data: { role: USER_ROLE.SHOP, viewerRole: 'shop' }
 			},
 			{
 				path: 'my-orders/edit/:id',

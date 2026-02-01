@@ -1,5 +1,5 @@
 // Angular import
-import { Component, effect } from '@angular/core';
+import { Component, effect, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location, LocationStrategy } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -12,6 +12,7 @@ import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
 import { NotificationMessageComponent } from 'src/app/shared/notification-message/notification-message.component';
+import { SocketService } from 'src/app/shared/services/socket.service';
 
 @Component({
 	selector: 'app-admin',
@@ -20,7 +21,7 @@ import { NotificationMessageComponent } from 'src/app/shared/notification-messag
 	templateUrl: './admin.component.html',
 	styleUrl: './admin.component.scss'
 })
-export class AdminComponent {
+export class AdminComponent implements OnInit, OnDestroy {
 	// public props
 	layouts = DeliveryAppConfig.layout;
 	currentLayout!: string;
@@ -34,7 +35,8 @@ export class AdminComponent {
 	constructor(
 		private location: Location,
 		private locationStrategy: LocationStrategy,
-		private themeService: ThemeService
+		private themeService: ThemeService,
+		private socketService: SocketService
 	) {
 		this.currentLayout = DeliveryAppConfig.layout;
 
@@ -54,6 +56,16 @@ export class AdminComponent {
 		effect(() => {
 			this.isThemeLayout(this.themeService.themeLayout());
 		});
+	}
+
+	ngOnInit(): void {
+		// Initialize WebSocket connection
+		this.socketService.connect();
+	}
+
+	ngOnDestroy(): void {
+		// Disconnect WebSocket when component is destroyed
+		this.socketService.disconnect();
 	}
 
 	// private method

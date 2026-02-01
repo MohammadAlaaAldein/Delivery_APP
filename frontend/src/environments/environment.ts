@@ -8,6 +8,7 @@ export const environment = {
 	appVersion: packageInfo.version,
 	production: false,
 	apiUrl: 'http://localhost:1000',
+	googleMapsApiKey: 'AIzaSyAZxaTLNEOs9wt9vtyuGecedcFICTUcuCA', // Add your Google Maps API key here
 };
 
 /*

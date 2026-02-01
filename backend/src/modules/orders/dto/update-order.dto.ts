@@ -1,5 +1,5 @@
 import { IsOptional, IsNumber, IsString, IsEnum, IsEmail, Min, IsDateString, IsBoolean, IsArray, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { PaymentMethod, PaymentStatus, OrderStatus } from '../entities/order.entity';
 import { OrderItemDto } from './create-order.dto';
 
@@ -96,6 +96,7 @@ export class UpdateOrderDto {
 
     // Assignments (admin only)
     @IsOptional()
+    @Transform(({ value }) => (value === null || value === undefined || value === '') ? undefined : Number(value))
     @IsNumber()
     company_id?: number;
 

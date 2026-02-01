@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { OrdersService } from '../orders.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,6 +9,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationMessageService } from 'src/app/shared/notification-message/notification-message.service';
 import { Order, OrderStatus } from '../order.interface';
+import { SocketService, OrderEventPayload, OrderEventType } from 'src/app/shared/services/socket.service';
+import { Subject, takeUntil } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -17,8 +19,9 @@ import Swal from 'sweetalert2';
     imports: [CommonModule, SCTTableModule, TranslateModule, FormsModule],
     templateUrl: './company-available-orders.component.html'
 })
-export class CompanyAvailableOrdersComponent {
+export class CompanyAvailableOrdersComponent implements OnInit, OnDestroy {
 
+    private destroy$ = new Subject<void>();
     orders: Order[] = [];
 
     columnConfig: ColumnsConfig[] = [
@@ -48,10 +51,50 @@ export class CompanyAvailableOrdersComponent {
         private translate: TranslateService,
         private router: Router,
         private notificationService: NotificationMessageService,
+        private socketService: SocketService,
     ) { }
 
     ngOnInit() {
         this.getOrdersList();
+        this.subscribeToRealTimeUpdates();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    private subscribeToRealTimeUpdates() {
+        // Listen for new orders and released orders
+        this.socketService.onOrderCreated()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Available Orders] New order created:', payload.eventType);
+                this.getOrdersList();
+            });
+
+        this.socketService.onOrderReleased()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Available Orders] Order released:', payload.eventType);
+                this.getOrdersList();
+            });
+
+        // Also listen when orders are taken (to remove from list)
+        this.socketService.onOrderAssignedToCompany()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Available Orders] Order taken:', payload.eventType);
+                this.getOrdersList();
+            });
+
+        // Listen for cancelled orders (to remove from list)
+        this.socketService.onOrderCancelled()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((payload: OrderEventPayload) => {
+                console.log('[Available Orders] Order cancelled:', payload.eventType);
+                this.getOrdersList();
+            });
     }
 
     getOrdersList() {

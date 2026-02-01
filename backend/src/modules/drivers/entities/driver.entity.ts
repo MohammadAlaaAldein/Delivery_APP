@@ -72,6 +72,18 @@ export class Driver {
     @Column({ type: 'character varying', length: 500, nullable: true })
     vehicle_image: string;
 
+    // Current location for live tracking (JSON: { latitude, longitude, speed, heading, accuracy, updatedAt })
+    @Column({ type: 'jsonb', nullable: true })
+    current_location: {
+        latitude: number;
+        longitude: number;
+        speed?: number;
+        heading?: number;
+        accuracy?: number;
+        orderId?: number;
+        updatedAt: Date;
+    };
+
     @CreateDateColumn({ type: 'timestamp without time zone' })
     created_at: Date;
 

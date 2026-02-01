@@ -8,6 +8,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { TakeOrderDto, AssignDriverDto, CancelOrderDto } from './dto/order-actions.dto';
 import { CompaniesShopsService } from '../companies-shops/companies-shops.service';
 import { DriversService } from '../drivers/drivers.service';
+import { OrdersGateway } from './orders.gateway';
 
 @Injectable()
 export class OrdersService {
@@ -18,6 +19,7 @@ export class OrdersService {
         private ordersHistoryRepository: Repository<OrderHistory>,
         private companiesShopsService: CompaniesShopsService,
         private driversService: DriversService,
+        private ordersGateway: OrdersGateway,
     ) { }
 
     // Generate unique order number
@@ -72,7 +74,18 @@ export class OrdersService {
             company_assigned_at: createOrderDto.company_id ? new Date() : null,
         });
 
-        return await this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // Emit real-time event
+        // If order is PENDING (no company assigned), get all connected companies to notify them
+        if (!createOrderDto.company_id) {
+            const connectedCompanyIds = await this.companiesShopsService.getCompanyIdsByShopId(shopId);
+            this.ordersGateway.emitOrderCreated(savedOrder, connectedCompanyIds);
+        } else {
+            this.ordersGateway.emitOrderCreated(savedOrder);
+        }
+
+        return savedOrder;
     }
 
     // Shop gets their own orders
@@ -134,9 +147,25 @@ export class OrdersService {
             throw new BadRequestException('Cannot cancel order after pickup');
         }
 
+        const previousCompanyId = order.company_id;
+        const previousDriverId = order.driver_id;
+
+        // Get all connected company IDs before cancelling (to notify them if order was pending)
+        let connectedCompanyIds: number[] = [];
+        if (order.status === OrderStatus.PENDING) {
+            connectedCompanyIds = await this.companiesShopsService.getCompanyIdsByShopId(order.shop_id);
+        }
+
         order.status = OrderStatus.CANCELLED;
         order.cancelled_at = new Date();
         order.cancellation_reason = cancelDto.cancellation_reason;
+
+        // Emit real-time event before moving to history
+        this.ordersGateway.emitOrderCancelled({
+            ...order,
+            company_id: previousCompanyId,
+            driver_id: previousDriverId,
+        }, connectedCompanyIds);
 
         // Move to history table
         const historyRecord = await this.moveOrderToHistory(order);
@@ -194,6 +223,9 @@ export class OrdersService {
             throw new ForbiddenException('Your company is not connected to this shop');
         }
 
+        // Get all connected company IDs before assigning (to notify them)
+        const connectedCompanyIds = await this.companiesShopsService.getCompanyIdsByShopId(order.shop_id);
+
         order.company_id = companyId;
         order.status = OrderStatus.ASSIGNED_TO_COMPANY;
         order.company_assigned_at = new Date();
@@ -201,7 +233,12 @@ export class OrdersService {
             order.company_notes = takeOrderDto.company_notes;
         }
 
-        return await this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // Emit real-time event (notify all connected companies so they remove it from available)
+        this.ordersGateway.emitOrderAssignedToCompany(savedOrder, connectedCompanyIds);
+
+        return savedOrder;
     }
 
     // Company gets their assigned orders
@@ -257,12 +294,24 @@ export class OrdersService {
             order.company_notes = assignDriverDto.company_notes;
         }
 
-        return await this.ordersRepository.save(order);
+        await this.ordersRepository.save(order);
+
+        // Reload order to ensure driver_id is set for the event emission
+        const savedOrder = await this.ordersRepository.findOne({
+            where: { id: orderId },
+            relations: ['shop', 'company', 'driver', 'driver.user'],
+        });
+
+        // Emit real-time event
+        this.ordersGateway.emitOrderAssignedToDriver(savedOrder);
+
+        return savedOrder;
     }
 
     // Company unassigns order from driver
     async unassignDriver(companyId: number, orderId: number): Promise<Order> {
         const order = await this.getCompanyOrder(companyId, orderId);
+        const previousDriverId = order.driver_id;
 
         if (order.status !== OrderStatus.ASSIGNED_TO_DRIVER) {
             throw new BadRequestException('Cannot unassign driver at this stage');
@@ -272,12 +321,19 @@ export class OrdersService {
         order.status = OrderStatus.ASSIGNED_TO_COMPANY;
         order.driver_assigned_at = null;
 
-        return await this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // Emit real-time event - notify the previous driver that order was unassigned
+        this.ordersGateway.emitOrderUnassignedFromDriver(savedOrder, previousDriverId);
+
+        return savedOrder;
     }
 
     // Company releases order (returns to available pool)
     async releaseOrder(companyId: number, orderId: number): Promise<Order> {
         const order = await this.getCompanyOrder(companyId, orderId);
+        const previousCompanyId = order.company_id;
+        const previousDriverId = order.driver_id;
 
         if (![OrderStatus.ASSIGNED_TO_COMPANY, OrderStatus.ASSIGNED_TO_DRIVER].includes(order.status)) {
             throw new BadRequestException('Cannot release order at this stage');
@@ -289,7 +345,12 @@ export class OrdersService {
         order.company_assigned_at = null;
         order.driver_assigned_at = null;
 
-        return await this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // Emit real-time event
+        this.ordersGateway.emitOrderReleased(savedOrder, previousCompanyId, previousDriverId);
+
+        return savedOrder;
     }
 
     // ==================== DRIVER ENDPOINTS ====================
@@ -343,7 +404,12 @@ export class OrdersService {
             order.driver_notes = notes;
         }
 
-        return await this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // Emit real-time event
+        this.ordersGateway.emitOrderPickedUp(savedOrder);
+
+        return savedOrder;
     }
 
     // Driver marks order as in transit
@@ -359,7 +425,12 @@ export class OrdersService {
             order.driver_notes = notes;
         }
 
-        return await this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // Emit real-time event
+        this.ordersGateway.emitOrderInTransit(savedOrder);
+
+        return savedOrder;
     }
 
     // Driver marks order as delivered - moves order to history table
@@ -375,6 +446,12 @@ export class OrdersService {
         if (notes) {
             order.driver_notes = notes;
         }
+
+        // Clear driver's current location since delivery is complete
+        await this.driversService.clearLocation(driverId);
+
+        // Emit real-time event before moving to history
+        this.ordersGateway.emitOrderDelivered(order);
 
         // Move to history table
         const historyRecord = await this.moveOrderToHistory(order);

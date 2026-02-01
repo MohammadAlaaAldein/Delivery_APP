@@ -717,5 +717,21 @@
 		"notes": "Notes",
 		"": ""
 	},
+	"tracking": {
+		"live": "Live Tracking",
+		"not_available": "Tracking Not Available",
+		"not_available_message": "Tracking is only available for orders that have been picked up",
+		"loading_map": "Loading map...",
+		"speed": "Speed",
+		"last_update": "Last Update",
+		"driver_location": "Driver Location",
+		"pickup_location": "Pickup Location",
+		"delivery_location": "Delivery Location",
+		"track_order": "Track Order",
+		"tracking_started": "Tracking Started",
+		"tracking_stopped": "Tracking Stopped",
+		"order_delivered": "Order has been delivered",
+		"order_cancelled": "Order has been cancelled"
+	},
 	"": ""
 }
