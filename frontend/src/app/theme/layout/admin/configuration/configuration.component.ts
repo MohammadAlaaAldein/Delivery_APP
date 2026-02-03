@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { DeliveryAppConfig } from 'src/app/app-config';
 import { ThemeService } from 'src/app/theme/shared/service/theme.service';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
+import { LANGUAGES, LanguageService } from 'src/app/shared/services/language.service';
 export type TThemeConfig = {
 	layout: string; // vertical, horizontal, compact
 	isCollapse_menu: boolean; // true, false
@@ -48,7 +49,8 @@ export class ConfigurationComponent implements OnInit {
 		private location: Location,
 		private renderer: Renderer2,
 		private locationStrategy: LocationStrategy,
-		private themeService: ThemeService
+		private themeService: ThemeService,
+		private languageService: LanguageService,
 	) {
 		this.setThemeLayout();
 		this.windowWidth = window.innerWidth;
@@ -74,6 +76,10 @@ export class ConfigurationComponent implements OnInit {
 			this.sidebar_caption_hide = DeliveryAppConfig.sidebar_caption_hide;
 			this.captionShow(this.sidebar_caption_hide);
 		}
+
+		this.languageService.changeLanguage.subscribe(language => {
+			this.setRtlLayout(language == LANGUAGES.AR ? true : true);
+		});
 	}
 
 	private setSavedTheme(): boolean {
@@ -103,7 +109,7 @@ export class ConfigurationComponent implements OnInit {
 	private saveThemeConfig() {
 		const themeConfig: TThemeConfig = {
 			font_family: this.setFontFamily,
-			i18n: 'en',
+			i18n: LANGUAGES.AR,
 			isBox_container: this.boxContainer,
 			isCollapse_menu: true,
 			isDarkMode: this.themeMode,
@@ -150,7 +156,7 @@ export class ConfigurationComponent implements OnInit {
 			this.renderer.removeClass(document.body, 'delivery_app-dark');
 			document.querySelector('html')?.classList.remove('dark');
 			this.SetBodyColor('preset-1');
-			this.fontFamily('Roboto');
+			this.fontFamily(this.setFontFamily);
 			this.themeMode = false;
 		}
 		this.themeService.isDarkTheme.set(this.themeMode);

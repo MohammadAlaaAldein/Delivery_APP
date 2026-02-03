@@ -14,6 +14,7 @@ import { AuthService } from 'src/app/dashboard/users/login/auth.service';
 import { USER_ROLE, UsersService } from 'src/app/dashboard/users/users.service';
 import { CommonDataService } from 'src/app/shared/services/common-data.service';
 import { NgSelectModule } from "@ng-select/ng-select";
+import { LANGUAGES, LanguageService } from 'src/app/shared/services/language.service';
 
 @Component({
 	selector: 'app-nav-right',
@@ -23,6 +24,8 @@ import { NgSelectModule } from "@ng-select/ng-select";
 	styleUrl: './nav-right.component.scss'
 })
 export class NavRightComponent implements OnInit {
+	readonly LANGUAGES = LANGUAGES;
+
 	readonly USER_ROLE = USER_ROLE;
 
 	user = null;
@@ -213,7 +216,8 @@ export class NavRightComponent implements OnInit {
 		public authService: AuthService,
 		private translate: TranslateService,
 		public usersService: UsersService,
-		private commonDataService: CommonDataService
+		private commonDataService: CommonDataService,
+		public languageService: LanguageService,
 	) { }
 
 	ngOnInit() {

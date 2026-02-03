@@ -1,5 +1,6 @@
 // project import
 import en from '../../../../../shared/translation/en.json';
+import ar from '../../../../../shared/translation/ar.json';
 
 // third party
 import { TranslateLoader } from '@ngx-translate/core';
@@ -8,8 +9,10 @@ import { TranslateLoader } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 export class CustomTranslateLoader implements TranslateLoader {
+	readonly LANGUAGES = { en, ar };
+
 	// public method
 	getTranslation(lang: string) {
-		return of(en);
+		return of(this.LANGUAGES[lang]);
 	}
 }
