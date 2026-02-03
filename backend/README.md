@@ -1,73 +1,196 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Delivery API Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS-based REST API server for the Delivery Management Platform.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **RESTful API** - Comprehensive endpoints for all business operations
+- **JWT Authentication** - Secure auth with refresh tokens and 2FA support
+- **Real-time Updates** - Socket.IO WebSocket for live order tracking
+- **Role-based Access** - Admin, Shop, Company, Driver permissions
+- **Database** - PostgreSQL with TypeORM ORM
+- **Caching** - Redis for session and performance optimization
+- **Email** - EJS templates for transactional emails
+- **Logging** - Action logs and API request logging
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
+
+- Node.js 18+
+- PostgreSQL 14+
+- Redis
 
 ## Installation
 
 ```bash
-$ npm install
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Configure your database and other settings in .env
 ```
 
-## Running the app
+## Environment Variables
+
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+DB_DATABASE=delivery
+
+# JWT
+JWT_SECRET=your_secret_key
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# App
+PORT=3000
+SITE_BASE_URL=http://localhost:4200
+
+# Email (optional)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=user@example.com
+SMTP_PASS=password
+```
+
+## Database Setup
 
 ```bash
-# development
-$ npm run start
+# Run migrations
+npm run migration:run
 
-# watch mode
-$ npm run start:dev
+# Seed initial data (optional)
+npm run seed
 
-# production mode
-$ npm run start:prod
+# Generate new migration
+npm run migration:generate -- src/database/migrations/MigrationName
 ```
 
-## Test
+## Running the Server
 
 ```bash
-# unit tests
-$ npm run test
+# Development mode (with hot reload)
+npm run start:dev
 
-# e2e tests
-$ npm run test:e2e
+# Production mode
+npm run build
+npm run start:prod
 
-# test coverage
-$ npm run test:cov
+# Debug mode
+npm run start:debug
 ```
 
-## Support
+## API Documentation
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Authentication Endpoints
 
-## Stay in touch
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/auth/login` | Login with email/password |
+| POST | `/api/v1/auth/logout` | Logout (invalidate token) |
+| POST | `/api/v1/auth/refresh` | Refresh access token |
+| POST | `/api/v1/auth/verify-login-otp-code` | Verify 2FA OTP |
+| POST | `/api/v1/auth/resend-login-otp` | Resend 2FA OTP |
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Order Endpoints by Role
+
+#### Shop Orders
+- `POST /api/v1/orders/shop/create` - Create order
+- `GET /api/v1/orders/shop/my` - List shop orders
+- `GET /api/v1/orders/shop/my/:id` - Get order details
+- `PATCH /api/v1/orders/shop/my/:id` - Update order
+- `POST /api/v1/orders/shop/my/:id/cancel` - Cancel order
+
+#### Company Orders
+- `GET /api/v1/orders/company/available` - List available orders
+- `POST /api/v1/orders/company/take/:id` - Take order
+- `GET /api/v1/orders/company/my` - List company orders
+- `POST /api/v1/orders/company/my/:id/assign-driver` - Assign driver
+- `POST /api/v1/orders/company/my/:id/release` - Release order
+
+#### Driver Orders
+- `GET /api/v1/orders/driver/my` - List assigned deliveries
+- `POST /api/v1/orders/driver/my/:id/pickup` - Mark picked up
+- `POST /api/v1/orders/driver/my/:id/start-delivery` - Start delivery
+- `POST /api/v1/orders/driver/my/:id/deliver` - Mark delivered
+- `POST /api/v1/orders/driver/update-location` - Update GPS location
+
+### WebSocket Connection
+
+```typescript
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000/orders', {
+  auth: { token: 'Bearer <jwt_token>' }
+});
+
+// Listen for order events
+socket.on('order_created', (order) => { ... });
+socket.on('order_assigned_to_company', (order) => { ... });
+socket.on('order_assigned_to_driver', (order) => { ... });
+socket.on('order_picked_up', (order) => { ... });
+socket.on('order_in_transit', (order) => { ... });
+socket.on('order_delivered', (order) => { ... });
+socket.on('order_cancelled', (order) => { ... });
+socket.on('driver_location_updated', (location) => { ... });
+```
+
+## Project Structure
+
+```
+src/
+ main.ts                 # Application entry point
+ app.module.ts           # Root module
+ config/
+    data-source.ts      # TypeORM configuration
+ common/
+    api-response.ts     # Response helpers
+    constants.ts        # App constants
+    utilities.ts        # Utility functions
+ decorators/
+    version.decorator.ts
+ interceptors/
+    role-interceptor.ts # Role-based access
+ modules/
+    auth/               # Authentication
+    users/              # User management
+    shops/              # Shop management
+    companies/          # Company management
+    drivers/            # Driver management
+    orders/             # Order management
+       orders.controller.ts
+       orders.service.ts
+       orders.gateway.ts  # WebSocket
+       entities/
+    shop-requests/      # Shop registration
+    driver-requests/    # Driver registration
+    companies-shops/    # Shop-Company relations
+    ...
+ view/                   # Email templates
+```
+
+## Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+Proprietary - All rights reserved

@@ -635,7 +635,8 @@ These endpoints are protected by `RoleInterceptor` with `requireEntityOwnership:
 - [x] Audit logging (action_logs)
 - [x] API request logging
 - [x] Role-based access control
-- [x] i18n translations (English)
+- [x] i18n translations (English & Arabic)
+- [x] RTL/LTR support for Arabic
 - [x] Shop extended fields (location, contact, license info)
 - [x] Company extended fields (location, contact, license info)
 - [x] Jordan cities support (Amman, Irbid, Zarqa, etc.)
@@ -647,15 +648,271 @@ These endpoints are protected by `RoleInterceptor` with `requireEntityOwnership:
 - [x] Shop request system (companies request new shops)
 - [x] Driver request system (companies request new drivers)
 - [x] Request approval/rejection workflow for admins
+- [x] Push notifications backend module (Firebase Cloud Messaging)
+- [x] Mobile app (Expo React Native)
 
 ### 🚧 TODO / In Progress
 - [ ] File upload for driver images (personal, license, vehicle)
 - [ ] Email notification system (mailers module commented out)
 - [ ] Sentry error tracking (commented out)
 - [ ] Full action logging integration
-- [ ] Orders module (not yet implemented)
-- [ ] Delivery tracking (not yet implemented)
-- [ ] Mobile app for drivers
+- [ ] Orders module (backend - in progress)
+- [ ] Delivery tracking (in progress)
+
+---
+
+## 📱 Mobile App (Expo React Native)
+
+### Overview
+The mobile app provides role-specific functionality for Shop owners, Company managers, and Drivers.
+
+### Technology Stack
+| Technology | Purpose |
+|------------|---------|
+| Expo SDK 54 | React Native framework |
+| React Navigation 7 | Navigation |
+| Zustand | State management |
+| Axios | HTTP client |
+| Socket.IO Client | Real-time updates |
+| expo-notifications | Push notifications |
+| expo-secure-store | Secure storage |
+| expo-location | GPS tracking |
+
+### Mobile Project Structure
+```
+mobile/
+├── src/
+│   ├── types/           # TypeScript interfaces
+│   │   └── index.ts     # All type definitions
+│   ├── constants/       # App constants & theme
+│   │   └── index.ts     # Colors, sizes, configs
+│   ├── i18n/            # Internationalization
+│   │   ├── index.ts     # i18n service
+│   │   ├── en.ts        # English translations
+│   │   └── ar.ts        # Arabic translations
+│   ├── services/        # API & external services
+│   │   ├── api.service.ts
+│   │   ├── auth.service.ts
+│   │   ├── orders.service.ts
+│   │   ├── entities.service.ts
+│   │   ├── socket.service.ts
+│   │   └── push.service.ts
+│   ├── stores/          # Zustand state stores
+│   │   ├── auth.store.ts
+│   │   └── orders.store.ts
+│   ├── components/      # Reusable UI components
+│   │   ├── common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── TextInput.tsx
+│   │   │   ├── Badge.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Loading.tsx
+│   │   │   ├── EmptyState.tsx
+│   │   │   ├── StatCard.tsx
+│   │   │   ├── OrderCard.tsx
+│   │   │   ├── DriverCard.tsx
+│   │   │   └── UIComponents.tsx
+│   │   └── index.ts
+│   ├── screens/         # App screens
+│   │   ├── auth/
+│   │   │   ├── LoginScreen.tsx
+│   │   │   ├── OTPScreen.tsx
+│   │   │   └── ForgotPasswordScreen.tsx
+│   │   ├── shop/
+│   │   │   ├── DashboardScreen.tsx
+│   │   │   ├── OrdersScreen.tsx
+│   │   │   └── CreateOrderScreen.tsx
+│   │   ├── company/
+│   │   │   ├── DashboardScreen.tsx
+│   │   │   └── AvailableOrdersScreen.tsx
+│   │   ├── driver/
+│   │   │   └── DashboardScreen.tsx
+│   │   └── common/
+│   │       └── ProfileScreen.tsx
+│   ├── navigation/      # React Navigation
+│   │   ├── RootNavigator.tsx
+│   │   ├── AuthNavigator.tsx
+│   │   ├── ShopNavigator.tsx
+│   │   ├── CompanyNavigator.tsx
+│   │   ├── DriverNavigator.tsx
+│   │   └── index.ts
+│   └── App.tsx          # App entry point
+├── package.json
+└── app.json
+```
+
+### Mobile Features by Role
+
+#### Shop User
+- Dashboard with order statistics
+- Create new delivery orders
+- Track order status in real-time
+- View order history
+- Manage profile settings
+
+#### Company User
+- Dashboard with company stats
+- View available orders
+- Take/release orders
+- Assign drivers to orders
+- Manage driver assignments
+- Track active deliveries
+
+#### Driver User
+- Dashboard with delivery stats
+- View assigned orders
+- Accept/reject deliveries
+- Update order status (picked up, in transit, delivered)
+- Real-time GPS location tracking
+- Navigation integration
+
+### i18n & RTL Support
+The mobile app supports both English and Arabic with automatic RTL layout adjustment:
+
+```typescript
+// Switching language
+import { setLanguage, isRTL } from './i18n';
+
+// Set to Arabic (enables RTL)
+await setLanguage('ar');
+
+// Check current direction
+if (isRTL()) {
+  // Apply RTL-specific styles
+}
+```
+
+### Push Notifications
+The app uses Firebase Cloud Messaging (via expo-notifications) for real-time push notifications:
+
+| Notification Type | Recipient | Description |
+|-------------------|-----------|-------------|
+| ORDER_CREATED | Company | New order available |
+| ORDER_ASSIGNED | Shop, Driver | Order assigned |
+| ORDER_PICKED_UP | Shop | Order picked up |
+| ORDER_IN_TRANSIT | Shop | Order in transit |
+| ORDER_DELIVERED | Shop, Company | Order delivered |
+| ORDER_CANCELLED | All parties | Order cancelled |
+
+### Mobile Setup
+```bash
+cd mobile
+npm install
+npx expo start
+```
+
+### Building for Production
+```bash
+# Android
+npx expo build:android
+
+# iOS
+npx expo build:ios
+
+# Using EAS Build
+eas build --platform all
+```
+
+---
+
+## 🔔 Push Notifications Module (Backend)
+
+### Overview
+The push notifications module provides Firebase Cloud Messaging integration for sending notifications to mobile devices.
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/push-notifications/register` | Register device token |
+| DELETE | `/push-notifications/unregister` | Unregister device token |
+| POST | `/push-notifications/subscribe/:topic` | Subscribe to topic |
+| DELETE | `/push-notifications/unsubscribe/:topic` | Unsubscribe from topic |
+
+### Configuration
+Add Firebase service account to environment:
+
+```env
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}
+```
+
+### Usage in Services
+```typescript
+import { PushNotificationsService } from './modules/push-notifications';
+
+// Inject service
+constructor(private pushService: PushNotificationsService) {}
+
+// Send to user
+await this.pushService.sendToUser(userId, {
+  title: 'Order Update',
+  body: 'Your order has been delivered!',
+  type: NotificationType.ORDER_DELIVERED,
+  data: { orderId }
+});
+
+// Send to topic
+await this.pushService.sendToTopic('new-orders', {
+  title: 'New Order Available',
+  body: 'A new order is available for pickup',
+  type: NotificationType.NEW_ORDER_AVAILABLE
+});
+```
+
+---
+
+## 🌐 Internationalization (i18n)
+
+### Supported Languages
+| Language | Code | Direction |
+|----------|------|-----------|
+| English | en | LTR |
+| Arabic | ar | RTL |
+
+### Translation Files
+```
+shared/
+└── translation/
+    ├── en.json    # English translations
+    └── ar.json    # Arabic translations
+```
+
+### Web (Angular) Usage
+```typescript
+// In component
+import { I18nService } from './shared/services/i18n.service';
+
+constructor(private i18n: I18nService) {}
+
+// Translate
+this.i18n.t('orders.title'); // "Orders" or "الطلبات"
+
+// Switch language
+this.i18n.setLanguage('ar');
+
+// Check RTL
+if (this.i18n.isRTL) {
+  // Apply RTL styles
+}
+```
+
+```html
+<!-- In template -->
+<h1>{{ 'orders.title' | translate }}</h1>
+
+<!-- RTL directive -->
+<div appRtl>
+  Content with automatic RTL handling
+</div>
+```
+
+### RTL Styling
+RTL styles are automatically applied when Arabic is selected:
+- Text alignment reversed
+- Flex directions reversed
+- Margins and paddings mirrored
+- Icons flipped where appropriate
+- Arabic fonts loaded (Cairo, Tajawal)
 
 ---
 

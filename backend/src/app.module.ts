@@ -29,6 +29,7 @@ import { DriversModule } from './modules/drivers/drivers.module';
 import { ShopRequestsModule } from './modules/shop-requests/shop-requests.module';
 import { DriverRequestsModule } from './modules/driver-requests/driver-requests.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { PushNotificationsModule } from './modules/push-notifications/push-notifications.module';
 
 @Module({
 	imports: [
@@ -54,6 +55,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 		ShopRequestsModule,
 		DriverRequestsModule,
 		OrdersModule,
+		PushNotificationsModule,
 		AuthModule,
 		// ActionLogModule,
 		// SentryModule.forRoot(),
