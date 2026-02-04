@@ -15,11 +15,12 @@ import { USER_ROLE, UsersService } from 'src/app/dashboard/users/users.service';
 import { CommonDataService } from 'src/app/shared/services/common-data.service';
 import { NgSelectModule } from "@ng-select/ng-select";
 import { LANGUAGES, LanguageService } from 'src/app/shared/services/language.service';
+import { NotificationDropdownComponent } from 'src/app/shared/components/notification-dropdown/notification-dropdown.component';
 
 @Component({
 	selector: 'app-nav-right',
 	standalone: true,
-	imports: [SharedModule, RouterModule, ConfigurationComponent, NgSelectModule],
+	imports: [SharedModule, RouterModule, ConfigurationComponent, NgSelectModule, NotificationDropdownComponent],
 	templateUrl: './nav-right.component.html',
 	styleUrl: './nav-right.component.scss'
 })

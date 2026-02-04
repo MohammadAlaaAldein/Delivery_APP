@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { PushNotificationService } from './shared/services/push-notification.service';
 
 @Component({
 	selector: 'app-root',
@@ -15,7 +16,8 @@ export class AppComponent implements OnInit {
 	// Constructor
 	constructor(
 		public translate: TranslateService,
-		private router: Router
+		private router: Router,
+		private pushNotificationService: PushNotificationService // Inject to initialize
 	) {
 		translate.addLangs(['en']);
 		translate.setDefaultLang('en');

@@ -9,6 +9,9 @@ import { TakeOrderDto, AssignDriverDto, CancelOrderDto } from './dto/order-actio
 import { CompaniesShopsService } from '../companies-shops/companies-shops.service';
 import { DriversService } from '../drivers/drivers.service';
 import { OrdersGateway } from './orders.gateway';
+import { PushNotificationsService } from '../push-notifications/push-notifications.service';
+import { NotificationType } from '../push-notifications/dto/push-notification.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class OrdersService {
@@ -17,10 +20,63 @@ export class OrdersService {
         private ordersRepository: Repository<Order>,
         @InjectRepository(OrderHistory)
         private ordersHistoryRepository: Repository<OrderHistory>,
+        @InjectRepository(User)
+        private usersRepository: Repository<User>,
         private companiesShopsService: CompaniesShopsService,
         private driversService: DriversService,
         private ordersGateway: OrdersGateway,
+        private pushNotificationsService: PushNotificationsService,
     ) { }
+
+    // ==================== NOTIFICATION HELPER METHODS ====================
+
+    // Get user IDs for a shop (shop owners/employees)
+    private async getShopUserIds(shopId: number): Promise<string[]> {
+        const users = await this.usersRepository.find({
+            where: { entity_id: shopId, role: 'shop' as any },
+            select: ['id'],
+        });
+        return users.map(u => u.id.toString());
+    }
+
+    // Get user IDs for a company (company owners/employees)
+    private async getCompanyUserIds(companyId: number): Promise<string[]> {
+        const users = await this.usersRepository.find({
+            where: { entity_id: companyId, role: 'company' as any },
+            select: ['id'],
+        });
+        return users.map(u => u.id.toString());
+    }
+
+    // Get user IDs for multiple companies
+    private async getMultipleCompaniesUserIds(companyIds: number[]): Promise<string[]> {
+        if (companyIds.length === 0) return [];
+        const users = await this.usersRepository.find({
+            where: { entity_id: In(companyIds), role: 'company' as any },
+            select: ['id'],
+        });
+        return users.map(u => u.id.toString());
+    }
+
+    // Send order notification (non-blocking)
+    private async sendOrderNotification(
+        order: Order,
+        type: NotificationType,
+        userIds: string[],
+        customTitle?: string,
+        customBody?: string,
+    ): Promise<void> {
+        if (userIds.length === 0) return;
+
+        // Don't await - send notification in background
+        this.pushNotificationsService.sendOrderNotification(
+            order.id.toString(),
+            type,
+            userIds,
+            customTitle,
+            customBody,
+        ).catch(err => console.error('Push notification error:', err));
+    }
 
     // Generate unique order number
     private async generateOrderNumber(): Promise<string> {
@@ -81,8 +137,28 @@ export class OrdersService {
         if (!createOrderDto.company_id) {
             const connectedCompanyIds = await this.companiesShopsService.getCompanyIdsByShopId(shopId);
             this.ordersGateway.emitOrderCreated(savedOrder, connectedCompanyIds);
+
+            // 🔔 PUSH NOTIFICATION: New order available for all connected companies
+            const companyUserIds = await this.getMultipleCompaniesUserIds(connectedCompanyIds);
+            this.sendOrderNotification(
+                savedOrder,
+                NotificationType.NEW_ORDER_AVAILABLE,
+                companyUserIds,
+                'طلب جديد متاح',
+                `طلب جديد #${savedOrder.order_number} متاح للاستلام`,
+            );
         } else {
             this.ordersGateway.emitOrderCreated(savedOrder);
+
+            // 🔔 PUSH NOTIFICATION: Order assigned to specific company
+            const companyUserIds = await this.getCompanyUserIds(createOrderDto.company_id);
+            this.sendOrderNotification(
+                savedOrder,
+                NotificationType.ORDER_ASSIGNED,
+                companyUserIds,
+                'طلب جديد معين',
+                `تم تعيين الطلب #${savedOrder.order_number} لشركتكم`,
+            );
         }
 
         return savedOrder;
@@ -167,6 +243,29 @@ export class OrdersService {
             driver_id: previousDriverId,
         }, connectedCompanyIds);
 
+        // 🔔 PUSH NOTIFICATION: Notify company if order was assigned to them
+        if (previousCompanyId) {
+            const companyUserIds = await this.getCompanyUserIds(previousCompanyId);
+            this.sendOrderNotification(
+                order,
+                NotificationType.ORDER_CANCELLED,
+                companyUserIds,
+                'تم إلغاء الطلب',
+                `تم إلغاء الطلب #${order.order_number} من قبل المتجر`,
+            );
+        }
+
+        // 🔔 PUSH NOTIFICATION: Notify driver if order was assigned to them
+        if (previousDriverId) {
+            this.sendOrderNotification(
+                order,
+                NotificationType.ORDER_CANCELLED,
+                [previousDriverId.toString()],
+                'تم إلغاء الطلب',
+                `تم إلغاء الطلب #${order.order_number}`,
+            );
+        }
+
         // Move to history table
         const historyRecord = await this.moveOrderToHistory(order);
 
@@ -238,6 +337,16 @@ export class OrdersService {
         // Emit real-time event (notify all connected companies so they remove it from available)
         this.ordersGateway.emitOrderAssignedToCompany(savedOrder, connectedCompanyIds);
 
+        // 🔔 PUSH NOTIFICATION: Notify shop that their order was taken
+        const shopUserIds = await this.getShopUserIds(order.shop_id);
+        this.sendOrderNotification(
+            savedOrder,
+            NotificationType.ORDER_ASSIGNED,
+            shopUserIds,
+            'تم استلام الطلب',
+            `تم استلام الطلب #${savedOrder.order_number} من شركة توصيل`,
+        );
+
         return savedOrder;
     }
 
@@ -305,6 +414,25 @@ export class OrdersService {
         // Emit real-time event
         this.ordersGateway.emitOrderAssignedToDriver(savedOrder);
 
+        // 🔔 PUSH NOTIFICATION: Notify driver that an order is assigned to them
+        this.sendOrderNotification(
+            savedOrder,
+            NotificationType.DRIVER_ASSIGNED,
+            [assignDriverDto.driver_id.toString()],
+            'طلب جديد معين لك',
+            `تم تعيين الطلب #${savedOrder.order_number} لك`,
+        );
+
+        // 🔔 PUSH NOTIFICATION: Notify shop that a driver was assigned
+        const shopUserIds = await this.getShopUserIds(savedOrder.shop_id);
+        this.sendOrderNotification(
+            savedOrder,
+            NotificationType.DRIVER_ASSIGNED,
+            shopUserIds,
+            'تم تعيين سائق',
+            `تم تعيين سائق للطلب #${savedOrder.order_number}`,
+        );
+
         return savedOrder;
     }
 
@@ -325,6 +453,17 @@ export class OrdersService {
 
         // Emit real-time event - notify the previous driver that order was unassigned
         this.ordersGateway.emitOrderUnassignedFromDriver(savedOrder, previousDriverId);
+
+        // 🔔 PUSH NOTIFICATION: Notify driver that order was unassigned
+        if (previousDriverId) {
+            this.sendOrderNotification(
+                savedOrder,
+                NotificationType.DRIVER_UNASSIGNED,
+                [previousDriverId.toString()],
+                'تم إلغاء تعيين الطلب',
+                `تم إلغاء تعيينك من الطلب #${savedOrder.order_number}`,
+            );
+        }
 
         return savedOrder;
     }
@@ -409,6 +548,28 @@ export class OrdersService {
         // Emit real-time event
         this.ordersGateway.emitOrderPickedUp(savedOrder);
 
+        // 🔔 PUSH NOTIFICATION: Notify shop that order was picked up
+        const shopUserIds = await this.getShopUserIds(savedOrder.shop_id);
+        this.sendOrderNotification(
+            savedOrder,
+            NotificationType.ORDER_PICKED_UP,
+            shopUserIds,
+            'تم استلام الطلب',
+            `تم استلام الطلب #${savedOrder.order_number} من قبل السائق`,
+        );
+
+        // 🔔 PUSH NOTIFICATION: Notify company that order was picked up
+        if (savedOrder.company_id) {
+            const companyUserIds = await this.getCompanyUserIds(savedOrder.company_id);
+            this.sendOrderNotification(
+                savedOrder,
+                NotificationType.ORDER_PICKED_UP,
+                companyUserIds,
+                'تم استلام الطلب',
+                `تم استلام الطلب #${savedOrder.order_number}`,
+            );
+        }
+
         return savedOrder;
     }
 
@@ -429,6 +590,16 @@ export class OrdersService {
 
         // Emit real-time event
         this.ordersGateway.emitOrderInTransit(savedOrder);
+
+        // 🔔 PUSH NOTIFICATION: Notify shop that order is in transit
+        const shopUserIds = await this.getShopUserIds(savedOrder.shop_id);
+        this.sendOrderNotification(
+            savedOrder,
+            NotificationType.ORDER_IN_TRANSIT,
+            shopUserIds,
+            'الطلب في الطريق',
+            `الطلب #${savedOrder.order_number} في طريقه للعميل`,
+        );
 
         return savedOrder;
     }
@@ -452,6 +623,28 @@ export class OrdersService {
 
         // Emit real-time event before moving to history
         this.ordersGateway.emitOrderDelivered(order);
+
+        // 🔔 PUSH NOTIFICATION: Notify shop that order was delivered
+        const shopUserIds = await this.getShopUserIds(order.shop_id);
+        this.sendOrderNotification(
+            order,
+            NotificationType.ORDER_DELIVERED,
+            shopUserIds,
+            'تم تسليم الطلب',
+            `تم تسليم الطلب #${order.order_number} بنجاح`,
+        );
+
+        // 🔔 PUSH NOTIFICATION: Notify company that order was delivered
+        if (order.company_id) {
+            const companyUserIds = await this.getCompanyUserIds(order.company_id);
+            this.sendOrderNotification(
+                order,
+                NotificationType.ORDER_DELIVERED,
+                companyUserIds,
+                'تم تسليم الطلب',
+                `تم تسليم الطلب #${order.order_number}`,
+            );
+        }
 
         // Move to history table
         const historyRecord = await this.moveOrderToHistory(order);

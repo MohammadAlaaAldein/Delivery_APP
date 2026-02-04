@@ -11,7 +11,8 @@ import { SentryModule } from "@sentry/nestjs/setup";
 import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
 import { HttpExceptionFilter } from './http-exception/http-exception.filter';
 import { SentryGlobalFilter } from "@sentry/nestjs/setup";
-import { ScheduleModule } from './modules/schedule/schedule.module';
+import { ScheduleModule as CustomScheduleModule } from './modules/schedule/schedule.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ApiLogsInterceptor } from './modules/api-logs/api-logs.interceptor';
@@ -48,6 +49,7 @@ import { PushNotificationsModule } from './modules/push-notifications/push-notif
 			writePort: +process.env.REDIS_WRITE_PORT,
 		}),
 		EventEmitterModule.forRoot(),
+		ScheduleModule.forRoot(),
 		UsersModule,
 		ShopsModule,
 		CompaniesModule,
@@ -59,7 +61,7 @@ import { PushNotificationsModule } from './modules/push-notifications/push-notif
 		AuthModule,
 		// ActionLogModule,
 		// SentryModule.forRoot(),
-		// ScheduleModule,
+		// CustomScheduleModule,
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', '..', 'frontend', 'dist'),
 			serveRoot: '/',

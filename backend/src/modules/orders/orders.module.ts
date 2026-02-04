@@ -7,10 +7,11 @@ import { OrderHistory } from './entities/order-history.entity';
 import { CompaniesShopsModule } from '../companies-shops/companies-shops.module';
 import { DriversModule } from '../drivers/drivers.module';
 import { OrdersGateway } from './orders.gateway';
+import { User } from '../users/entities/user.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Order, OrderHistory]),
+        TypeOrmModule.forFeature([Order, OrderHistory, User]),
         CompaniesShopsModule,
         DriversModule,
     ],

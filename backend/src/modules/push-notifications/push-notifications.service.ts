@@ -1,7 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, LessThan } from 'typeorm';
 import * as admin from 'firebase-admin';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { DeviceToken } from './entities/device-token.entity';
 import { NotificationLog } from './entities/notification-log.entity';
 import {
@@ -401,40 +402,144 @@ export class PushNotificationsService implements OnModuleInit {
         customTitle?: string,
         customBody?: string,
     ): Promise<void> {
+        // Arabic titles for notifications
         const titles = {
-            [NotificationType.ORDER_CREATED]: 'New Order Created',
-            [NotificationType.ORDER_ASSIGNED]: 'Order Assigned',
-            [NotificationType.ORDER_PICKED_UP]: 'Order Picked Up',
-            [NotificationType.ORDER_IN_TRANSIT]: 'Order In Transit',
-            [NotificationType.ORDER_DELIVERED]: 'Order Delivered',
-            [NotificationType.ORDER_CANCELLED]: 'Order Cancelled',
-            [NotificationType.ORDER_UPDATED]: 'Order Updated',
-            [NotificationType.DRIVER_ASSIGNED]: 'Driver Assigned',
-            [NotificationType.DRIVER_UNASSIGNED]: 'Driver Unassigned',
-            [NotificationType.NEW_ORDER_AVAILABLE]: 'New Order Available',
+            [NotificationType.ORDER_CREATED]: 'طلب جديد',
+            [NotificationType.ORDER_ASSIGNED]: 'تم تعيين الطلب',
+            [NotificationType.ORDER_PICKED_UP]: 'تم استلام الطلب',
+            [NotificationType.ORDER_IN_TRANSIT]: 'الطلب في الطريق',
+            [NotificationType.ORDER_DELIVERED]: 'تم تسليم الطلب',
+            [NotificationType.ORDER_CANCELLED]: 'تم إلغاء الطلب',
+            [NotificationType.ORDER_UPDATED]: 'تم تحديث الطلب',
+            [NotificationType.DRIVER_ASSIGNED]: 'تم تعيين سائق',
+            [NotificationType.DRIVER_UNASSIGNED]: 'تم إلغاء تعيين السائق',
+            [NotificationType.NEW_ORDER_AVAILABLE]: 'طلب جديد متاح',
         };
 
+        // Arabic bodies for notifications
         const bodies = {
-            [NotificationType.ORDER_CREATED]: 'A new order has been created.',
-            [NotificationType.ORDER_ASSIGNED]: 'Your order has been assigned to a delivery company.',
-            [NotificationType.ORDER_PICKED_UP]: 'Your order has been picked up for delivery.',
-            [NotificationType.ORDER_IN_TRANSIT]: 'Your order is on its way.',
-            [NotificationType.ORDER_DELIVERED]: 'Your order has been delivered.',
-            [NotificationType.ORDER_CANCELLED]: 'Your order has been cancelled.',
-            [NotificationType.ORDER_UPDATED]: 'Your order has been updated.',
-            [NotificationType.DRIVER_ASSIGNED]: 'A driver has been assigned to your order.',
-            [NotificationType.DRIVER_UNASSIGNED]: 'The driver has been unassigned from your order.',
-            [NotificationType.NEW_ORDER_AVAILABLE]: 'A new order is available for pickup.',
+            [NotificationType.ORDER_CREATED]: 'تم إنشاء طلب جديد.',
+            [NotificationType.ORDER_ASSIGNED]: 'تم تعيين طلبك لشركة توصيل.',
+            [NotificationType.ORDER_PICKED_UP]: 'تم استلام طلبك للتوصيل.',
+            [NotificationType.ORDER_IN_TRANSIT]: 'طلبك في الطريق إليك.',
+            [NotificationType.ORDER_DELIVERED]: 'تم تسليم طلبك بنجاح.',
+            [NotificationType.ORDER_CANCELLED]: 'تم إلغاء طلبك.',
+            [NotificationType.ORDER_UPDATED]: 'تم تحديث طلبك.',
+            [NotificationType.DRIVER_ASSIGNED]: 'تم تعيين سائق لطلبك.',
+            [NotificationType.DRIVER_UNASSIGNED]: 'تم إلغاء تعيين السائق من طلبك.',
+            [NotificationType.NEW_ORDER_AVAILABLE]: 'يوجد طلب جديد متاح للاستلام.',
         };
 
         await this.sendToUsers(userIds, {
-            title: customTitle || titles[type] || 'Order Update',
-            body: customBody || bodies[type] || 'Your order status has changed.',
+            title: customTitle || titles[type] || 'تحديث الطلب',
+            body: customBody || bodies[type] || 'تم تغيير حالة طلبك.',
             type,
             data: {
                 orderId,
                 type: 'order_update',
             },
         });
+    }
+
+    /**
+     * Cleanup expired/inactive device tokens
+     * Runs daily at 3:00 AM
+     */
+    @Cron(CronExpression.EVERY_DAY_AT_3AM)
+    async cleanupExpiredTokens(): Promise<{ deleted: number }> {
+        try {
+            this.logger.log('Starting cleanup of expired device tokens...');
+
+            // Calculate the cutoff date (30 days ago)
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 30);
+
+            // Delete tokens that are:
+            // 1. Inactive (marked as invalid)
+            // 2. Not used for more than 30 days
+            const inactiveResult = await this.deviceTokenRepository.delete({
+                isActive: false,
+            });
+
+            const expiredResult = await this.deviceTokenRepository.delete({
+                lastUsedAt: LessThan(cutoffDate),
+            });
+
+            // Also delete tokens that were created more than 30 days ago but never used
+            const unusedResult = await this.deviceTokenRepository
+                .createQueryBuilder()
+                .delete()
+                .from(DeviceToken)
+                .where('last_used_at IS NULL')
+                .andWhere('created_at < :cutoffDate', { cutoffDate })
+                .execute();
+
+            const totalDeleted =
+                (inactiveResult.affected || 0) +
+                (expiredResult.affected || 0) +
+                (unusedResult.affected || 0);
+
+            this.logger.log(
+                `Cleanup completed. Deleted ${totalDeleted} tokens: ` +
+                `${inactiveResult.affected || 0} inactive, ` +
+                `${expiredResult.affected || 0} expired, ` +
+                `${unusedResult.affected || 0} unused`,
+            );
+
+            return { deleted: totalDeleted };
+        } catch (error) {
+            this.logger.error('Failed to cleanup expired tokens', error);
+            return { deleted: 0 };
+        }
+    }
+
+    /**
+     * Get token statistics for monitoring
+     */
+    async getTokenStats(): Promise<{
+        total: number;
+        active: number;
+        inactive: number;
+        byPlatform: Record<string, number>;
+    }> {
+        try {
+            const total = await this.deviceTokenRepository.count();
+            const active = await this.deviceTokenRepository.count({
+                where: { isActive: true },
+            });
+            const inactive = total - active;
+
+            // Count by platform
+            const platformStats = await this.deviceTokenRepository
+                .createQueryBuilder('token')
+                .select('token.platform', 'platform')
+                .addSelect('COUNT(*)', 'count')
+                .groupBy('token.platform')
+                .getRawMany();
+
+            const byPlatform: Record<string, number> = {};
+            platformStats.forEach((stat) => {
+                byPlatform[stat.platform] = parseInt(stat.count, 10);
+            });
+
+            return { total, active, inactive, byPlatform };
+        } catch (error) {
+            this.logger.error('Failed to get token stats', error);
+            return { total: 0, active: 0, inactive: 0, byPlatform: {} };
+        }
+    }
+
+    /**
+     * Update last used timestamp when sending notifications
+     */
+    private async updateLastUsed(tokens: string[]): Promise<void> {
+        try {
+            await this.deviceTokenRepository.update(
+                { token: In(tokens), isActive: true },
+                { lastUsedAt: new Date() },
+            );
+        } catch (error) {
+            this.logger.error('Failed to update last used timestamp', error);
+        }
     }
 }

@@ -44,7 +44,8 @@
 						"assets": [
 							"src/favicon.ico",
 							"src/assets",
-							"src/fake-data"
+							"src/fake-data",
+							"src/firebase-messaging-sw.js"
 						],
 						"styles": [
 							"node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
