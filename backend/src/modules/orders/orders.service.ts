@@ -200,18 +200,50 @@ export class OrdersService {
             throw new BadRequestException('Cannot update order after it has been assigned to a driver');
         }
 
+        // Check if company is being updated or assigned
+        if (updateOrderDto.company_id && updateOrderDto.company_id !== order.company_id) {
+            const isConnected = await this.companiesShopsService.isCompanyConnectedToShop(
+                updateOrderDto.company_id,
+                shopId
+            );
+            if (!isConnected) {
+                throw new BadRequestException('The specified company is not connected to your shop');
+            }
+            order.company_id = updateOrderDto.company_id;
+            // If it was pending, update status to assigned
+            if (order.status === OrderStatus.PENDING) {
+                order.status = OrderStatus.ASSIGNED_TO_COMPANY;
+            }
+            order.company_assigned_at = new Date();
+        }
+
         // Recalculate total if amounts changed
         const orderAmount = updateOrderDto.order_amount ?? order.order_amount;
         const deliveryFee = updateOrderDto.delivery_fee ?? order.delivery_fee;
 
-        // Don't allow shop to change status, company_id, or driver_id directly
+        // Don't allow shop to change status or driver_id directly (company_id handled above)
+        // We explicitly exclude company_id from the spread to avoid overwriting our logic above if we didn't set it
         const { status, company_id, driver_id, ...allowedUpdates } = updateOrderDto;
 
         Object.assign(order, allowedUpdates, {
             total_amount: Number(orderAmount) + Number(deliveryFee),
         });
 
-        return await this.ordersRepository.save(order);
+        const savedOrder = await this.ordersRepository.save(order);
+
+        // 🔔 PUSH NOTIFICATION: Notify company/driver if order was updated
+        if (savedOrder.company_id) {
+            const companyUserIds = await this.getCompanyUserIds(savedOrder.company_id);
+            this.sendOrderNotification(
+                savedOrder,
+                NotificationType.ORDER_UPDATED,
+                companyUserIds,
+                'تم تحديث الطلب',
+                `قام المتجر بتحديث تفاصيل الطلب #${savedOrder.order_number}`
+            );
+        }
+
+        return savedOrder;
     }
 
     // Shop cancels their order - moves to history table
@@ -487,7 +519,20 @@ export class OrdersService {
         const savedOrder = await this.ordersRepository.save(order);
 
         // Emit real-time event
+        // Emit real-time event
         this.ordersGateway.emitOrderReleased(savedOrder, previousCompanyId, previousDriverId);
+
+        // 🔔 PUSH NOTIFICATION: Notify other companies that order is available again
+        const connectedCompanyIds = await this.companiesShopsService.getCompanyIdsByShopId(savedOrder.shop_id);
+        const companyUserIds = await this.getMultipleCompaniesUserIds(connectedCompanyIds);
+
+        this.sendOrderNotification(
+            savedOrder,
+            NotificationType.ORDER_RELEASED,
+            companyUserIds,
+            'طلب متاح مجدداً',
+            `تم إطلاق الطلب #${savedOrder.order_number} وأصبح متاحاً للاستلام`
+        );
 
         return savedOrder;
     }

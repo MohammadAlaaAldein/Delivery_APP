@@ -9,6 +9,8 @@ import { RootNavigator } from './src/navigation';
 import { pushService } from './src/services';
 import { useAuthStore } from './src/stores';
 import { COLORS } from './src/constants';
+import { navigate } from './src/navigation/navigationRef';
+import { UserRole } from './src/types';
 
 // // Keep splash screen visible while loading
 // SplashScreen.preventAutoHideAsync();
@@ -62,6 +64,21 @@ export default function App() {
                     pushService.addNotificationResponseListener((response) => {
                         console.log('Notification response:', response);
                         // Handle notification tap - navigate to appropriate screen
+                        const data = response.notification.request.content.data;
+                        if (data && data.orderId) {
+                            const orderId = Number(data.orderId);
+                            switch (user.role) {
+                                case UserRole.SHOP:
+                                    navigate('Shop', { screen: 'OrderDetail', params: { orderId } });
+                                    break;
+                                case UserRole.COMPANY:
+                                    navigate('Company', { screen: 'OrderDetail', params: { orderId } });
+                                    break;
+                                case UserRole.DRIVER:
+                                    navigate('Driver', { screen: 'OrderDetail', params: { orderId } });
+                                    break;
+                            }
+                        }
                     });
                 } catch (error) {
                     console.error('Failed to initialize push notifications:', error);

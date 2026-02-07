@@ -414,6 +414,8 @@ export class PushNotificationsService implements OnModuleInit {
             [NotificationType.DRIVER_ASSIGNED]: 'تم تعيين سائق',
             [NotificationType.DRIVER_UNASSIGNED]: 'تم إلغاء تعيين السائق',
             [NotificationType.NEW_ORDER_AVAILABLE]: 'طلب جديد متاح',
+            [NotificationType.ORDER_RELEASED]: 'تم إطلاق الطلب',
+            [NotificationType.ORDER_REJECTED]: 'تم رفض الطلب',
         };
 
         // Arabic bodies for notifications
@@ -428,6 +430,8 @@ export class PushNotificationsService implements OnModuleInit {
             [NotificationType.DRIVER_ASSIGNED]: 'تم تعيين سائق لطلبك.',
             [NotificationType.DRIVER_UNASSIGNED]: 'تم إلغاء تعيين السائق من طلبك.',
             [NotificationType.NEW_ORDER_AVAILABLE]: 'يوجد طلب جديد متاح للاستلام.',
+            [NotificationType.ORDER_RELEASED]: 'تم إعادة إطلاق الطلب ليكون متاحاً للجميع.',
+            [NotificationType.ORDER_REJECTED]: 'تم رفض طلبك.',
         };
 
         await this.sendToUsers(userIds, {
@@ -437,6 +441,7 @@ export class PushNotificationsService implements OnModuleInit {
             data: {
                 orderId,
                 type: 'order_update',
+                click_action: 'FLUTTER_NOTIFICATION_CLICK',
             },
         });
     }

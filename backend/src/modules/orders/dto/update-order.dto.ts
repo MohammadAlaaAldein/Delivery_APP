@@ -1,4 +1,4 @@
-import { IsOptional, IsNumber, IsString, IsEnum, IsEmail, Min, IsDateString, IsBoolean, IsArray, ValidateNested } from 'class-validator';
+import { IsOptional, IsNumber, IsString, IsEnum, IsEmail, Min, IsDateString, IsBoolean, IsArray, ValidateNested, ValidateIf } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { PaymentMethod, PaymentStatus, OrderStatus } from '../entities/order.entity';
 import { OrderItemDto } from './create-order.dto';
@@ -67,13 +67,17 @@ export class UpdateOrderDto {
     requires_large_vehicle?: boolean;
 
     @IsOptional()
+    @ValidateIf((o) => o.order_amount !== '' && o.order_amount !== null && o.order_amount !== undefined)
     @IsNumber()
     @Min(0)
+    @Transform(({ value }) => (value === '' || value === null || value === undefined) ? undefined : Number(value))
     order_amount?: number;
 
     @IsOptional()
+    @ValidateIf((o) => o.delivery_fee !== '' && o.delivery_fee !== null && o.delivery_fee !== undefined)
     @IsNumber()
     @Min(0)
+    @Transform(({ value }) => (value === '' || value === null || value === undefined) ? undefined : Number(value))
     delivery_fee?: number;
 
     // Payment

@@ -286,7 +286,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     if (notification.data?.['type'] === 'order_update' && notification.data?.['orderId']) {
       const orderId = notification.data['orderId'];
       // Navigate to orders page with the order ID
-      this.router.navigate(['/orders'], { queryParams: { id: orderId } });
+      this.pushService.handleNotificationClick(orderId);
     }
   }
 

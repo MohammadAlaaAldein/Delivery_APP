@@ -2,14 +2,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-
-type User = {
-	id?: number;
-	name?: string;
-	phone_number?: string;
-	role_id?: number;
-	company_id?: number;
-};
+import { User } from '../user.interface';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

@@ -4,6 +4,9 @@ import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, Messaging, MessagePayload } from 'firebase/messaging';
 import { environment } from '../../../environments/environment';
+import { Router } from '@angular/router';
+import { AuthService } from '../../dashboard/users/login/auth.service';
+import { USER_ROLE } from '../../dashboard/users/users.service';
 
 export interface PushNotification {
     title: string;
@@ -31,7 +34,11 @@ export class PushNotificationService implements OnDestroy {
     private unreadCountSubject = new BehaviorSubject<number>(0);
     public unreadCount$ = this.unreadCountSubject.asObservable();
 
-    constructor(private http: HttpClient) {
+    constructor(
+        private http: HttpClient,
+        private router: Router,
+        private authService: AuthService
+    ) {
         this.initializeFirebase();
         this.loadStoredNotifications();
 
@@ -119,6 +126,9 @@ export class PushNotificationService implements OnDestroy {
     /**
      * Get token and register with server (without requesting permission)
      */
+    /**
+     * Get token and register with server (without requesting permission)
+     */
     private async getTokenAndRegister(): Promise<void> {
         try {
             if (!this.messaging) {
@@ -126,7 +136,8 @@ export class PushNotificationService implements OnDestroy {
                 return;
             }
 
-            // Get service worker registration
+            // Get service worker registration safely
+            // const registration = await this.getServiceWorkerRegistration();
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
             // Get FCM token
@@ -148,6 +159,35 @@ export class PushNotificationService implements OnDestroy {
     }
 
     /**
+     * Helper to get Service Worker Registration
+     */
+    // private async getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration> {
+    //     try {
+    //         // Try to register/get registration
+    //         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    //         return registration;
+    //     } catch (e) {
+    //         // Fallback to ready if register fails (rare) or just return ready promise
+    //         console.log('Service Worker register failed, waiting for ready...');
+    //         return await navigator.serviceWorker.ready;
+    //     }
+    // }
+
+    // /**
+    //  * Safely get current push subscription
+    //  * Use this instead of messaging.swRegistration.pushManager.getSubscription()
+    //  */
+    // async getCurrentSubscription(): Promise<PushSubscription | null> {
+    //     try {
+    //         const registration = await this.getServiceWorkerRegistration();
+    //         return await registration.pushManager.getSubscription();
+    //     } catch (error) {
+    //         console.error('Error getting push subscription:', error);
+    //         return null;
+    //     }
+    // }
+
+    /**
      * Request permission and get FCM token
      */
     async requestPermission(): Promise<string | null> {
@@ -166,7 +206,8 @@ export class PushNotificationService implements OnDestroy {
                 return null;
             }
 
-            // Get service worker registration
+            // Get service worker registration safely
+            // const registration = await this.getServiceWorkerRegistration();
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
             // Get FCM token
@@ -272,9 +313,39 @@ export class PushNotificationService implements OnDestroy {
 
                 // Navigate based on notification type
                 if (notification.data?.['type'] === 'order_update' && notification.data?.['orderId']) {
-                    window.location.href = `/orders/${notification.data['orderId']}`;
+                    const orderId = notification.data['orderId'];
+                    this.handleNotificationClick(orderId);
                 }
             };
+        }
+    }
+
+    /**
+     * Handle notification click navigation
+     */
+    public handleNotificationClick(orderId: string): void {
+        const currentUser = this.authService.currentUserValue;
+
+        if (!currentUser || !currentUser.role) {
+            return;
+        }
+
+        console.log(currentUser.role);
+        switch (currentUser.role) {
+            case USER_ROLE.SHOP:
+                this.router.navigate(['/my-orders/view', orderId]);
+                break;
+            case USER_ROLE.COMPANY:
+                this.router.navigate(['/company-orders/view', orderId]);
+                break;
+            case USER_ROLE.DRIVER:
+                this.router.navigate(['/my-deliveries/view', orderId]);
+                break;
+            case USER_ROLE.ADMIN:
+                this.router.navigate(['/orders/view', orderId]);
+                break;
+            default:
+                this.router.navigate(['/dashboard']);
         }
     }
 

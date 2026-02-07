@@ -9,6 +9,7 @@ import AuthNavigator from './AuthNavigator';
 import ShopNavigator from './ShopNavigator';
 import CompanyNavigator from './CompanyNavigator';
 import DriverNavigator from './DriverNavigator';
+import { navigationRef } from './navigationRef';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,7 +56,7 @@ const RootNavigator: React.FC = () => {
     };
 
     return (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
                 screenOptions={{
                     headerShown: false,
