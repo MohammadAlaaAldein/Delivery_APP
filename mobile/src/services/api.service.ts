@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from './secure-store';
 import { API_CONFIG, STORAGE_KEYS } from '../constants';
 import { ApiResponse } from '../types';
 

@@ -77,12 +77,12 @@ const OrderDetailScreen: React.FC = () => {
 
     const renderTimeline = () => {
         const statuses = [
-            { status: OrderStatus.PENDING, label: 'Order Created', time: order.createdAt },
-            { status: OrderStatus.ASSIGNED_TO_COMPANY, label: 'Assigned to Company', time: order.assignedToCompanyAt },
-            { status: OrderStatus.ASSIGNED_TO_DRIVER, label: 'Driver Assigned', time: order.assignedToDriverAt },
-            { status: OrderStatus.PICKED_UP, label: 'Picked Up', time: order.pickedUpAt },
-            { status: OrderStatus.IN_TRANSIT, label: 'In Transit', time: order.inTransitAt },
-            { status: OrderStatus.DELIVERED, label: 'Delivered', time: order.deliveredAt },
+            { status: OrderStatus.PENDING, label: 'Order Created', time: order.created_at },
+            { status: OrderStatus.ASSIGNED_TO_COMPANY, label: 'Assigned to Company', time: order.company_assigned_at },
+            { status: OrderStatus.ASSIGNED_TO_DRIVER, label: 'Driver Assigned', time: order.driver_assigned_at },
+            { status: OrderStatus.PICKED_UP, label: 'Picked Up', time: order.picked_up_at },
+            { status: OrderStatus.IN_TRANSIT, label: 'In Transit', time: null },
+            { status: OrderStatus.DELIVERED, label: 'Delivered', time: order.delivered_at },
         ];
 
         const currentIndex = statuses.findIndex((s) => s.status === order.status);
@@ -167,9 +167,9 @@ const OrderDetailScreen: React.FC = () => {
 
                 <View style={styles.orderHeader}>
                     <View>
-                        <Text style={styles.orderNumber}>#{order.orderNumber}</Text>
+                        <Text style={styles.orderNumber}>#{order.order_number}</Text>
                         <Text style={styles.orderDate}>
-                            {new Date(order.createdAt).toLocaleDateString()}
+                            {new Date(order.created_at).toLocaleDateString()}
                         </Text>
                     </View>
                     <View style={[styles.statusBadge, { backgroundColor: statusConfig.bgColor }]}>
@@ -197,22 +197,22 @@ const OrderDetailScreen: React.FC = () => {
                     </View>
                     <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Name</Text>
-                        <Text style={styles.infoValue}>{order.customerName}</Text>
+                        <Text style={styles.infoValue}>{order.customer_name}</Text>
                     </View>
                     <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Phone</Text>
                         <TouchableOpacity
                             style={styles.phoneButton}
-                            onPress={() => handleCall(order.customerPhone)}
+                            onPress={() => handleCall(order.customer_phone)}
                         >
-                            <Text style={styles.phoneText}>{order.customerPhone}</Text>
+                            <Text style={styles.phoneText}>{order.customer_phone}</Text>
                             <Ionicons name="call-outline" size={16} color={COLORS.primary} />
                         </TouchableOpacity>
                     </View>
                     <Divider />
                     <View style={styles.addressContainer}>
                         <Ionicons name="location-outline" size={20} color={COLORS.gray500} />
-                        <Text style={styles.addressText}>{order.deliveryAddress}</Text>
+                        <Text style={styles.addressText}>{order.delivery_address}</Text>
                     </View>
                 </Card>
 
@@ -220,18 +220,18 @@ const OrderDetailScreen: React.FC = () => {
                 <Card style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Ionicons name="cube-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.sectionTitle}>Items ({order.items?.length || 0})</Text>
+                        <Text style={styles.sectionTitle}>Items ({order.order_items?.length || 0})</Text>
                     </View>
-                    {order.items?.map((item, index) => (
+                    {order.order_items?.map((item, index) => (
                         <View key={index} style={styles.itemRow}>
                             <View style={styles.itemInfo}>
-                                <Text style={styles.itemName}>{item.name}</Text>
+                                <Text style={styles.itemName}>{item.description || item.name || item.type}</Text>
                                 <Text style={styles.itemMeta}>
-                                    {item.type} • Qty: {item.quantity}
+                                    {item.type} • Qty: {item.count || item.quantity || 1}
                                 </Text>
                             </View>
                             <Text style={styles.itemPrice}>
-                                ${(item.price * item.quantity).toFixed(2)}
+                                ${Number(item.price || 0).toFixed(2)}
                             </Text>
                         </View>
                     ))}
@@ -239,16 +239,16 @@ const OrderDetailScreen: React.FC = () => {
                     <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Subtotal</Text>
                         <Text style={styles.totalValue}>
-                            ${order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2) || '0.00'}
+                            ${Number(order.order_amount || 0).toFixed(2)}
                         </Text>
                     </View>
                     <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Delivery Fee</Text>
-                        <Text style={styles.totalValue}>${order.deliveryFee?.toFixed(2) || '0.00'}</Text>
+                        <Text style={styles.totalValue}>${Number(order.delivery_fee || 0).toFixed(2)}</Text>
                     </View>
                     <View style={styles.grandTotalRow}>
                         <Text style={styles.grandTotalLabel}>Total</Text>
-                        <Text style={styles.grandTotalValue}>${order.totalAmount?.toFixed(2) || '0.00'}</Text>
+                        <Text style={styles.grandTotalValue}>${Number(order.total_amount || 0).toFixed(2)}</Text>
                     </View>
                 </Card>
 
@@ -261,15 +261,15 @@ const OrderDetailScreen: React.FC = () => {
                     <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Method</Text>
                         <Badge
-                            label={order.paymentMethod || 'Cash'}
+                            label={order.payment_method || 'Cash'}
                             variant="secondary"
                         />
                     </View>
                     <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Status</Text>
                         <Badge
-                            label={order.paymentStatus || 'Pending'}
-                            variant={order.paymentStatus === 'paid' ? 'success' : 'warning'}
+                            label={order.payment_status || 'Pending'}
+                            variant={order.payment_status === 'paid' ? 'success' : 'warning'}
                         />
                     </View>
                 </Card>

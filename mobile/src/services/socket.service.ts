@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from './secure-store';
 import { SOCKET_CONFIG, STORAGE_KEYS } from '../constants';
 import { Order, SocketEvent } from '../types';
 

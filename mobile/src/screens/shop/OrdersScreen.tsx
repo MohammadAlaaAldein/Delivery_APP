@@ -34,18 +34,18 @@ const TABS = [
 
 const ShopOrdersScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { orders, isLoading, fetchOrders } = useOrdersStore();
+    const { orders, isLoading, fetchShopOrders } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
     const [activeTab, setActiveTab] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        fetchOrders();
+        fetchShopOrders();
     }, []);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        await fetchOrders();
+        await fetchShopOrders();
         setRefreshing(false);
     }, []);
 
@@ -59,10 +59,10 @@ const ShopOrdersScreen: React.FC = () => {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             return (
-                order.orderNumber?.toLowerCase().includes(query) ||
-                order.customerName?.toLowerCase().includes(query) ||
-                order.customerPhone?.includes(query) ||
-                order.deliveryAddress?.toLowerCase().includes(query)
+                order.order_number?.toLowerCase().includes(query) ||
+                order.customer_name?.toLowerCase().includes(query) ||
+                order.customer_phone?.includes(query) ||
+                order.delivery_address?.toLowerCase().includes(query)
             );
         }
 
@@ -171,7 +171,7 @@ const ShopOrdersScreen: React.FC = () => {
             ) : (
                 <FlatList
                     data={filteredOrders}
-                    keyExtractor={(item) => item.id}
+                        keyExtractor={(item) => String(item.id)}
                     renderItem={renderOrder}
                     ListHeaderComponent={renderHeader}
                     ListEmptyComponent={

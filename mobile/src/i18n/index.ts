@@ -1,5 +1,5 @@
 import { I18n } from 'i18n-js';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from '../services/secure-store';
 import { I18nManager } from 'react-native';
 import { STORAGE_KEYS } from '../constants';
 import en from './locales/en';
@@ -69,7 +69,14 @@ export const toggleLanguage = async (): Promise<string> => {
 
 // Translate function
 export const t = (key: string, options?: Record<string, any>): string => {
-    return i18n.t(key, options);
+    const result = i18n.t(key, options);
+    if (typeof result === 'string')
+        return result;
+
+    if (Array.isArray(result))
+        return (result as string[]).join(', ');
+
+    return String(result ?? key);
 };
 
 // Export i18n instance

@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from './secure-store';
 import { STORAGE_KEYS, API_CONFIG } from '../constants';
 import { User, UserRole, AuthResponse } from '../types';
 import { apiService } from './api.service';

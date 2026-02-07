@@ -6,49 +6,58 @@ class EntitiesService {
 
     // Get my shop (for shop users)
     async getMyShop(): Promise<Shop> {
-        return apiService.get<Shop>('/shops/my');
+        const res = await apiService.get<any>('/shops/my');
+        return res.data || res;
     }
 
     // Update my shop (for shop users)
     async updateMyShop(data: Partial<Shop>): Promise<Shop> {
-        return apiService.patch<Shop>('/shops/my', data);
+        const res = await apiService.patch<any>('/shops/my', data);
+        return res.data || res;
     }
 
     // Get shop by ID (admin)
     async getShop(shopId: number): Promise<Shop> {
-        return apiService.get<Shop>(`/shops/${shopId}`);
+        const res = await apiService.get<any>(`/shops/${shopId}`);
+        return res.data || res;
     }
 
     // Get all shops (admin)
     async getAllShops(): Promise<Shop[]> {
-        return apiService.get<Shop[]>('/shops');
+        const res = await apiService.get<any>('/shops');
+        return res.data || res;
     }
 
     // ==================== COMPANIES ====================
 
     // Get my company (for company users)
     async getMyCompany(): Promise<Company> {
-        return apiService.get<Company>('/companies/my');
+        const res = await apiService.get<any>('/companies/my');
+        return res.data || res;
     }
 
     // Update my company (for company users)
     async updateMyCompany(data: Partial<Company>): Promise<Company> {
-        return apiService.patch<Company>('/companies/my', data);
+        const res = await apiService.patch<any>('/companies/my', data);
+        return res.data || res;
     }
 
     // Get my company's drivers
     async getMyCompanyDrivers(): Promise<Driver[]> {
-        return apiService.get<Driver[]>('/companies/my/drivers');
+        const res = await apiService.get<any>('/companies/my/drivers');
+        return res.data || res;
     }
 
     // Get company by ID (admin)
     async getCompany(companyId: number): Promise<Company> {
-        return apiService.get<Company>(`/companies/${companyId}`);
+        const res = await apiService.get<any>(`/companies/${companyId}`);
+        return res.data || res;
     }
 
     // Get all companies (admin)
     async getAllCompanies(): Promise<Company[]> {
-        return apiService.get<Company[]>('/companies');
+        const res = await apiService.get<any>('/companies');
+        return res.data || res;
     }
 
     // Get companies (alias for getAllCompanies)
@@ -60,12 +69,14 @@ class EntitiesService {
 
     // Get my driver profile (for driver users)
     async getMyDriverProfile(): Promise<Driver> {
-        return apiService.get<Driver>('/drivers/my');
+        const res = await apiService.get<any>('/drivers/my');
+        return res.data || res;
     }
 
     // Update my driver profile (for driver users)
     async updateMyDriverProfile(data: Partial<Driver>): Promise<Driver> {
-        return apiService.patch<Driver>('/drivers/my', data);
+        const res = await apiService.patch<any>('/drivers/my', data);
+        return res.data || res;
     }
 
     // Update driver location
@@ -80,18 +91,20 @@ class EntitiesService {
 
     // Get driver by ID (admin/company)
     async getDriver(driverId: number): Promise<Driver> {
-        return apiService.get<Driver>(`/drivers/${driverId}`);
+        const res = await apiService.get<any>(`/drivers/${driverId}`);
+        return res.data || res;
     }
 
     // Get all drivers (admin)
     async getAllDrivers(): Promise<Driver[]> {
-        return apiService.get<Driver[]>('/drivers');
+        const res = await apiService.get<any>('/drivers');
+        return res.data || res;
     }
 
     // Get active drivers for company
     async getActiveDrivers(): Promise<Driver[]> {
         const drivers = await this.getMyCompanyDrivers();
-        return drivers.filter((driver) => driver.is_active);
+        return (Array.isArray(drivers) ? drivers : []).filter((driver) => driver.is_active);
     }
 
     // ==================== DROPDOWNS ====================
@@ -99,7 +112,7 @@ class EntitiesService {
     // Get active shops for dropdown
     async getActiveShops(): Promise<{ id: number; name: string }[]> {
         const shops = await this.getAllShops();
-        return shops
+        return (Array.isArray(shops) ? shops : [])
             .filter((shop) => shop.is_active)
             .map((shop) => ({ id: shop.id, name: shop.name }));
     }
@@ -107,7 +120,7 @@ class EntitiesService {
     // Get active companies for dropdown
     async getActiveCompanies(): Promise<{ id: number; name: string }[]> {
         const companies = await this.getAllCompanies();
-        return companies
+        return (Array.isArray(companies) ? companies : [])
             .filter((company) => company.is_active)
             .map((company) => ({ id: company.id, name: company.name }));
     }

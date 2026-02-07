@@ -427,6 +427,47 @@ export default {
         aqaba: 'Aqaba',
     },
 
+    // Shop (role-specific keys used in shop screens)
+    shop: {
+        stats: 'Statistics',
+        pendingOrders: 'Pending',
+        activeOrders: 'Active',
+        deliveredOrders: 'Delivered',
+        totalOrders: 'Total Orders',
+        recentOrders: 'Recent Orders',
+        noOrders: 'No orders found',
+        orders: 'Orders',
+        createOrder: 'Create Order',
+    },
+
+    // Company (role-specific keys used in company screens)
+    company: {
+        stats: 'Statistics',
+        pendingOrders: 'Pending',
+        activeDeliveries: 'Active Deliveries',
+        completedToday: 'Completed Today',
+        totalRevenue: 'Total Revenue',
+        availableOrders: 'Available Orders',
+        noAvailableOrders: 'No available orders',
+        drivers: 'Drivers',
+        noDrivers: 'No drivers available',
+    },
+
+    // Driver (role-specific keys used in driver screens)
+    driver: {
+        stats: 'Statistics',
+        pendingPickup: 'Pending Pickup',
+        inProgress: 'In Progress',
+        completedToday: 'Completed Today',
+        rating: 'Rating',
+        activeOrders: 'Active Orders',
+        noActiveOrders: 'No active deliveries',
+        history: 'Delivery History',
+        online: 'Online',
+        offline: 'Offline',
+        todayEarnings: "Today's Earnings",
+    },
+
     // Time
     time: {
         justNow: 'Just now',

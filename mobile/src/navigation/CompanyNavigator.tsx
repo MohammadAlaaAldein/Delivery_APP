@@ -7,6 +7,7 @@ import {
     CompanyDashboardScreen,
     CompanyAvailableOrdersScreen,
     CompanyDriversScreen,
+    ProfileScreen,
 } from '../screens';
 import { ShopOrderDetailScreen } from '../screens';
 import { CompanyStackParamList } from '../types';
@@ -80,7 +81,7 @@ const CompanyTabs: React.FC = () => {
             />
             <Tab.Screen
                 name="ProfileTab"
-                component={CompanyDashboardScreen}
+                component={ProfileScreen}
                 options={{
                     tabBarLabel: 'Profile',
                     tabBarIcon: ({ focused, size }) => (
@@ -106,6 +107,7 @@ const CompanyNavigator: React.FC = () => {
             <Stack.Screen name="Drivers" component={CompanyDriversScreen} />
             <Stack.Screen name="MyOrders" component={CompanyAvailableOrdersScreen} />
             <Stack.Screen name="OrderDetail" component={ShopOrderDetailScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
     );
 };

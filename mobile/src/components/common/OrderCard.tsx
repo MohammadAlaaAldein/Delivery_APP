@@ -28,7 +28,12 @@ const OrderCard: React.FC<OrderCardProps> = ({
     variant = 'default',
     compact = false,
 }) => {
-    const statusConfig = ORDER_STATUS_CONFIG[order.status as keyof typeof ORDER_STATUS_CONFIG];
+    const statusConfig = ORDER_STATUS_CONFIG[order.status as keyof typeof ORDER_STATUS_CONFIG] || {
+        color: COLORS.gray500,
+        bgColor: COLORS.gray100,
+        icon: 'help-circle-outline',
+        label: order.status || 'Unknown',
+    };
     const effectiveVariant = compact ? 'compact' : variant;
 
     const formatDate = (dateString: string) => {
@@ -42,7 +47,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
     };
 
     const formatCurrency = (amount: number) => {
-        return `${amount.toFixed(2)} JOD`;
+        amount ||= 0.00;
+        return `${amount} JOD`;
     };
 
     if (effectiveVariant === 'compact') {
@@ -80,7 +86,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     <Text style={styles.date}>{formatDate(order.created_at)}</Text>
                 </View>
                 <Badge
-                    text={t(`orders.status.${order.status}`)}
+                    text={String(t(`orders.status.${order.status}`) || statusConfig.label)}
                     variant={
                         order.status === OrderStatus.DELIVERED
                             ? 'success'
@@ -111,7 +117,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 <View style={styles.infoRow}>
                     <Ionicons name="location-outline" size={18} color={COLORS.gray500} />
                     <Text style={styles.infoText} numberOfLines={2}>
-                        {order.delivery_address || `${order.delivery_city}, ${order.delivery_area || ''}`}
+                        {String(order.delivery_address || `${order.delivery_city || ''}, ${order.delivery_area || ''}`)}
                     </Text>
                 </View>
             </View>
@@ -163,7 +169,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         size={16}
                         color={COLORS.gray500}
                     />
-                    <Text style={styles.paymentText}>{t(`orders.paymentMethods.${order.payment_method}`)}</Text>
+                    <Text style={styles.paymentText}>{String(t(`orders.paymentMethods.${order.payment_method}`) || order.payment_method || 'N/A')}</Text>
                     {order.is_paid && (
                         <View style={styles.paidBadge}>
                             <Ionicons name="checkmark-circle" size={14} color={COLORS.success} />

@@ -26,11 +26,12 @@ type NavigationProp = NativeStackNavigationProp<DriverStackParamList, 'ActiveOrd
 
 const ActiveOrdersScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { orders, isLoading, fetchDriverOrders } = useOrdersStore();
+    const { activeOrders: storeActiveOrders, orders, isLoading, fetchDriverOrders } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    const activeOrders = orders.filter(
+    const allOrders = storeActiveOrders.length > 0 ? storeActiveOrders : orders;
+    const activeOrders = allOrders.filter(
         (o) => [OrderStatus.ASSIGNED_TO_DRIVER, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(o.status as OrderStatus)
     );
 
@@ -47,7 +48,7 @@ const ActiveOrdersScreen: React.FC = () => {
     const handlePickup = async (order: Order) => {
         Alert.alert(
             'Confirm Pickup',
-            `Have you picked up order #${order.orderNumber}?`,
+            `Have you picked up order #${order.order_number}?`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
@@ -85,7 +86,7 @@ const ActiveOrdersScreen: React.FC = () => {
     const handleDeliver = async (order: Order) => {
         Alert.alert(
             'Confirm Delivery',
-            `Has order #${order.orderNumber} been delivered?`,
+            `Has order #${order.order_number} been delivered?`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
@@ -107,9 +108,28 @@ const ActiveOrdersScreen: React.FC = () => {
         );
     };
 
-    const handleNavigate = (order: Order) => {
-        const address = encodeURIComponent(order.deliveryAddress);
-        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${address}`);
+    const openNavigation = (lat?: number, lng?: number, address?: string) => {
+        if (lat && lng) {
+            Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`);
+        } else if (address) {
+            Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`);
+        }
+    };
+
+    const handleNavigateToShop = (order: Order) => {
+        openNavigation(
+            Number(order.shop?.latitude) || undefined,
+            Number(order.shop?.longitude) || undefined,
+            order.shop?.address,
+        );
+    };
+
+    const handleNavigateToCustomer = (order: Order) => {
+        openNavigation(
+            Number(order.delivery_latitude) || undefined,
+            Number(order.delivery_longitude) || undefined,
+            order.delivery_address,
+        );
     };
 
     const handleCall = (phone: string) => {
@@ -173,9 +193,9 @@ const ActiveOrdersScreen: React.FC = () => {
                 >
                     <View style={styles.orderHeader}>
                         <View>
-                            <Text style={styles.orderNumber}>#{item.orderNumber}</Text>
+                            <Text style={styles.orderNumber}>#{item.order_number}</Text>
                             <Text style={styles.orderTime}>
-                                {new Date(item.createdAt).toLocaleTimeString()}
+                                {new Date(item.created_at).toLocaleTimeString()}
                             </Text>
                         </View>
                         <View style={[styles.statusBadge, { backgroundColor: statusConfig.bgColor }]}>
@@ -190,10 +210,10 @@ const ActiveOrdersScreen: React.FC = () => {
                     <View style={styles.customerSection}>
                         <View style={styles.customerRow}>
                             <Ionicons name="person-outline" size={18} color={COLORS.gray500} />
-                            <Text style={styles.customerName}>{item.customerName}</Text>
+                            <Text style={styles.customerName}>{item.customer_name}</Text>
                             <TouchableOpacity
                                 style={styles.callBtn}
-                                onPress={() => handleCall(item.customerPhone)}
+                                onPress={() => handleCall(item.customer_phone)}
                             >
                                 <Ionicons name="call" size={16} color={COLORS.white} />
                             </TouchableOpacity>
@@ -210,6 +230,12 @@ const ActiveOrdersScreen: React.FC = () => {
                                 <Text style={styles.addressLabel}>Pickup from</Text>
                                 <Text style={styles.addressText}>{item.shop?.address || 'Shop address'}</Text>
                             </View>
+                            <TouchableOpacity
+                                style={styles.navigateBtn}
+                                onPress={() => handleNavigateToShop(item)}
+                            >
+                                <Ionicons name="navigate" size={16} color={COLORS.primary} />
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.addressLine} />
                         <View style={styles.addressRow}>
@@ -218,11 +244,11 @@ const ActiveOrdersScreen: React.FC = () => {
                             </View>
                             <View style={styles.addressContent}>
                                 <Text style={styles.addressLabel}>Deliver to</Text>
-                                <Text style={styles.addressText}>{item.deliveryAddress}</Text>
+                                <Text style={styles.addressText}>{item.delivery_address}</Text>
                             </View>
                             <TouchableOpacity
                                 style={styles.navigateBtn}
-                                onPress={() => handleNavigate(item)}
+                                onPress={() => handleNavigateToCustomer(item)}
                             >
                                 <Ionicons name="navigate" size={16} color={COLORS.primary} />
                             </TouchableOpacity>
@@ -233,7 +259,7 @@ const ActiveOrdersScreen: React.FC = () => {
                     <View style={styles.itemsInfo}>
                         <Ionicons name="cube-outline" size={16} color={COLORS.gray500} />
                         <Text style={styles.itemsText}>
-                            {item.items?.length || 0} item(s) • {item.items?.[0]?.type || 'Package'}
+                            {item.order_items?.length || 0} item(s) • {item.order_items?.[0]?.type || 'Package'}
                         </Text>
                     </View>
                 </TouchableOpacity>
@@ -242,9 +268,9 @@ const ActiveOrdersScreen: React.FC = () => {
                 <View style={styles.orderFooter}>
                     <View style={styles.paymentInfo}>
                         <Text style={styles.paymentLabel}>
-                            {item.paymentMethod} • {item.paymentStatus}
+                            {item.payment_method} • {item.payment_status}
                         </Text>
-                        <Text style={styles.paymentAmount}>${item.totalAmount?.toFixed(2) || '0.00'}</Text>
+                        <Text style={styles.paymentAmount}>${Number(item.total_amount || 0).toFixed(2)}</Text>
                     </View>
                     {getActionButton(item)}
                 </View>
@@ -291,7 +317,7 @@ const ActiveOrdersScreen: React.FC = () => {
             ) : (
                 <FlatList
                     data={activeOrders}
-                    keyExtractor={(item) => item.id}
+                        keyExtractor={(item) => String(item.id)}
                     renderItem={renderOrder}
                     ListEmptyComponent={
                         <EmptyState

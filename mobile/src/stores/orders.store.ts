@@ -95,7 +95,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const orders = await ordersService.getShopOrders(status);
-            set({ orders, isLoading: false });
+            set({ orders: Array.isArray(orders) ? orders : [], isLoading: false });
         } catch (error: any) {
             set({
                 isLoading: false,
@@ -186,7 +186,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const orders = await ordersService.getAvailableOrders();
-            set({ availableOrders: orders, isLoading: false });
+            set({ availableOrders: Array.isArray(orders) ? orders : [], isLoading: false });
         } catch (error: any) {
             set({
                 isLoading: false,
@@ -199,7 +199,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const orders = await ordersService.getCompanyOrders(status);
-            set({ orders, isLoading: false });
+            set({ orders: Array.isArray(orders) ? orders : [], isLoading: false });
         } catch (error: any) {
             set({
                 isLoading: false,
@@ -308,7 +308,8 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const orders = await ordersService.getDriverOrders(status);
-            set({ activeOrders: orders, isLoading: false });
+            const orderList = Array.isArray(orders) ? orders : [];
+            set({ activeOrders: orderList, orders: orderList, isLoading: false });
         } catch (error: any) {
             set({
                 isLoading: false,

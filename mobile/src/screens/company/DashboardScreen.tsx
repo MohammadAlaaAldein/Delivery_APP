@@ -8,6 +8,7 @@ import {
     ScrollView,
     RefreshControl,
     TouchableOpacity,
+    Alert,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,8 +25,8 @@ type NavigationProp = NativeStackNavigationProp<CompanyStackParamList, 'Dashboar
 
 const CompanyDashboardScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { user, logout } = useAuthStore();
-    const { orders, stats, isLoading, fetchCompanyOrders, fetchStats } = useOrdersStore();
+    const { user } = useAuthStore();
+    const { orders, companyStats, isLoading, fetchCompanyOrders, fetchCompanyStats } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
@@ -33,7 +34,7 @@ const CompanyDashboardScreen: React.FC = () => {
     }, []);
 
     const loadData = async () => {
-        await Promise.all([fetchCompanyOrders(), fetchStats()]);
+        await Promise.all([fetchCompanyOrders(), fetchCompanyStats()]);
     };
 
     const onRefresh = useCallback(async () => {
@@ -89,7 +90,7 @@ const CompanyDashboardScreen: React.FC = () => {
                         </Text>
                     </View>
                     <View style={styles.headerRight}>
-                        <TouchableOpacity style={styles.notificationBtn}>
+                        <TouchableOpacity style={styles.notificationBtn} onPress={() => Alert.alert(t('notifications.title'), t('notifications.noNotifications'))}>
                             <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
                             {pendingOrders.length > 0 && (
                                 <View style={styles.notificationBadge}>
@@ -97,7 +98,7 @@ const CompanyDashboardScreen: React.FC = () => {
                                 </View>
                             )}
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.profileBtn} onPress={logout}>
+                        <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
                             <Ionicons name="person-outline" size={24} color={COLORS.white} />
                         </TouchableOpacity>
                     </View>
@@ -124,7 +125,7 @@ const CompanyDashboardScreen: React.FC = () => {
                             <Ionicons name="people-outline" size={24} color={COLORS.success} />
                         </View>
                         <Text style={styles.quickActionTitle}>Drivers</Text>
-                        <Text style={styles.quickActionCount}>{stats?.driversCount || 0}</Text>
+                        <Text style={styles.quickActionCount}>{companyStats?.totalDrivers || 0}</Text>
                     </TouchableOpacity>
                 </View>
             </LinearGradient>
@@ -142,26 +143,26 @@ const CompanyDashboardScreen: React.FC = () => {
                     <View style={styles.statsGrid}>
                         <StatCard
                             title={t('company.pendingOrders')}
-                            value={stats?.pending || 0}
+                            value={companyStats?.availableOrders || 0}
                             icon="time-outline"
                             color={COLORS.warning}
                         />
                         <StatCard
                             title={t('company.activeDeliveries')}
-                            value={stats?.active || 0}
+                            value={companyStats?.activeDeliveries || 0}
                             icon="sync-outline"
                             color={COLORS.info}
                         />
                         <StatCard
                             title={t('company.completedToday')}
-                            value={stats?.completedToday || 0}
+                            value={companyStats?.deliveredToday || 0}
                             icon="checkmark-circle-outline"
                             color={COLORS.success}
                             trend={8}
                         />
                         <StatCard
                             title={t('company.totalRevenue')}
-                            value={`$${stats?.revenue?.toFixed(0) || 0}`}
+                            value={`$${companyStats?.totalOrders || 0}`}
                             icon="cash-outline"
                             color={COLORS.primary}
                             trend={15}
@@ -179,17 +180,17 @@ const CompanyDashboardScreen: React.FC = () => {
                     </View>
                     <View style={styles.performanceMetrics}>
                         <View style={styles.metric}>
-                            <Text style={styles.metricValue}>{stats?.avgDeliveryTime || '--'}</Text>
+                            <Text style={styles.metricValue}>{'--'}</Text>
                             <Text style={styles.metricLabel}>Avg. Delivery</Text>
                         </View>
                         <View style={styles.metricDivider} />
                         <View style={styles.metric}>
-                            <Text style={styles.metricValue}>{stats?.successRate || 0}%</Text>
+                            <Text style={styles.metricValue}>{'--'}%</Text>
                             <Text style={styles.metricLabel}>Success Rate</Text>
                         </View>
                         <View style={styles.metricDivider} />
                         <View style={styles.metric}>
-                            <Text style={styles.metricValue}>{stats?.activeDrivers || 0}</Text>
+                            <Text style={styles.metricValue}>{companyStats?.activeDrivers || 0}</Text>
                             <Text style={styles.metricLabel}>Active Drivers</Text>
                         </View>
                     </View>

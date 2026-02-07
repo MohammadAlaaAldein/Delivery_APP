@@ -44,7 +44,7 @@ const AvailableOrdersScreen: React.FC = () => {
     const handleAcceptOrder = async (order: Order) => {
         Alert.alert(
             'Accept Order',
-            `Accept order #${order.orderNumber}?`,
+            `Accept order #${order.order_number}?`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
@@ -74,9 +74,9 @@ const AvailableOrdersScreen: React.FC = () => {
         <Card style={styles.orderCard}>
             <View style={styles.orderHeader}>
                 <View>
-                    <Text style={styles.orderNumber}>#{item.orderNumber}</Text>
+                    <Text style={styles.orderNumber}>#{item.order_number}</Text>
                     <Text style={styles.orderTime}>
-                        {new Date(item.createdAt).toLocaleTimeString()}
+                        {new Date(item.created_at).toLocaleTimeString()}
                     </Text>
                 </View>
                 <View style={styles.shopBadge}>
@@ -88,18 +88,18 @@ const AvailableOrdersScreen: React.FC = () => {
             <View style={styles.orderDetails}>
                 <View style={styles.detailRow}>
                     <Ionicons name="person-outline" size={16} color={COLORS.gray500} />
-                    <Text style={styles.detailText}>{item.customerName}</Text>
+                    <Text style={styles.detailText}>{item.customer_name}</Text>
                 </View>
                 <View style={styles.detailRow}>
                     <Ionicons name="location-outline" size={16} color={COLORS.gray500} />
                     <Text style={styles.detailText} numberOfLines={2}>
-                        {item.deliveryAddress}
+                        {item.delivery_address}
                     </Text>
                 </View>
                 <View style={styles.detailRow}>
                     <Ionicons name="cube-outline" size={16} color={COLORS.gray500} />
                     <Text style={styles.detailText}>
-                        {item.items?.length || 0} item(s) • {item.items?.[0]?.type || 'Package'}
+                        {item.order_items?.length || 0} item(s) • {item.order_items?.[0]?.type || 'Package'}
                     </Text>
                 </View>
             </View>
@@ -107,7 +107,7 @@ const AvailableOrdersScreen: React.FC = () => {
             <View style={styles.orderFooter}>
                 <View style={styles.priceContainer}>
                     <Text style={styles.priceLabel}>Delivery Fee</Text>
-                    <Text style={styles.priceValue}>${item.deliveryFee?.toFixed(2) || '0.00'}</Text>
+                    <Text style={styles.priceValue}>${Number(item.delivery_fee || 0).toFixed(2)}</Text>
                 </View>
                 <View style={styles.actionButtons}>
                     <TouchableOpacity
@@ -155,7 +155,7 @@ const AvailableOrdersScreen: React.FC = () => {
                 <View style={styles.summaryDivider} />
                 <View style={styles.summaryItem}>
                     <Text style={styles.summaryValue}>
-                        ${availableOrders.reduce((sum, o) => sum + (o.deliveryFee || 0), 0).toFixed(0)}
+                        ${availableOrders.reduce((sum, o) => sum + Number(o.delivery_fee || 0), 0).toFixed(0)}
                     </Text>
                     <Text style={styles.summaryLabel}>Total Value</Text>
                 </View>
@@ -166,7 +166,7 @@ const AvailableOrdersScreen: React.FC = () => {
             ) : (
                 <FlatList
                     data={availableOrders}
-                    keyExtractor={(item) => item.id}
+                        keyExtractor={(item) => String(item.id)}
                     renderItem={renderOrder}
                     ListEmptyComponent={
                         <EmptyState

@@ -8,6 +8,7 @@ import {
     ScrollView,
     RefreshControl,
     TouchableOpacity,
+    Alert,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,8 +25,8 @@ type NavigationProp = NativeStackNavigationProp<ShopStackParamList, 'Dashboard'>
 
 const ShopDashboardScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { user, logout } = useAuthStore();
-    const { orders, stats, isLoading, fetchOrders, fetchStats } = useOrdersStore();
+    const { user } = useAuthStore();
+    const { orders, shopStats, isLoading, fetchShopOrders, fetchShopStats } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
@@ -33,7 +34,7 @@ const ShopDashboardScreen: React.FC = () => {
     }, []);
 
     const loadData = async () => {
-        await Promise.all([fetchOrders(), fetchStats()]);
+        await Promise.all([fetchShopOrders(), fetchShopStats()]);
     };
 
     const onRefresh = useCallback(async () => {
@@ -42,7 +43,7 @@ const ShopDashboardScreen: React.FC = () => {
         setRefreshing(false);
     }, []);
 
-    const recentOrders = orders.slice(0, 5);
+    const recentOrders = Array.isArray(orders) ? orders.slice(0, 5) : [];
 
     const handleCreateOrder = () => {
         navigation.navigate('CreateOrder');
@@ -86,11 +87,11 @@ const ShopDashboardScreen: React.FC = () => {
                         </Text>
                     </View>
                     <View style={styles.headerRight}>
-                        <TouchableOpacity style={styles.notificationBtn}>
+                        <TouchableOpacity style={styles.notificationBtn} onPress={() => Alert.alert(t('notifications.title'), t('notifications.noNotifications'))}>
                             <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
                             <View style={styles.notificationBadge} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.profileBtn} onPress={logout}>
+                        <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
                             <Ionicons name="person-outline" size={24} color={COLORS.white} />
                         </TouchableOpacity>
                     </View>
@@ -130,27 +131,27 @@ const ShopDashboardScreen: React.FC = () => {
                     <View style={styles.statsGrid}>
                         <StatCard
                             title={t('shop.pendingOrders')}
-                            value={stats?.pending || 0}
+                            value={shopStats?.pendingOrders || 0}
                             icon="time-outline"
                             color={COLORS.warning}
                             trend={5}
                         />
                         <StatCard
                             title={t('shop.activeOrders')}
-                            value={stats?.active || 0}
+                            value={shopStats?.inProgressOrders || 0}
                             icon="sync-outline"
                             color={COLORS.info}
                         />
                         <StatCard
                             title={t('shop.deliveredOrders')}
-                            value={stats?.delivered || 0}
+                            value={shopStats?.deliveredOrders || 0}
                             icon="checkmark-circle-outline"
                             color={COLORS.success}
                             trend={12}
                         />
                         <StatCard
                             title={t('shop.totalOrders')}
-                            value={stats?.total || 0}
+                            value={shopStats?.totalOrders || 0}
                             icon="cube-outline"
                             color={COLORS.primary}
                         />
@@ -163,13 +164,13 @@ const ShopDashboardScreen: React.FC = () => {
                         <View style={styles.quickStatRow}>
                             <View style={styles.quickStatItem}>
                                 <Text style={styles.quickStatValue}>
-                                    ${stats?.todayRevenue?.toFixed(2) || '0.00'}
+                                    ${Number(shopStats?.todayRevenue || 0).toFixed(2)}
                                 </Text>
                                 <Text style={styles.quickStatLabel}>Today's Revenue</Text>
                             </View>
                             <View style={styles.quickStatDivider} />
                             <View style={styles.quickStatItem}>
-                                <Text style={styles.quickStatValue}>{stats?.todayOrders || 0}</Text>
+                                <Text style={styles.quickStatValue}>{shopStats?.todayOrders || 0}</Text>
                                 <Text style={styles.quickStatLabel}>Today's Orders</Text>
                             </View>
                         </View>

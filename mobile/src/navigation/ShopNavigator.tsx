@@ -8,6 +8,7 @@ import {
     ShopOrdersScreen,
     ShopCreateOrderScreen,
     ShopOrderDetailScreen,
+    ProfileScreen,
 } from '../screens';
 import { ShopStackParamList } from '../types';
 import { COLORS, FONTS, FONT_SIZES, SPACING } from '../constants';
@@ -84,7 +85,7 @@ const ShopTabs: React.FC = () => {
             />
             <Tab.Screen
                 name="ProfileTab"
-                component={ShopDashboardScreen}
+                component={ProfileScreen}
                 options={{
                     tabBarLabel: 'Profile',
                     tabBarIcon: ({ focused, size }) => (
@@ -108,6 +109,7 @@ const ShopNavigator: React.FC = () => {
             <Stack.Screen name="Orders" component={ShopOrdersScreen} />
             <Stack.Screen name="CreateOrder" component={ShopCreateOrderScreen} />
             <Stack.Screen name="OrderDetail" component={ShopOrderDetailScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
     );
 };

@@ -8,6 +8,7 @@ import {
     DriverActiveOrdersScreen,
     DriverHistoryScreen,
     DriverOrderDetailScreen,
+    ProfileScreen,
 } from '../screens';
 import { DriverStackParamList } from '../types';
 import { COLORS, FONTS, SPACING } from '../constants';
@@ -80,7 +81,7 @@ const DriverTabs: React.FC = () => {
             />
             <Tab.Screen
                 name="ProfileTab"
-                component={DriverDashboardScreen}
+                component={ProfileScreen}
                 options={{
                     tabBarLabel: 'Profile',
                     tabBarIcon: ({ focused, size }) => (
@@ -104,6 +105,7 @@ const DriverNavigator: React.FC = () => {
             <Stack.Screen name="ActiveOrders" component={DriverActiveOrdersScreen} />
             <Stack.Screen name="History" component={DriverHistoryScreen} />
             <Stack.Screen name="OrderDetail" component={DriverOrderDetailScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
     );
 };

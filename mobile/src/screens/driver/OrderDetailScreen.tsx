@@ -29,23 +29,27 @@ const DriverOrderDetailScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const route = useRoute<RouteProps>();
     const { orderId } = route.params;
-    const { orders, fetchDriverOrders } = useOrdersStore();
+    const { orders, activeOrders, fetchDriverOrders } = useOrdersStore();
 
     const [order, setOrder] = useState<Order | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
-        const foundOrder = orders.find((o) => o.id === orderId);
+        const allOrders = activeOrders.length > 0 ? activeOrders : orders;
+        const foundOrder = allOrders.find((o) => o.id === orderId);
         setOrder(foundOrder || null);
-    }, [orderId, orders]);
+    }, [orderId, orders, activeOrders]);
 
     const handleCall = (phone: string) => {
         Linking.openURL(`tel:${phone}`);
     };
 
-    const handleNavigate = (address: string) => {
-        const encodedAddress = encodeURIComponent(address);
-        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`);
+    const openNavigation = (lat?: number, lng?: number, address?: string) => {
+        if (lat && lng) {
+            Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`);
+        } else if (address) {
+            Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`);
+        }
     };
 
     const handlePickup = async () => {
@@ -169,7 +173,7 @@ const DriverOrderDetailScreen: React.FC = () => {
                     <Text style={styles.headerTitle}>Order Details</Text>
                     <TouchableOpacity
                         style={styles.backButton}
-                        onPress={() => handleCall(order.customerPhone)}
+                        onPress={() => handleCall(order.customer_phone)}
                     >
                         <Ionicons name="call" size={24} color={COLORS.white} />
                     </TouchableOpacity>
@@ -177,9 +181,9 @@ const DriverOrderDetailScreen: React.FC = () => {
 
                 <View style={styles.orderHeader}>
                     <View>
-                        <Text style={styles.orderNumber}>#{order.orderNumber}</Text>
+                        <Text style={styles.orderNumber}>#{order.order_number}</Text>
                         <Text style={styles.orderDate}>
-                            {new Date(order.createdAt).toLocaleDateString()}
+                            {new Date(order.created_at).toLocaleDateString()}
                         </Text>
                     </View>
                     <View style={[styles.statusBadge, { backgroundColor: COLORS.white }]}>
@@ -211,7 +215,11 @@ const DriverOrderDetailScreen: React.FC = () => {
                         </View>
                         <TouchableOpacity
                             style={styles.navigateBtn}
-                            onPress={() => handleNavigate(order.shop?.address || '')}
+                            onPress={() => openNavigation(
+                                Number(order.shop?.latitude) || undefined,
+                                Number(order.shop?.longitude) || undefined,
+                                order.shop?.address,
+                            )}
                         >
                             <Ionicons name="navigate" size={20} color={COLORS.white} />
                         </TouchableOpacity>
@@ -230,12 +238,16 @@ const DriverOrderDetailScreen: React.FC = () => {
                         </View>
                         <View style={styles.routeInfo}>
                             <Text style={styles.routeLabel}>DELIVERY</Text>
-                            <Text style={styles.routeName}>{order.customerName}</Text>
-                            <Text style={styles.routeAddress}>{order.deliveryAddress}</Text>
+                            <Text style={styles.routeName}>{order.customer_name}</Text>
+                            <Text style={styles.routeAddress}>{order.delivery_address}</Text>
                         </View>
                         <TouchableOpacity
                             style={[styles.navigateBtn, { backgroundColor: COLORS.success }]}
-                            onPress={() => handleNavigate(order.deliveryAddress)}
+                            onPress={() => openNavigation(
+                                Number(order.delivery_latitude) || undefined,
+                                Number(order.delivery_longitude) || undefined,
+                                order.delivery_address,
+                            )}
                         >
                             <Ionicons name="navigate" size={20} color={COLORS.white} />
                         </TouchableOpacity>
@@ -250,19 +262,19 @@ const DriverOrderDetailScreen: React.FC = () => {
                     </View>
                     <View style={styles.contactRow}>
                         <View style={styles.contactInfo}>
-                            <Text style={styles.contactName}>{order.customerName}</Text>
-                            <Text style={styles.contactPhone}>{order.customerPhone}</Text>
+                            <Text style={styles.contactName}>{order.customer_name}</Text>
+                            <Text style={styles.contactPhone}>{order.customer_phone}</Text>
                         </View>
                         <View style={styles.contactActions}>
                             <TouchableOpacity
                                 style={styles.contactBtn}
-                                onPress={() => handleCall(order.customerPhone)}
+                                onPress={() => handleCall(order.customer_phone)}
                             >
                                 <Ionicons name="call" size={20} color={COLORS.success} />
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.contactBtn, { backgroundColor: COLORS.infoSoft }]}
-                                onPress={() => Linking.openURL(`sms:${order.customerPhone}`)}
+                                onPress={() => Linking.openURL(`sms:${order.customer_phone}`)}
                             >
                                 <Ionicons name="chatbubble" size={20} color={COLORS.info} />
                             </TouchableOpacity>
@@ -274,15 +286,15 @@ const DriverOrderDetailScreen: React.FC = () => {
                 <Card style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Ionicons name="cube-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.sectionTitle}>Items ({order.items?.length || 0})</Text>
+                        <Text style={styles.sectionTitle}>Items ({order.order_items?.length || 0})</Text>
                     </View>
-                    {order.items?.map((item, index) => (
+                    {order.order_items?.map((item, index) => (
                         <View key={index} style={styles.itemRow}>
                             <View style={styles.itemInfo}>
-                                <Text style={styles.itemName}>{item.name}</Text>
+                                <Text style={styles.itemName}>{item.description || item.name || item.type}</Text>
                                 <Badge label={item.type} variant="secondary" size="sm" />
                             </View>
-                            <Text style={styles.itemQuantity}>x{item.quantity}</Text>
+                            <Text style={styles.itemQuantity}>x{item.count || item.quantity || 1}</Text>
                         </View>
                     ))}
                 </Card>
@@ -295,23 +307,23 @@ const DriverOrderDetailScreen: React.FC = () => {
                     </View>
                     <View style={styles.paymentRow}>
                         <Text style={styles.paymentLabel}>Method</Text>
-                        <Badge label={order.paymentMethod || 'Cash'} variant="secondary" />
+                        <Badge label={order.payment_method || 'Cash'} variant="secondary" />
                     </View>
                     <View style={styles.paymentRow}>
                         <Text style={styles.paymentLabel}>Status</Text>
                         <Badge
-                            label={order.paymentStatus || 'Pending'}
-                            variant={order.paymentStatus === 'paid' ? 'success' : 'warning'}
+                            label={order.payment_status || 'Pending'}
+                            variant={order.payment_status === 'paid' ? 'success' : 'warning'}
                         />
                     </View>
                     <Divider />
                     <View style={styles.paymentRow}>
                         <Text style={styles.paymentLabel}>Total Amount</Text>
-                        <Text style={styles.paymentTotal}>${order.totalAmount?.toFixed(2) || '0.00'}</Text>
+                        <Text style={styles.paymentTotal}>${Number(order.total_amount || 0).toFixed(2)}</Text>
                     </View>
                     <View style={styles.paymentRow}>
                         <Text style={styles.paymentLabel}>Delivery Fee</Text>
-                        <Text style={styles.deliveryFee}>${order.deliveryFee?.toFixed(2) || '0.00'}</Text>
+                        <Text style={styles.deliveryFee}>${Number(order.delivery_fee || 0).toFixed(2)}</Text>
                     </View>
                 </Card>
 

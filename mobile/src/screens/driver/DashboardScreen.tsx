@@ -9,6 +9,7 @@ import {
     RefreshControl,
     TouchableOpacity,
     Switch,
+    Alert,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +19,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Card, StatCard, OrderCard, Loading, EmptyState } from '../../components';
 import { COLORS, FONTS, FONT_SIZES, SPACING, RADIUS, SHADOWS } from '../../constants';
 import { useAuthStore, useOrdersStore } from '../../stores';
+import { entitiesService } from '../../services';
 import { t } from '../../i18n';
 import { DriverStackParamList, OrderStatus } from '../../types';
 
@@ -25,8 +27,8 @@ type NavigationProp = NativeStackNavigationProp<DriverStackParamList, 'Dashboard
 
 const DriverDashboardScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { user, logout } = useAuthStore();
-    const { orders, stats, isLoading, fetchDriverOrders, fetchStats } = useOrdersStore();
+    const { user } = useAuthStore();
+    const { orders, activeOrders: storeActiveOrders, driverStats, isLoading, fetchDriverOrders, fetchDriverStats } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
 
@@ -35,7 +37,7 @@ const DriverDashboardScreen: React.FC = () => {
     }, []);
 
     const loadData = async () => {
-        await Promise.all([fetchDriverOrders(), fetchStats()]);
+        await Promise.all([fetchDriverOrders(), fetchDriverStats()]);
     };
 
     const onRefresh = useCallback(async () => {
@@ -44,12 +46,14 @@ const DriverDashboardScreen: React.FC = () => {
         setRefreshing(false);
     }, []);
 
-    const activeOrders = orders.filter(
+    const allDriverOrders = storeActiveOrders.length > 0 ? storeActiveOrders : orders;
+
+    const activeOrders = allDriverOrders.filter(
         (o) => [OrderStatus.ASSIGNED_TO_DRIVER, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(o.status as OrderStatus)
     );
 
-    const pendingPickup = orders.filter((o) => o.status === OrderStatus.ASSIGNED_TO_DRIVER);
-    const inProgress = orders.filter(
+    const pendingPickup = allDriverOrders.filter((o) => o.status === OrderStatus.ASSIGNED_TO_DRIVER);
+    const inProgress = allDriverOrders.filter(
         (o) => [OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(o.status as OrderStatus)
     );
 
@@ -72,7 +76,7 @@ const DriverDashboardScreen: React.FC = () => {
         return 'Good Evening';
     };
 
-    if (isLoading && orders.length === 0) {
+    if (isLoading && allDriverOrders.length === 0) {
         return <Loading fullScreen message="Loading dashboard..." />;
     }
 
@@ -95,7 +99,7 @@ const DriverDashboardScreen: React.FC = () => {
                         </Text>
                     </View>
                     <View style={styles.headerRight}>
-                        <TouchableOpacity style={styles.profileBtn} onPress={logout}>
+                        <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
                             <Ionicons name="person-outline" size={24} color={COLORS.white} />
                         </TouchableOpacity>
                     </View>
@@ -111,7 +115,19 @@ const DriverDashboardScreen: React.FC = () => {
                     </View>
                     <Switch
                         value={isOnline}
-                        onValueChange={setIsOnline}
+                        onValueChange={async (value) => {
+                            setIsOnline(value);
+                            try {
+                                if (value) {
+                                    // Send a dummy location update to mark as active
+                                    await entitiesService.updateDriverLocation(0, 0);
+                                } else {
+                                    await entitiesService.clearDriverLocation();
+                                }
+                            } catch (err) {
+                                console.log('Toggle online status error:', err);
+                            }
+                        }}
                         trackColor={{ false: 'rgba(255,255,255,0.3)', true: COLORS.white }}
                         thumbColor={isOnline ? COLORS.success : COLORS.gray400}
                     />
@@ -122,18 +138,18 @@ const DriverDashboardScreen: React.FC = () => {
                     <View style={styles.earningsMain}>
                         <Text style={styles.earningsLabel}>Today's Earnings</Text>
                         <Text style={styles.earningsValue}>
-                            ${stats?.todayEarnings?.toFixed(2) || '0.00'}
+                            ${Number(driverStats?.todayEarnings || 0).toFixed(2)}
                         </Text>
                     </View>
                     <View style={styles.earningsDivider} />
                     <View style={styles.earningsStats}>
                         <View style={styles.earningsStat}>
-                            <Text style={styles.earnStatValue}>{stats?.todayDeliveries || 0}</Text>
+                            <Text style={styles.earnStatValue}>{driverStats?.todayDeliveries || 0}</Text>
                             <Text style={styles.earnStatLabel}>Deliveries</Text>
                         </View>
                         <View style={styles.earningsStat}>
                             <Text style={styles.earnStatValue}>
-                                {stats?.todayDistance?.toFixed(1) || 0} km
+                                {Number(driverStats?.todayDistance || 0).toFixed(1)} km
                             </Text>
                             <Text style={styles.earnStatLabel}>Distance</Text>
                         </View>
@@ -193,13 +209,13 @@ const DriverDashboardScreen: React.FC = () => {
                         />
                         <StatCard
                             title={t('driver.completedToday')}
-                            value={stats?.todayDeliveries || 0}
+                            value={driverStats?.todayDeliveries || 0}
                             icon="checkmark-circle-outline"
                             color={COLORS.success}
                         />
                         <StatCard
                             title={t('driver.rating')}
-                            value={(stats?.rating || 4.8).toFixed(1)}
+                            value={Number(driverStats?.rating || 4.8).toFixed(1)}
                             icon="star-outline"
                             color={COLORS.warning}
                         />
@@ -240,18 +256,18 @@ const DriverDashboardScreen: React.FC = () => {
                     <View style={styles.performanceRow}>
                         <View style={styles.performanceItem}>
                             <Ionicons name="checkmark-done" size={24} color={COLORS.success} />
-                            <Text style={styles.perfValue}>{stats?.weekDeliveries || 0}</Text>
+                            <Text style={styles.perfValue}>{driverStats?.weeklyDeliveries || 0}</Text>
                             <Text style={styles.perfLabel}>Completed</Text>
                         </View>
                         <View style={styles.performanceItem}>
                             <Ionicons name="time" size={24} color={COLORS.info} />
-                            <Text style={styles.perfValue}>{stats?.avgDeliveryTime || '--'}</Text>
+                            <Text style={styles.perfValue}>{'--'}</Text>
                             <Text style={styles.perfLabel}>Avg. Time</Text>
                         </View>
                         <View style={styles.performanceItem}>
                             <Ionicons name="cash" size={24} color={COLORS.warning} />
                             <Text style={styles.perfValue}>
-                                ${stats?.weekEarnings?.toFixed(0) || 0}
+                                ${Number(driverStats?.weekEarnings || 0).toFixed(0)}
                             </Text>
                             <Text style={styles.perfLabel}>Earned</Text>
                         </View>

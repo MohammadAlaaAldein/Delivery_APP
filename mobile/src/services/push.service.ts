@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from './secure-store';
 import { STORAGE_KEYS, NOTIFICATION_CHANNELS } from '../constants';
 import { DeviceTokenDto, NotificationType, PushNotificationPayload } from '../types';
 import apiService from './api.service';

@@ -36,7 +36,7 @@ const DriversScreen: React.FC = () => {
     const [assigningOrder, setAssigningOrder] = useState<string | null>(null);
 
     const unassignedOrders = orders.filter(
-        (o) => o.status === OrderStatus.ASSIGNED_TO_COMPANY && !o.driverId
+        (o) => o.status === OrderStatus.ASSIGNED_TO_COMPANY && !o.driver_id
     );
 
     useEffect(() => {
@@ -46,11 +46,11 @@ const DriversScreen: React.FC = () => {
     const loadData = async () => {
         try {
             setIsLoading(true);
-            const [driversRes] = await Promise.all([
-                entitiesService.getDrivers(),
+            const [driversData] = await Promise.all([
+                entitiesService.getMyCompanyDrivers(),
                 fetchCompanyOrders(),
             ]);
-            setDrivers(driversRes.data || []);
+            setDrivers(Array.isArray(driversData) ? driversData : (driversData?.data || []));
         } catch (err) {
             console.error('Failed to load drivers:', err);
         } finally {
@@ -78,8 +78,8 @@ const DriversScreen: React.FC = () => {
 
         setAssigningOrder(order.id);
         try {
-            await ordersService.assignDriver(order.id, selectedDriver.id);
-            Alert.alert('Success', `Order assigned to ${selectedDriver.name}`);
+            await ordersService.assignDriver(order.id, { driver_id: selectedDriver.id });
+            Alert.alert('Success', `Order assigned to ${selectedDriver.name || selectedDriver.user?.name}`);
             setShowAssignModal(false);
             setSelectedDriver(null);
             await loadData();
@@ -92,7 +92,7 @@ const DriversScreen: React.FC = () => {
 
     const renderDriver = ({ item }: { item: Driver }) => {
         const activeOrdersCount = orders.filter(
-            (o) => o.driverId === item.id && ['assigned_to_driver', 'picked_up', 'in_transit'].includes(o.status)
+            (o) => o.driver_id === item.id && ['assigned_to_driver', 'picked_up', 'in_transit'].includes(o.status)
         ).length;
 
         return (
@@ -100,15 +100,15 @@ const DriversScreen: React.FC = () => {
                 <View style={styles.driverHeader}>
                     <View style={styles.driverAvatar}>
                         <Text style={styles.driverInitial}>
-                            {item.name.charAt(0).toUpperCase()}
+                            {(item.name || item.user?.name || 'D').charAt(0).toUpperCase()}
                         </Text>
                     </View>
                     <View style={styles.driverInfo}>
                         <View style={styles.driverNameRow}>
-                            <Text style={styles.driverName}>{item.name}</Text>
+                            <Text style={styles.driverName}>{item.name || item.user?.name || 'Driver'}</Text>
                             <Badge
-                                label={item.isActive ? 'Online' : 'Offline'}
-                                variant={item.isActive ? 'success' : 'secondary'}
+                                label={item.is_active ? 'Online' : 'Offline'}
+                                variant={item.is_active ? 'success' : 'secondary'}
                                 size="sm"
                             />
                         </View>
@@ -119,7 +119,7 @@ const DriversScreen: React.FC = () => {
                 <View style={styles.driverStats}>
                     <View style={styles.driverStat}>
                         <Ionicons name="car-outline" size={18} color={COLORS.gray500} />
-                        <Text style={styles.statText}>{item.vehicleType || 'N/A'}</Text>
+                        <Text style={styles.statText}>{item.vehicle_type || 'N/A'}</Text>
                     </View>
                     <View style={styles.driverStat}>
                         <Ionicons name="cube-outline" size={18} color={COLORS.gray500} />
@@ -127,7 +127,7 @@ const DriversScreen: React.FC = () => {
                     </View>
                     <View style={styles.driverStat}>
                         <Ionicons name="star-outline" size={18} color={COLORS.warning} />
-                        <Text style={styles.statText}>{item.rating?.toFixed(1) || '4.5'}</Text>
+                        <Text style={styles.statText}>{Number(item.rating || 4.5).toFixed(1)}</Text>
                     </View>
                 </View>
 
@@ -142,7 +142,7 @@ const DriversScreen: React.FC = () => {
                         title="Assign Order"
                         onPress={() => handleAssignDriver(item)}
                         size="sm"
-                        disabled={!item.isActive || unassignedOrders.length === 0}
+                        disabled={!item.is_active || unassignedOrders.length === 0}
                     />
                 </View>
             </Card>
@@ -156,9 +156,9 @@ const DriversScreen: React.FC = () => {
             disabled={assigningOrder !== null}
         >
             <View style={styles.orderInfo}>
-                <Text style={styles.orderNumber}>#{item.orderNumber}</Text>
+                <Text style={styles.orderNumber}>#{item.order_number}</Text>
                 <Text style={styles.orderAddress} numberOfLines={1}>
-                    {item.deliveryAddress}
+                    {item.delivery_address}
                 </Text>
             </View>
             {assigningOrder === item.id ? (
@@ -206,7 +206,7 @@ const DriversScreen: React.FC = () => {
                     </View>
                     <View>
                         <Text style={styles.statValue}>
-                            {drivers.filter((d) => d.isActive).length}
+                            {drivers.filter((d) => d.is_active).length}
                         </Text>
                         <Text style={styles.statLabel}>Online</Text>
                     </View>
@@ -251,7 +251,7 @@ const DriversScreen: React.FC = () => {
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>
-                                Assign Order to {selectedDriver?.name}
+                                Assign Order to {selectedDriver?.name || selectedDriver?.user?.name}
                             </Text>
                             <TouchableOpacity onPress={() => setShowAssignModal(false)}>
                                 <Ionicons name="close" size={24} color={COLORS.gray900} />
@@ -260,7 +260,7 @@ const DriversScreen: React.FC = () => {
 
                         <FlatList
                             data={unassignedOrders}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => String(item.id)}
                             renderItem={renderOrderToAssign}
                             ListEmptyComponent={
                                 <EmptyState

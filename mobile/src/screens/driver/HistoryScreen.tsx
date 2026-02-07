@@ -25,11 +25,12 @@ const TABS = ['all', 'delivered', 'cancelled'];
 
 const HistoryScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { orders, isLoading, fetchDriverOrders } = useOrdersStore();
+    const { activeOrders: storeActiveOrders, orders, isLoading, fetchDriverOrders } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
     const [activeTab, setActiveTab] = useState('all');
 
-    const completedOrders = orders.filter(
+    const allOrders = storeActiveOrders.length > 0 ? storeActiveOrders : orders;
+    const completedOrders = allOrders.filter(
         (o) => [OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(o.status as OrderStatus)
     );
 
@@ -56,7 +57,7 @@ const HistoryScreen: React.FC = () => {
 
     // Group orders by date
     const groupedOrders = filteredOrders.reduce((groups: { [key: string]: Order[] }, order) => {
-        const date = new Date(order.deliveredAt || order.updatedAt || order.createdAt).toLocaleDateString();
+        const date = new Date(order.delivered_at || order.updated_at || order.created_at).toLocaleDateString();
         if (!groups[date]) {
             groups[date] = [];
         }
@@ -69,7 +70,7 @@ const HistoryScreen: React.FC = () => {
         orders,
         earnings: orders
             .filter((o) => o.status === OrderStatus.DELIVERED)
-            .reduce((sum, o) => sum + (o.deliveryFee || 0), 0),
+            .reduce((sum, o) => sum + Number(o.delivery_fee || 0), 0),
     }));
 
     const renderOrder = (order: Order) => {
@@ -84,13 +85,13 @@ const HistoryScreen: React.FC = () => {
                 <View style={[styles.statusIndicator, { backgroundColor: statusConfig.color }]} />
                 <View style={styles.orderInfo}>
                     <View style={styles.orderRow}>
-                        <Text style={styles.orderNumber}>#{order.orderNumber}</Text>
+                        <Text style={styles.orderNumber}>#{order.order_number}</Text>
                         <Text style={styles.orderAmount}>
-                            ${order.deliveryFee?.toFixed(2) || '0.00'}
+                            ${Number(order.delivery_fee || 0).toFixed(2)}
                         </Text>
                     </View>
                     <Text style={styles.orderAddress} numberOfLines={1}>
-                        {order.deliveryAddress}
+                        {order.delivery_address}
                     </Text>
                     <View style={styles.orderMeta}>
                         <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
@@ -98,7 +99,7 @@ const HistoryScreen: React.FC = () => {
                             {statusConfig.label}
                         </Text>
                         <Text style={styles.orderTime}>
-                            {new Date(order.deliveredAt || order.updatedAt || order.createdAt).toLocaleTimeString()}
+                            {new Date(order.delivered_at || order.updated_at || order.created_at).toLocaleTimeString()}
                         </Text>
                     </View>
                 </View>
@@ -113,7 +114,7 @@ const HistoryScreen: React.FC = () => {
                 <Text style={styles.sectionDate}>{item.date}</Text>
                 <View style={styles.sectionStats}>
                     <Text style={styles.sectionCount}>{item.orders.length} orders</Text>
-                    <Text style={styles.sectionEarnings}>${item.earnings.toFixed(2)}</Text>
+                    <Text style={styles.sectionEarnings}>${Number(item.earnings || 0).toFixed(2)}</Text>
                 </View>
             </View>
             <Card style={styles.sectionCard}>
@@ -127,7 +128,7 @@ const HistoryScreen: React.FC = () => {
     const totalCancelled = completedOrders.filter((o) => o.status === OrderStatus.CANCELLED).length;
     const totalEarnings = completedOrders
         .filter((o) => o.status === OrderStatus.DELIVERED)
-        .reduce((sum, o) => sum + (o.deliveryFee || 0), 0);
+        .reduce((sum, o) => sum + Number(o.delivery_fee || 0), 0);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -167,7 +168,7 @@ const HistoryScreen: React.FC = () => {
                     <View style={[styles.statIcon, { backgroundColor: COLORS.warningSoft }]}>
                         <Ionicons name="cash" size={20} color={COLORS.warning} />
                     </View>
-                    <Text style={styles.statValue}>${totalEarnings.toFixed(0)}</Text>
+                    <Text style={styles.statValue}>${Number(totalEarnings || 0).toFixed(0)}</Text>
                     <Text style={styles.statLabel}>Earned</Text>
                 </View>
             </View>

@@ -66,8 +66,8 @@ const CreateOrderScreen: React.FC = () => {
 
     const loadCompanies = async () => {
         try {
-            const response = await entitiesService.getCompanies();
-            setCompanies(response.data || []);
+            const data = await entitiesService.getCompanies();
+            setCompanies(Array.isArray(data) ? data : (data?.data || []));
         } catch (err) {
             console.error('Failed to load companies:', err);
         }
@@ -143,21 +143,20 @@ const CreateOrderScreen: React.FC = () => {
             const validItems = items
                 .filter((item) => item.name.trim())
                 .map((item) => ({
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price,
                     type: item.type,
+                    count: item.quantity,
+                    description: item.name,
                 }));
 
             await createOrder({
-                customerName: customerName.trim(),
-                customerPhone: customerPhone.trim(),
-                deliveryAddress: deliveryAddress.trim(),
-                notes: notes.trim(),
-                items: validItems,
-                paymentMethod,
-                deliveryFee: parseFloat(deliveryFee) || 0,
-                companyId: selectedCompany?.id,
+                customer_name: customerName.trim(),
+                customer_phone: customerPhone.trim(),
+                delivery_address: deliveryAddress.trim(),
+                shop_notes: notes.trim(),
+                order_items: validItems,
+                payment_method: paymentMethod,
+                order_amount: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                delivery_fee: parseFloat(deliveryFee) || 0,
             });
 
             Alert.alert(

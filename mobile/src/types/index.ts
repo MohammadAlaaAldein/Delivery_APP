@@ -172,8 +172,10 @@ export interface Driver {
 // Order Item Interface
 export interface OrderItem {
     type: OrderItemType;
-    quantity: number;
+    count?: number; // Backend field name
+    quantity?: number; // Alias for count (display)
     description?: string;
+    size?: string;
     weight?: number;
     name?: string; // Display name for the item
     price?: number; // Price per unit
