@@ -99,10 +99,16 @@ export class UpdateOrderDto {
     status?: OrderStatus;
 
     // Assignments (admin only)
+    // Assignments (admin only)
     @IsOptional()
-    @Transform(({ value }) => (value === null || value === undefined || value === '') ? undefined : Number(value))
+    @Transform(({ value }) => {
+        if (value === null || value === 'null' || value === '') return null;
+        if (value === undefined) return undefined;
+        return Number(value);
+    })
+    @ValidateIf((object, value) => value !== null)
     @IsNumber()
-    company_id?: number;
+    company_id?: number | null;
 
     @IsOptional()
     @IsNumber()

@@ -200,21 +200,41 @@ export class OrdersService {
             throw new BadRequestException('Cannot update order after it has been assigned to a driver');
         }
 
+        const previousCompanyId = order.company_id;
+        let companyChanged = false;
+
         // Check if company is being updated or assigned
-        if (updateOrderDto.company_id && updateOrderDto.company_id !== order.company_id) {
-            const isConnected = await this.companiesShopsService.isCompanyConnectedToShop(
-                updateOrderDto.company_id,
-                shopId
-            );
-            if (!isConnected) {
-                throw new BadRequestException('The specified company is not connected to your shop');
+        if (updateOrderDto.company_id !== undefined && updateOrderDto.company_id !== order.company_id) {
+            // Only check connection if assigning to a company (not removing)
+            if (updateOrderDto.company_id !== null) {
+                const isConnected = await this.companiesShopsService.isCompanyConnectedToShop(
+                    updateOrderDto.company_id,
+                    shopId
+                );
+                if (!isConnected) {
+                    throw new BadRequestException('The specified company is not connected to your shop');
+                }
             }
+
             order.company_id = updateOrderDto.company_id;
-            // If it was pending, update status to assigned
-            if (order.status === OrderStatus.PENDING) {
+
+            // Update status based on assignment
+            if (updateOrderDto.company_id) {
+            // Assigning to a company
                 order.status = OrderStatus.ASSIGNED_TO_COMPANY;
+                order.company_assigned_at = new Date();
+            } else {
+                // Removing company (unassigning)
+                order.status = OrderStatus.PENDING;
+                order.company_id = null;
+                order.company = null; // IMPORTANT: Also null the relation object for TypeORM
+                order.company_assigned_at = null;
+                order.driver_id = null; // Also unassign driver
+                order.driver = null; // IMPORTANT: Also null the relation object for TypeORM
+                order.driver_assigned_at = null;
             }
-            order.company_assigned_at = new Date();
+
+            companyChanged = true;
         }
 
         // Recalculate total if amounts changed
@@ -231,8 +251,47 @@ export class OrdersService {
 
         const savedOrder = await this.ordersRepository.save(order);
 
-        // 🔔 PUSH NOTIFICATION: Notify company/driver if order was updated
-        if (savedOrder.company_id) {
+        // Emit real-time events
+        if (companyChanged) {
+            // If company changed, notify the old company to remove it (if there was one)
+            if (previousCompanyId) {
+                this.ordersGateway.emitOrderReleased(savedOrder, previousCompanyId);
+            }
+            // Notify the new company to add it (only if there is a new company)
+            if (savedOrder.company_id) {
+                this.ordersGateway.emitOrderAssignedToCompany(savedOrder);
+            }
+        } else {
+            // Just details updated
+            this.ordersGateway.emitOrderUpdated(savedOrder);
+        }
+
+        // 🔔 PUSH NOTIFICATION: Based on what changed
+        if (companyChanged) {
+            // If company was assigned
+            if (savedOrder.company_id) {
+                const companyUserIds = await this.getCompanyUserIds(savedOrder.company_id);
+                this.sendOrderNotification(
+                    savedOrder,
+                    NotificationType.ORDER_ASSIGNED,
+                    companyUserIds,
+                    'طلب جديد معين',
+                    `تم تعيين الطلب #${savedOrder.order_number} لشركتكم`
+                );
+            }
+            // If company was removed, notify the previous company
+            if (previousCompanyId) {
+                const prevCompanyUserIds = await this.getCompanyUserIds(previousCompanyId);
+                this.sendOrderNotification(
+                    savedOrder,
+                    NotificationType.ORDER_RELEASED,
+                    prevCompanyUserIds,
+                    'تم إلغاء تعيين الطلب',
+                    `تم إلغاء تعيين الطلب #${savedOrder.order_number} من شركتكم`
+                );
+            }
+        } else if (savedOrder.company_id) {
+            // Just details updated (no company change)
             const companyUserIds = await this.getCompanyUserIds(savedOrder.company_id);
             this.sendOrderNotification(
                 savedOrder,
@@ -250,9 +309,9 @@ export class OrdersService {
     async cancelShopOrder(shopId: number, orderId: number, cancelDto: CancelOrderDto): Promise<OrderHistory> {
         const order = await this.getShopOrder(shopId, orderId);
 
-        // Can only cancel if not already picked up or delivered
-        if ([OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED].includes(order.status)) {
-            throw new BadRequestException('Cannot cancel order after pickup');
+        // Can only cancel if not already picked up, delivered, or assigned to driver
+        if ([OrderStatus.ASSIGNED_TO_DRIVER, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED].includes(order.status)) {
+            throw new BadRequestException('Cannot cancel order after driver assignment');
         }
 
         const previousCompanyId = order.company_id;

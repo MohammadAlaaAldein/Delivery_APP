@@ -106,7 +106,6 @@ export class DriverOrdersComponent implements OnInit, OnDestroy {
         this.socketService.onOrderUpdate()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Driver Orders] Real-time update received:', payload.eventType);
                 this.getOrdersList();
             });
     }

@@ -68,7 +68,6 @@ export class OrderViewComponent implements OnInit, OnDestroy {
             .subscribe((payload: OrderEventPayload) => {
                 // Only reload if this is the order being viewed
                 if (payload.orderId === this.orderId) {
-                    console.log('[Order View] Real-time update received:', payload.eventType);
                     this.loadOrder();
                 }
             });

@@ -233,7 +233,6 @@ Should show `firebase-messaging-sw.js`
 // Get FCM token first
 const messaging = firebase.messaging();
 const token = await messaging.getToken();
-console.log('Token:', token);
 
 // Register with backend
 fetch('http://localhost:1000/push-notifications/register', {
@@ -286,8 +285,6 @@ fetch('http://localhost:1000/push-notifications/register', {
 **Open DevTools Console and run:**
 
 ```javascript
-// 1. Check permission
-console.log('Permission:', Notification.permission);
 
 // 2. Request permission if needed
 if (Notification.permission === 'default') {
@@ -296,7 +293,6 @@ if (Notification.permission === 'default') {
 
 // 3. Check if service worker is registered
 const registrations = await navigator.serviceWorker.getRegistrations();
-console.log('Service Workers:', registrations);
 
 // 4. Test browser notification API directly
 new Notification('Test', {

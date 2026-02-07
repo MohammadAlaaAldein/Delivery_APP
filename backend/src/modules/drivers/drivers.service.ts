@@ -77,7 +77,6 @@ export class DriversService {
         accuracy?: number;
         orderId?: number;
     }): Promise<void> {
-        console.log(`[DriversService] Updating location for driver ${driverId}:`, location);
         const result = await this.driversRepository.update(
             { user_id: driverId },
             {
@@ -87,7 +86,6 @@ export class DriversService {
                 },
             }
         );
-        console.log(`[DriversService] Update result:`, result.affected, 'rows affected');
     }
 
     

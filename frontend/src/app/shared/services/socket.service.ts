@@ -99,14 +99,12 @@ export class SocketService implements OnDestroy {
     // Connect to WebSocket server
     connect(): void {
         if (this.socket?.connected) {
-            console.log('[Socket] Already connected');
             return;
         }
 
         // Get token from localStorage
         const currentUser = localStorage.getItem('currentUser');
         if (!currentUser) {
-            console.log('[Socket] No user found, skipping connection');
             return;
         }
 
@@ -115,7 +113,6 @@ export class SocketService implements OnDestroy {
             const user = JSON.parse(currentUser);
             token = user.accessToken;
             if (!token) {
-                console.log('[Socket] No access token found');
                 return;
             }
         } catch (e) {
@@ -127,7 +124,6 @@ export class SocketService implements OnDestroy {
 
         // Build WebSocket URL from API URL
         const baseUrl = environment.apiUrl.replace('/api', '');
-        console.log('[Socket] Connecting to:', baseUrl + '/orders');
 
         this.socket = io(baseUrl + '/orders', {
             auth: { token },
@@ -157,14 +153,12 @@ export class SocketService implements OnDestroy {
 
         // Connection events
         this.socket.on('connect', () => {
-            console.log('[Socket] Connected:', this.socket?.id);
             this.connectionState$.next(ConnectionState.CONNECTED);
             this.reconnectAttempts = 0;
             this.processOfflineQueue();
         });
 
         this.socket.on('disconnect', (reason) => {
-            console.log('[Socket] Disconnected:', reason);
             this.connectionState$.next(ConnectionState.DISCONNECTED);
         });
 
@@ -174,13 +168,11 @@ export class SocketService implements OnDestroy {
         });
 
         this.socket.on('reconnect_attempt', (attempt) => {
-            console.log('[Socket] Reconnection attempt:', attempt);
             this.connectionState$.next(ConnectionState.RECONNECTING);
             this.reconnectAttempts = attempt;
         });
 
         this.socket.on('reconnect', () => {
-            console.log('[Socket] Reconnected');
             this.connectionState$.next(ConnectionState.CONNECTED);
             this.processOfflineQueue();
         });
@@ -191,7 +183,6 @@ export class SocketService implements OnDestroy {
 
         // Listen for the main orderUpdate event from backend
         this.socket.on('orderUpdate', (payload: OrderEventPayload) => {
-            console.log('[Socket] Order update received:', payload.eventType, payload.orderNumber);
             this.orderUpdate$.next(payload);
         });
     }
@@ -329,13 +320,11 @@ export class SocketService implements OnDestroy {
             timestamp: new Date(),
         });
 
-        console.log('[Socket] Event queued for later:', event);
     }
 
     private processOfflineQueue(): void {
         if (this.offlineQueue.length === 0) return;
 
-        console.log('[Socket] Processing offline queue:', this.offlineQueue.length, 'events');
 
         while (this.offlineQueue.length > 0) {
             const queuedEvent = this.offlineQueue.shift();
@@ -352,14 +341,12 @@ export class SocketService implements OnDestroy {
     // ==================== ONLINE/OFFLINE HANDLERS ====================
 
     private handleOnline(): void {
-        console.log('[Socket] Browser online');
         if (this.socket && !this.socket.connected) {
             this.socket.connect();
         }
     }
 
     private handleOffline(): void {
-        console.log('[Socket] Browser offline');
         this.connectionState$.next(ConnectionState.DISCONNECTED);
     }
 

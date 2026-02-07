@@ -120,9 +120,6 @@ class AuthService {
 
     // Store tokens
     async storeTokens(accessToken: string, refreshToken?: string): Promise<void> {
-        console.log(STORAGE_KEYS.accessToken);
-        console.log(accessToken);
-        
         await SecureStore.setItemAsync(STORAGE_KEYS.accessToken, accessToken);
         if (refreshToken) {
             await SecureStore.setItemAsync(STORAGE_KEYS.refreshToken, refreshToken);

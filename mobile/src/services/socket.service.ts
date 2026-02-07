@@ -80,14 +80,12 @@ class SocketService {
         if (!this.socket) return;
 
         this.socket.on(SOCKET_EVENTS.CONNECT, () => {
-            console.log('Socket connected');
             this.isConnected = true;
             this.reconnectAttempts = 0;
             this.emitEvent(SOCKET_EVENTS.CONNECT, null);
         });
 
         this.socket.on(SOCKET_EVENTS.DISCONNECT, (reason: string) => {
-            console.log('Socket disconnected:', reason);
             this.isConnected = false;
             this.emitEvent(SOCKET_EVENTS.DISCONNECT, reason);
         });
@@ -98,7 +96,6 @@ class SocketService {
         });
 
         this.socket.on(SOCKET_EVENTS.RECONNECT, (attemptNumber: number) => {
-            console.log('Socket reconnected after', attemptNumber, 'attempts');
             this.reconnectAttempts = 0;
             this.emitEvent(SOCKET_EVENTS.RECONNECT, attemptNumber);
         });

@@ -64,7 +64,6 @@ export class DriverHistoryComponent implements OnInit, OnDestroy {
         this.socketService.onOrderDelivered()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Driver History] Order delivered:', payload.eventType);
                 this.getHistory();
             });
 
@@ -72,7 +71,6 @@ export class DriverHistoryComponent implements OnInit, OnDestroy {
         this.socketService.onOrderCancelled()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Driver History] Order cancelled:', payload.eventType);
                 this.getHistory();
             });
     }

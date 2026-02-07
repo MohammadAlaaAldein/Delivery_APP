@@ -278,7 +278,6 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
     ngOnInit(): void {
         // Socket should already be connected by admin.component.ts
         // Just log connection status for debugging
-        console.log('[TrackingMap] Socket connected:', this.socketService.isConnected());
         this.loadGoogleMaps();
     }
 
@@ -354,13 +353,11 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private subscribeToLocationUpdates(): void {
-        console.log('[TrackingMap] Subscribing to location updates for order:', this.order.id);
 
         // Listen for location updates for this specific order
         this.socketService.onOrderLocationUpdate(this.order.id)
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[TrackingMap] Received location update:', payload);
                 if (payload.location) {
                     this.currentLocation = payload.location;
                     this.updateDriverPosition(payload.location);
@@ -372,7 +369,6 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
         this.socketService.onDriverLocationUpdate()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[TrackingMap] Received any driver location update:', payload.orderId, 'my order:', this.order.id);
                 // Check if this is our order
                 if (payload.orderId === this.order.id && payload.location) {
                     this.currentLocation = payload.location;
@@ -386,7 +382,6 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
                 if (payload.orderId === this.order.id) {
-                    console.log('[TrackingMap] Order status update:', payload.eventType);
                     // Update order status if changed
                     if (payload.eventType === OrderEventType.ORDER_DELIVERED ||
                         payload.eventType === OrderEventType.ORDER_CANCELLED) {
@@ -451,11 +446,9 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private updateDriverPosition(location: { latitude: number; longitude: number; speed?: number; heading?: number }): void {
-        console.log('[TrackingMap] Updating driver position:', location.latitude, location.longitude);
         const position = { lat: location.latitude, lng: location.longitude };
 
         if (!this.driverMarker) {
-            console.log('[TrackingMap] Creating new driver marker');
             // Create driver marker
             this.driverMarker = new window.google.maps.Marker({
                 position: position,
@@ -465,7 +458,6 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
                 zIndex: 1000, // Make sure driver marker is on top
             });
         } else {
-            console.log('[TrackingMap] Moving existing driver marker');
             // Update marker position
             this.driverMarker.setPosition(position);
             this.driverMarker.setIcon(this.getDriverIcon(location.heading));

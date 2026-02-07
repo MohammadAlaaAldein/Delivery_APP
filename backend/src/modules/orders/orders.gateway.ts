@@ -25,6 +25,7 @@ export enum OrderEventType {
     ORDER_DELIVERED = 'order_delivered',
     ORDER_CANCELLED = 'order_cancelled',
     ORDER_RELEASED = 'order_released',
+    ORDER_UPDATED = 'order_updated',
     DRIVER_LOCATION_UPDATED = 'driver_location_updated',
 }
 
@@ -512,6 +513,31 @@ export class OrdersGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         // Notify previous driver if any
         if (previousDriverId) {
             this.emitToRoom(`driver:${previousDriverId}`, 'orderUpdate', payload);
+        }
+    }
+
+    // Emit order updated (general details update)
+    emitOrderUpdated(order: any) {
+        const payload: OrderEventPayload = {
+            eventType: OrderEventType.ORDER_UPDATED,
+            orderId: order.id,
+            orderNumber: order.order_number,
+            status: order.status,
+            shopId: order.shop_id,
+            companyId: order.company_id,
+            driverId: order.driver_id,
+            timestamp: new Date(),
+            data: order,
+        };
+
+        this.emitToRoom(`shop:${order.shop_id}`, 'orderUpdate', payload);
+        this.emitToRoom('admin', 'orderUpdate', payload);
+
+        if (order.company_id) {
+            this.emitToRoom(`company:${order.company_id}`, 'orderUpdate', payload);
+        }
+        if (order.driver_id) {
+            this.emitToRoom(`driver:${order.driver_id}`, 'orderUpdate', payload);
         }
     }
 }

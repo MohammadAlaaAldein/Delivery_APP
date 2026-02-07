@@ -28,8 +28,6 @@ export class FilterSectionComponent {
 
 	ngOnInit() {
 		this.filters = { ...this.filtersDefaultValues };
-		console.log('FilterSectionComponent initialized with filters:', this.filters);
-		console.log('Filter columns:', this.filterColumns);
 	}
 
 	search(): void {

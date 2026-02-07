@@ -42,12 +42,10 @@ export class DriverLocationService implements OnDestroy {
      */
     startTracking(order: ActiveOrder): void {
         if (this.watchId !== null) {
-            console.log('[DriverLocation] Already tracking, stopping previous tracking');
             this.stopTracking();
         }
 
         this.activeOrder = order;
-        console.log('[DriverLocation] Starting tracking for order:', order.order_number);
 
         // Check if geolocation is available
         if (!navigator.geolocation) {
@@ -77,8 +75,6 @@ export class DriverLocationService implements OnDestroy {
      * Call this when order is delivered or cancelled
      */
     stopTracking(): void {
-        console.log('[DriverLocation] Stopping tracking');
-
         if (this.watchId !== null) {
             navigator.geolocation.clearWatch(this.watchId);
             this.watchId = null;

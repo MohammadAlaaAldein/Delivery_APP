@@ -11,10 +11,26 @@ import { USER_ROLE } from '../../dashboard/users/users.service';
 export interface PushNotification {
     title: string;
     body: string;
-    data?: Record<string, any>;
+    data?: any;
     timestamp: Date;
     read: boolean;
 }
+
+export enum NOTIFICATION_TYPE {
+    ORDER_CREATED = 'ORDER_CREATED',
+    ORDER_ASSIGNED = 'ORDER_ASSIGNED',
+    ORDER_PICKED_UP = 'ORDER_PICKED_UP',
+    ORDER_IN_TRANSIT = 'ORDER_IN_TRANSIT',
+    ORDER_DELIVERED = 'ORDER_DELIVERED',
+    ORDER_CANCELLED = 'ORDER_CANCELLED',
+    ORDER_UPDATED = 'ORDER_UPDATED',
+    DRIVER_ASSIGNED = 'DRIVER_ASSIGNED',
+    DRIVER_UNASSIGNED = 'DRIVER_UNASSIGNED',
+    NEW_ORDER_AVAILABLE = 'NEW_ORDER_AVAILABLE',
+    ORDER_RELEASED = 'ORDER_RELEASED',
+    ORDER_REJECTED = 'ORDER_REJECTED',
+    GENERAL = 'GENERAL',
+};
 
 @Injectable({
     providedIn: 'root'
@@ -42,10 +58,19 @@ export class PushNotificationService implements OnDestroy {
         this.initializeFirebase();
         this.loadStoredNotifications();
 
-        // Auto-initialize notifications if user is logged in
-        setTimeout(() => {
-            this.autoInitializeNotifications();
-        }, 500); // Reduced delay for faster initialization
+        // Reactively listen to auth state changes
+        this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe(user => {
+            if (user && user.accessToken) {
+                // User logged in
+                this.autoInitializeNotifications();
+            } else {
+                // User logged out
+                this.unregisterToken();
+                this.currentToken = null;
+                this.notificationsSubject.next([]);
+                this.unreadCountSubject.next(0);
+            }
+        });
     }
 
     /**
@@ -54,29 +79,30 @@ export class PushNotificationService implements OnDestroy {
     private initializeFirebase(): void {
         try {
             if (!environment.firebase?.apiKey || environment.firebase.apiKey === 'YOUR_FIREBASE_API_KEY') {
-                console.warn('Firebase not configured. Push notifications will be disabled.');
+                console.warn('[Push] Firebase not configured. Push notifications will be disabled.');
                 return;
             }
 
             this.firebaseApp = initializeApp(environment.firebase);
 
             // Check if browser supports notifications
-            if ('Notification' in window && 'serviceWorker' in navigator) {
+            const isSupported = 'Notification' in window && 'serviceWorker' in navigator;
+
+            if (isSupported) {
                 this.messaging = getMessaging(this.firebaseApp);
                 this.permissionStatusSubject.next(Notification.permission);
 
                 // Listen for foreground messages
                 if (this.messaging) {
                     onMessage(this.messaging, (payload: MessagePayload) => {
-                        console.log('Message received in foreground:', payload);
                         this.handleForegroundMessage(payload);
                     });
                 }
             } else {
-                console.warn('Browser does not support notifications');
+                console.warn('[Push] Browser does not support notifications');
             }
         } catch (error) {
-            console.error('Failed to initialize Firebase:', error);
+            console.error('[Push] Failed to initialize Firebase:', error);
         }
     }
 
@@ -85,59 +111,30 @@ export class PushNotificationService implements OnDestroy {
      */
     private async autoInitializeNotifications(): Promise<void> {
         try {
-            // Check if user is logged in
-            const currentUserStr = localStorage.getItem('currentUser');
-            if (!currentUserStr) {
-                console.log('User not logged in, skipping notification initialization');
-                return;
-            }
-
-            const currentUser = JSON.parse(currentUserStr);
-            if (!currentUser.accessToken) {
-                console.log('No access token found, skipping notification initialization');
-                return;
-            }
-
-            // Check if already initialized
-            if (this.currentToken) {
-                console.log('Notifications already initialized');
-                return;
-            }
-
             // Check current permission status
             const permission = Notification.permission;
 
             if (permission === 'granted') {
-                // Already granted, just get token and register
-                console.log('Permission already granted, registering token...');
+                // Already granted, register token to ensure it's linked to current user
                 await this.getTokenAndRegister();
             } else if (permission === 'default') {
                 // Auto-request permission immediately
-                console.log('Auto-requesting notification permission...');
                 await this.requestPermission();
             } else if (permission === 'denied') {
-                console.log('Notification permission was previously denied by user');
             }
         } catch (error) {
-            console.error('Error auto-initializing notifications:', error);
+            console.error('[Push] Error auto-initializing notifications:', error);
         }
     }
 
-    /**
-     * Get token and register with server (without requesting permission)
-     */
-    /**
-     * Get token and register with server (without requesting permission)
-     */
     private async getTokenAndRegister(): Promise<void> {
         try {
             if (!this.messaging) {
-                console.warn('Firebase messaging not initialized');
+                console.warn('[Push] Firebase messaging not initialized');
                 return;
             }
 
             // Get service worker registration safely
-            // const registration = await this.getServiceWorkerRegistration();
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
             // Get FCM token
@@ -147,14 +144,18 @@ export class PushNotificationService implements OnDestroy {
             });
 
             if (token) {
-                console.log('FCM Token obtained:', token);
                 this.currentToken = token;
                 await this.registerTokenWithServer(token);
             } else {
-                console.warn('No FCM token received');
+                console.warn('[Push] No FCM token received');
             }
-        } catch (error) {
-            console.error('Error getting FCM token:', error);
+        } catch (error: any) {
+            console.error('[Push] Error in getTokenAndRegister:', error);
+            if (error.code === 'messaging/unsupported-browser' || error.message?.includes('unsupported')) {
+                console.warn('[Push] Push notifications not supported in this browser/mode (e.g. Incognito).');
+            } else if (error.code === 'messaging/permission-blocked' || error.message?.includes('permission')) {
+                console.warn('[Push] Notification permission blocked.');
+            }
         }
     }
 
@@ -168,7 +169,6 @@ export class PushNotificationService implements OnDestroy {
     //         return registration;
     //     } catch (e) {
     //         // Fallback to ready if register fails (rare) or just return ready promise
-    //         console.log('Service Worker register failed, waiting for ready...');
     //         return await navigator.serviceWorker.ready;
     //     }
     // }
@@ -202,7 +202,6 @@ export class PushNotificationService implements OnDestroy {
             this.permissionStatusSubject.next(permission);
 
             if (permission !== 'granted') {
-                console.log('Notification permission denied');
                 return null;
             }
 
@@ -217,7 +216,6 @@ export class PushNotificationService implements OnDestroy {
             });
 
             if (token) {
-                console.log('FCM Token obtained:', token);
                 this.currentToken = token;
                 await this.registerTokenWithServer(token);
                 return token;
@@ -245,7 +243,6 @@ export class PushNotificationService implements OnDestroy {
                 deviceName: deviceInfo.name,
             }).toPromise();
 
-            console.log('Device registered with backend successfully');
         } catch (error) {
             console.error('Failed to register token with server:', error);
         }
@@ -262,7 +259,6 @@ export class PushNotificationService implements OnDestroy {
                 }).toPromise();
 
                 this.currentToken = null;
-                console.log('Token unregistered from server');
             }
         } catch (error) {
             console.error('Failed to unregister token:', error);
@@ -314,7 +310,7 @@ export class PushNotificationService implements OnDestroy {
                 // Navigate based on notification type
                 if (notification.data?.['type'] === 'order_update' && notification.data?.['orderId']) {
                     const orderId = notification.data['orderId'];
-                    this.handleNotificationClick(orderId);
+                    this.handleNotificationClick(notification);
                 }
             };
         }
@@ -323,20 +319,24 @@ export class PushNotificationService implements OnDestroy {
     /**
      * Handle notification click navigation
      */
-    public handleNotificationClick(orderId: string): void {
+    public handleNotificationClick(notification: PushNotification): void {
         const currentUser = this.authService.currentUserValue;
+        const orderId = notification.data?.['orderId'];
+        console.log(notification);
 
         if (!currentUser || !currentUser.role) {
             return;
         }
 
-        console.log(currentUser.role);
         switch (currentUser.role) {
             case USER_ROLE.SHOP:
                 this.router.navigate(['/my-orders/view', orderId]);
                 break;
             case USER_ROLE.COMPANY:
-                this.router.navigate(['/company-orders/view', orderId]);
+                if ([NOTIFICATION_TYPE.NEW_ORDER_AVAILABLE, NOTIFICATION_TYPE.ORDER_CANCELLED].includes(notification.data.notificationType))
+                    this.router.navigate(['/available-orders/view', orderId]);
+                else
+                    this.router.navigate(['/company-orders/view', orderId]);
                 break;
             case USER_ROLE.DRIVER:
                 this.router.navigate(['/my-deliveries/view', orderId]);

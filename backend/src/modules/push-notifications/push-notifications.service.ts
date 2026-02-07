@@ -356,14 +356,17 @@ export class PushNotificationsService implements OnModuleInit {
     ): Record<string, string> {
         const result: Record<string, string> = {};
 
-        if (type) {
-            result.type = type;
-        }
-
+        // Process custom data first
         if (data) {
             Object.entries(data).forEach(([key, value]) => {
                 result[key] = typeof value === 'string' ? value : JSON.stringify(value);
             });
+        }
+
+        // Set notification type AFTER custom data to ensure it's not overwritten
+        // This is the actual NotificationType enum value (ORDER_ASSIGNED, ORDER_CANCELLED, etc.)
+        if (type) {
+            result.notificationType = type;
         }
 
         return result;
@@ -440,8 +443,9 @@ export class PushNotificationsService implements OnModuleInit {
             type,
             data: {
                 orderId,
-                type: 'order_update',
-                click_action: 'FLUTTER_NOTIFICATION_CLICK',
+                type: 'order_update', // Generic category for all order notifications
+                notificationType: type, // Actual type: ORDER_ASSIGNED, ORDER_CANCELLED, etc.
+                click_action: 'OPEN_ORDER_DETAILS', // Used by mobile apps to determine navigation
             },
         });
     }

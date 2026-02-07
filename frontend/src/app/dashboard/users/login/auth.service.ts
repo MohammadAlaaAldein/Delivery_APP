@@ -1,5 +1,6 @@
 // angular import
 import { Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { User } from '../user.interface';
@@ -7,6 +8,7 @@ import { User } from '../user.interface';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 	private currentUserSignal = signal<User | null>(null);
+	public currentUser$ = toObservable(this.currentUserSignal);
 
 	constructor(
 		private router: Router,
@@ -55,6 +57,11 @@ export class AuthService {
 		localStorage.removeItem('currentUser');
 		this.currentUserSignal.set(null);
 		this.router.navigate(['/login']);
+	}
+
+	handleLoginSuccess(user: User) {
+		localStorage.setItem('currentUser', JSON.stringify(user));
+		this.currentUserSignal.set(user);
 	}
 
 	refreshToken() {

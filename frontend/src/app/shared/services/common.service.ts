@@ -52,17 +52,9 @@ export class CommonService {
 	}
 
 	getDomainName() {
-		console.log('getDomainName');
-
 		const angularRoute = this.location.path();
-		console.log(angularRoute);
-
 		const url = window.location.href;
-		console.log(url);
-
 		const domain = url.replace(angularRoute, '');
-		console.log(domain);
-
 		return domain;
 	}
 

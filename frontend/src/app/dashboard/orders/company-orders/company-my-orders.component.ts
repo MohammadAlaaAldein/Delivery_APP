@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { OrdersService } from '../orders.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -64,6 +64,7 @@ export class CompanyMyOrdersComponent implements OnInit, OnDestroy {
         private router: Router,
         private notificationService: NotificationMessageService,
         private socketService: SocketService,
+        private ngZone: NgZone
     ) { }
 
     ngOnInit() {
@@ -80,9 +81,37 @@ export class CompanyMyOrdersComponent implements OnInit, OnDestroy {
         this.socketService.onOrderUpdate()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Company Orders] Real-time update received:', payload.eventType);
-                this.getOrdersList();
+                this.ngZone.run(() => {
+                    // Show toast
+                    if (payload.eventType === 'order_assigned_to_company') {
+                        this.showToast('info', `New Order Assigned: ${payload.orderNumber}`);
+                    } else if (payload.eventType === 'order_released') {
+                        this.showToast('warning', `Order Released: ${payload.orderNumber}`);
+                        // Optimistically remove from list if viewing Assigned
+                        if (!this.selectedStatus || this.selectedStatus === OrderStatus.ASSIGNED_TO_COMPANY) {
+                            this.tableData = this.tableData.filter((item: any) => item.id !== payload.orderId);
+                        }
+                    } else if (payload.eventType === 'order_cancelled') {
+                        this.showToast('error', `Order Cancelled: ${payload.orderNumber}`);
+                        // Optimistically remove from list
+                        this.tableData = this.tableData.filter((item: any) => item.id !== payload.orderId);
+                    }
+
+                    // Reload list to be sure
+                    this.getOrdersList();
+                });
             });
+    }
+
+    private showToast(icon: any, title: string) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+        Toast.fire({ icon, title });
     }
 
     getOrdersList() {

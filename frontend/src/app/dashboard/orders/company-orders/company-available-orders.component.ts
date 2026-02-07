@@ -69,14 +69,12 @@ export class CompanyAvailableOrdersComponent implements OnInit, OnDestroy {
         this.socketService.onOrderCreated()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Available Orders] New order created:', payload.eventType);
                 this.getOrdersList();
             });
 
         this.socketService.onOrderReleased()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Available Orders] Order released:', payload.eventType);
                 this.getOrdersList();
             });
 
@@ -84,7 +82,6 @@ export class CompanyAvailableOrdersComponent implements OnInit, OnDestroy {
         this.socketService.onOrderAssignedToCompany()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Available Orders] Order taken:', payload.eventType);
                 this.getOrdersList();
             });
 
@@ -92,7 +89,6 @@ export class CompanyAvailableOrdersComponent implements OnInit, OnDestroy {
         this.socketService.onOrderCancelled()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Available Orders] Order cancelled:', payload.eventType);
                 this.getOrdersList();
             });
     }

@@ -23,8 +23,6 @@ const messaging = firebase.messaging();
 
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
-    console.log('[firebase-messaging-sw.js] Received background message:', payload);
-
     const notificationTitle = payload.notification?.title || 'New Notification';
     const notificationOptions = {
         body: payload.notification?.body || '',
@@ -50,8 +48,6 @@ messaging.onBackgroundMessage((payload) => {
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
-    console.log('[firebase-messaging-sw.js] Notification click received:', event);
-
     event.notification.close();
 
     const action = event.action;
@@ -87,8 +83,6 @@ self.addEventListener('notificationclick', (event) => {
 
 // Handle push events (for silent pushes)
 self.addEventListener('push', (event) => {
-    console.log('[firebase-messaging-sw.js] Push event received');
-
     if (!event.data) {
         return;
     }
@@ -119,12 +113,10 @@ self.addEventListener('push', (event) => {
 
 // Log when service worker is installed
 self.addEventListener('install', (event) => {
-    console.log('[firebase-messaging-sw.js] Service worker installed');
     self.skipWaiting();
 });
 
 // Log when service worker is activated
 self.addEventListener('activate', (event) => {
-    console.log('[firebase-messaging-sw.js] Service worker activated');
     event.waitUntil(clients.claim());
 });

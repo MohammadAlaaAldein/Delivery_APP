@@ -96,7 +96,7 @@ export class LoginComponent {
 				refreshToken: res.refreshToken,
 			}
 
-			localStorage.setItem('currentUser', JSON.stringify(currentUser));
+			this.authService.handleLoginSuccess(currentUser);
 			return this.router.navigate(['dashboard']);
 		});
 	}

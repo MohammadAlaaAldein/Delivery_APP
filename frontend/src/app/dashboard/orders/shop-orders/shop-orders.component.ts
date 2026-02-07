@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { OrdersService } from '../orders.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -81,7 +81,6 @@ export class ShopOrdersComponent implements OnInit, OnDestroy {
         this.socketService.onOrderUpdate()
             .pipe(takeUntil(this.destroy$))
             .subscribe((payload: OrderEventPayload) => {
-                console.log('[Shop Orders] Real-time update received:', payload.eventType);
                 this.getOrdersList();
             });
     }
@@ -141,8 +140,8 @@ export class ShopOrdersComponent implements OnInit, OnDestroy {
                 options.push({ text: this.translate.instant('g.edit'), action: () => { this.edit(order) } });
             }
 
-            // Can cancel if not yet picked up or delivered
-            if (![OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(order.status)) {
+            // Can cancel if not yet assigned to driver, picked up or delivered
+            if (![OrderStatus.ASSIGNED_TO_DRIVER, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(order.status)) {
                 options.push({ text: this.translate.instant('g.cancel'), action: () => { this.cancelOrder(order) } });
             }
         }

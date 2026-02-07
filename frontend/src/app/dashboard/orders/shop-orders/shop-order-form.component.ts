@@ -245,8 +245,11 @@ export class ShopOrderFormComponent {
             const data = { ...this.orderForm.value };
 
             // Clean up empty/null optional fields
-            if (!data.company_id) {
+            // Allow null for company_id to support unassigning
+            if (data.company_id === undefined || data.company_id === '') {
                 delete data.company_id;
+            } else if (data.company_id === 'null') {
+                data.company_id = null;
             }
             if (!data.customer_email || data.customer_email.trim() === '') {
                 delete data.customer_email;
@@ -382,7 +385,7 @@ export class ShopOrderFormComponent {
 
     canCancel(): boolean {
         if (!this.order) return false;
-        return ![OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(this.order.status);
+        return ![OrderStatus.ASSIGNED_TO_DRIVER, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(this.order.status);
     }
 
     getStatusClass(status: OrderStatus): string {

@@ -42,7 +42,7 @@
 										'is-invalid': formGroup.get(field)?.touched && formGroup.get(field)?.invalid,
 									}"
 								>
-									<option *ngFor="let option of fields[field].options" [value]="option.value">
+									<option *ngFor="let option of fields[field].options" [ngValue]="option.value">
 										{{ option.label | translate }}
 									</option>
 								</select>

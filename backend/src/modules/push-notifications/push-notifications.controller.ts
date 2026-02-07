@@ -16,7 +16,6 @@ import { JwtGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Push Notifications')
 @Controller('push-notifications')
-@UseGuards(JwtGuard)
 @ApiBearerAuth()
 export class PushNotificationsController {
     constructor(
@@ -24,6 +23,7 @@ export class PushNotificationsController {
     ) { }
 
     @Post('register')
+    @UseGuards(JwtGuard)
     @ApiOperation({ summary: 'Register device for push notifications' })
     @ApiResponse({ status: 201, description: 'Device registered successfully' })
     async registerDevice(
@@ -57,6 +57,7 @@ export class PushNotificationsController {
     }
 
     @Post('subscribe/:topic')
+    @UseGuards(JwtGuard)
     @ApiOperation({ summary: 'Subscribe to a notification topic' })
     @ApiResponse({ status: 200, description: 'Subscribed successfully' })
     async subscribeToTopic(
@@ -75,6 +76,7 @@ export class PushNotificationsController {
 
     @Delete('unsubscribe/:topic')
     @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtGuard)
     @ApiOperation({ summary: 'Unsubscribe from a notification topic' })
     @ApiResponse({ status: 200, description: 'Unsubscribed successfully' })
     async unsubscribeFromTopic(
@@ -92,6 +94,7 @@ export class PushNotificationsController {
     }
 
     @Post('test')
+    @UseGuards(JwtGuard)
     @ApiOperation({ summary: 'Send a test notification to the current user' })
     @ApiResponse({ status: 200, description: 'Test notification sent' })
     async sendTestNotification(@Request() req) {
@@ -113,6 +116,7 @@ export class PushNotificationsController {
     }
 
     @Get('stats')
+    @UseGuards(JwtGuard)
     @ApiOperation({ summary: 'Get notification statistics' })
     @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
     async getStats() {
