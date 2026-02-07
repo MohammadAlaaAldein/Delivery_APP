@@ -91,6 +91,18 @@ class PushNotificationService {
         try {
             const projectId = Constants.expoConfig?.extra?.eas?.projectId;
 
+            // UUID regex pattern for validation
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+            // Check if projectId is valid (must be a valid UUID)
+            if (!projectId || !uuidRegex.test(projectId)) {
+                console.warn('[Push] EAS projectId not configured or invalid.');
+                console.warn('[Push] Current projectId:', projectId || 'undefined');
+                console.warn('[Push] Run "npx eas init" in the mobile directory to set up a valid project ID.');
+                console.warn('[Push] Skipping Expo push token registration.');
+                return null;
+            }
+
             const token = await Notifications.getExpoPushTokenAsync({
                 projectId,
             });

@@ -100,48 +100,33 @@ class SocketService {
             this.emitEvent(SOCKET_EVENTS.RECONNECT, attemptNumber);
         });
 
-        // Order events
-        this.socket.on(SOCKET_EVENTS.ORDER_CREATED, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_CREATED, data);
+        // Main order update event from backend - distributes to specific event callbacks
+        this.socket.on('orderUpdate', (payload: any) => {
+            // Emit to generic orderUpdate listeners
+            this.emitEvent('orderUpdate', payload);
+
+            // Also emit to specific event listeners based on eventType
+            const eventType = payload.eventType;
+            const eventMap: Record<string, string> = {
+                'order_created': SOCKET_EVENTS.ORDER_CREATED,
+                'order_updated': SOCKET_EVENTS.ORDER_UPDATED,
+                'order_assigned_to_company': SOCKET_EVENTS.ORDER_ASSIGNED_TO_COMPANY,
+                'order_assigned_to_driver': SOCKET_EVENTS.ORDER_ASSIGNED_TO_DRIVER,
+                'order_unassigned_from_driver': SOCKET_EVENTS.ORDER_UNASSIGNED_FROM_DRIVER,
+                'order_released': SOCKET_EVENTS.ORDER_RELEASED,
+                'order_picked_up': SOCKET_EVENTS.ORDER_PICKED_UP,
+                'order_in_transit': SOCKET_EVENTS.ORDER_IN_TRANSIT,
+                'order_delivered': SOCKET_EVENTS.ORDER_DELIVERED,
+                'order_cancelled': SOCKET_EVENTS.ORDER_CANCELLED,
+                'driver_location_update': SOCKET_EVENTS.DRIVER_LOCATION_UPDATE,
+            };
+
+            if (eventType && eventMap[eventType]) {
+                this.emitEvent(eventMap[eventType], payload.data || payload);
+            }
         });
 
-        this.socket.on(SOCKET_EVENTS.ORDER_UPDATED, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_UPDATED, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_ASSIGNED_TO_COMPANY, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_ASSIGNED_TO_COMPANY, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_ASSIGNED_TO_DRIVER, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_ASSIGNED_TO_DRIVER, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_UNASSIGNED_FROM_DRIVER, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_UNASSIGNED_FROM_DRIVER, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_RELEASED, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_RELEASED, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_PICKED_UP, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_PICKED_UP, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_IN_TRANSIT, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_IN_TRANSIT, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_DELIVERED, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_DELIVERED, data);
-        });
-
-        this.socket.on(SOCKET_EVENTS.ORDER_CANCELLED, (data: Order) => {
-            this.emitEvent(SOCKET_EVENTS.ORDER_CANCELLED, data);
-        });
-
-        // Driver location updates
+        // Driver location updates (might come separately)
         this.socket.on(SOCKET_EVENTS.DRIVER_LOCATION_UPDATE, (data: any) => {
             this.emitEvent(SOCKET_EVENTS.DRIVER_LOCATION_UPDATE, data);
         });
