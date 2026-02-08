@@ -8,10 +8,13 @@ import {
     CompanyAvailableOrdersScreen,
     CompanyDriversScreen,
     ProfileScreen,
+    EditProfileScreen,
+    OrderTrackingScreen,
 } from '../screens';
 import { ShopOrderDetailScreen } from '../screens';
 import { CompanyStackParamList } from '../types';
 import { COLORS, FONTS, SPACING } from '../constants';
+import { t } from '../i18n';
 
 const Stack = createNativeStackNavigator<CompanyStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -53,7 +56,7 @@ const CompanyTabs: React.FC = () => {
                 name="DashboardTab"
                 component={CompanyDashboardScreen}
                 options={{
-                    tabBarLabel: 'Home',
+                    tabBarLabel: t('nav.dashboard'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} size={size} />
                     ),
@@ -63,7 +66,7 @@ const CompanyTabs: React.FC = () => {
                 name="AvailableOrdersTab"
                 component={CompanyAvailableOrdersScreen}
                 options={{
-                    tabBarLabel: 'Orders',
+                    tabBarLabel: t('nav.orders'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'cube' : 'cube-outline'} focused={focused} size={size} />
                     ),
@@ -73,7 +76,7 @@ const CompanyTabs: React.FC = () => {
                 name="DriversTab"
                 component={CompanyDriversScreen}
                 options={{
-                    tabBarLabel: 'Drivers',
+                    tabBarLabel: t('nav.drivers'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'people' : 'people-outline'} focused={focused} size={size} />
                     ),
@@ -83,7 +86,7 @@ const CompanyTabs: React.FC = () => {
                 name="ProfileTab"
                 component={ProfileScreen}
                 options={{
-                    tabBarLabel: 'Profile',
+                    tabBarLabel: t('nav.profile'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} size={size} />
                     ),
@@ -107,6 +110,8 @@ const CompanyNavigator: React.FC = () => {
             <Stack.Screen name="Drivers" component={CompanyDriversScreen} />
             <Stack.Screen name="MyOrders" component={CompanyAvailableOrdersScreen} />
             <Stack.Screen name="OrderDetail" component={ShopOrderDetailScreen} />
+            <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
     );

@@ -34,7 +34,7 @@ const OrderDetailScreen: React.FC = () => {
     const [isCancelling, setIsCancelling] = useState(false);
 
     useEffect(() => {
-        const foundOrder = orders.find((o) => o.id === orderId);
+        const foundOrder = orders.find((o) => String(o.id) === String(orderId));
         setOrder(foundOrder || null);
     }, [orderId, orders]);
 
@@ -46,20 +46,20 @@ const OrderDetailScreen: React.FC = () => {
         if (!order) return;
 
         Alert.alert(
-            'Cancel Order',
-            'Are you sure you want to cancel this order?',
+            t('orders.cancelOrder'),
+            t('orders.confirmCancel'),
             [
-                { text: 'No', style: 'cancel' },
+                { text: t('common.no'), style: 'cancel' },
                 {
-                    text: 'Yes, Cancel',
+                    text: t('orders.yesCancel'),
                     style: 'destructive',
                     onPress: async () => {
                         setIsCancelling(true);
                         try {
                             await cancelOrder(order.id);
-                            Alert.alert('Success', 'Order cancelled successfully');
+                            Alert.alert(t('common.success'), t('orders.orderCancelled'));
                         } catch (err: any) {
-                            Alert.alert('Error', err.response?.data?.message || 'Failed to cancel order');
+                            Alert.alert(t('common.error'), err.response?.data?.message || 'Failed to cancel order');
                         } finally {
                             setIsCancelling(false);
                         }
@@ -70,19 +70,19 @@ const OrderDetailScreen: React.FC = () => {
     };
 
     if (isLoading || !order) {
-        return <Loading fullScreen message="Loading order details..." />;
+        return <Loading fullScreen message={t('orders.loadingDetails')} />;
     }
 
     const statusConfig = ORDER_STATUS_CONFIG[order.status] || ORDER_STATUS_CONFIG[OrderStatus.PENDING];
 
     const renderTimeline = () => {
         const statuses = [
-            { status: OrderStatus.PENDING, label: 'Order Created', time: order.created_at },
-            { status: OrderStatus.ASSIGNED_TO_COMPANY, label: 'Assigned to Company', time: order.company_assigned_at },
-            { status: OrderStatus.ASSIGNED_TO_DRIVER, label: 'Driver Assigned', time: order.driver_assigned_at },
-            { status: OrderStatus.PICKED_UP, label: 'Picked Up', time: order.picked_up_at },
-            { status: OrderStatus.IN_TRANSIT, label: 'In Transit', time: null },
-            { status: OrderStatus.DELIVERED, label: 'Delivered', time: order.delivered_at },
+            { status: OrderStatus.PENDING, label: t('orders.status.pending'), time: order.created_at },
+            { status: OrderStatus.ASSIGNED_TO_COMPANY, label: t('orders.status.assigned_to_company'), time: order.company_assigned_at },
+            { status: OrderStatus.ASSIGNED_TO_DRIVER, label: t('orders.status.assigned_to_driver'), time: order.driver_assigned_at },
+            { status: OrderStatus.PICKED_UP, label: t('orders.status.picked_up'), time: order.picked_up_at },
+            { status: OrderStatus.IN_TRANSIT, label: t('orders.status.in_transit'), time: null },
+            { status: OrderStatus.DELIVERED, label: t('orders.status.delivered'), time: order.delivered_at },
         ];
 
         const currentIndex = statuses.findIndex((s) => s.status === order.status);
@@ -161,7 +161,7 @@ const OrderDetailScreen: React.FC = () => {
                     >
                         <Ionicons name="arrow-back" size={24} color={COLORS.white} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Order Details</Text>
+                    <Text style={styles.headerTitle}>{t('orders.orderDetails')}</Text>
                     <View style={{ width: 44 }} />
                 </View>
 
@@ -193,14 +193,14 @@ const OrderDetailScreen: React.FC = () => {
                 <Card style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Ionicons name="person-circle-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.sectionTitle}>Customer</Text>
+                        <Text style={styles.sectionTitle}>{t('orders.customerInfo')}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Name</Text>
+                        <Text style={styles.infoLabel}>{t('common.name')}</Text>
                         <Text style={styles.infoValue}>{order.customer_name}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Phone</Text>
+                        <Text style={styles.infoLabel}>{t('orders.customerPhone')}</Text>
                         <TouchableOpacity
                             style={styles.phoneButton}
                             onPress={() => handleCall(order.customer_phone)}
@@ -220,7 +220,7 @@ const OrderDetailScreen: React.FC = () => {
                 <Card style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Ionicons name="cube-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.sectionTitle}>Items ({order.order_items?.length || 0})</Text>
+                        <Text style={styles.sectionTitle}>{t('orders.orderItems')} ({order.order_items?.length || 0})</Text>
                     </View>
                     {order.order_items?.map((item, index) => (
                         <View key={index} style={styles.itemRow}>
@@ -237,17 +237,17 @@ const OrderDetailScreen: React.FC = () => {
                     ))}
                     <Divider />
                     <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Subtotal</Text>
+                        <Text style={styles.totalLabel}>{t('orders.subtotal')}</Text>
                         <Text style={styles.totalValue}>
                             ${Number(order.order_amount || 0).toFixed(2)}
                         </Text>
                     </View>
                     <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Delivery Fee</Text>
+                        <Text style={styles.totalLabel}>{t('orders.deliveryFee')}</Text>
                         <Text style={styles.totalValue}>${Number(order.delivery_fee || 0).toFixed(2)}</Text>
                     </View>
                     <View style={styles.grandTotalRow}>
-                        <Text style={styles.grandTotalLabel}>Total</Text>
+                        <Text style={styles.grandTotalLabel}>{t('orders.totalAmount')}</Text>
                         <Text style={styles.grandTotalValue}>${Number(order.total_amount || 0).toFixed(2)}</Text>
                     </View>
                 </Card>
@@ -256,7 +256,7 @@ const OrderDetailScreen: React.FC = () => {
                 <Card style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Ionicons name="wallet-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.sectionTitle}>Payment</Text>
+                        <Text style={styles.sectionTitle}>{t('orders.paymentInfo')}</Text>
                     </View>
                     <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Method</Text>
@@ -279,7 +279,7 @@ const OrderDetailScreen: React.FC = () => {
                     <Card style={styles.section}>
                         <View style={styles.sectionHeader}>
                             <Ionicons name="car-outline" size={24} color={COLORS.primary} />
-                            <Text style={styles.sectionTitle}>Driver</Text>
+                            <Text style={styles.sectionTitle}>{t('orders.driver')}</Text>
                         </View>
                         <View style={styles.driverInfo}>
                             <View style={styles.driverAvatar}>
@@ -304,10 +304,10 @@ const OrderDetailScreen: React.FC = () => {
                     <Card style={styles.section}>
                         <View style={styles.sectionHeader}>
                             <Ionicons name="business-outline" size={24} color={COLORS.primary} />
-                            <Text style={styles.sectionTitle}>Delivery Company</Text>
+                            <Text style={styles.sectionTitle}>{t('orders.deliveryCompany')}</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Name</Text>
+                            <Text style={styles.infoLabel}>{t('common.name')}</Text>
                             <Text style={styles.infoValue}>{order.company.name}</Text>
                         </View>
                     </Card>
@@ -317,7 +317,7 @@ const OrderDetailScreen: React.FC = () => {
                 <Card style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Ionicons name="time-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.sectionTitle}>Order Timeline</Text>
+                        <Text style={styles.sectionTitle}>{t('orders.timeline')}</Text>
                     </View>
                     {renderTimeline()}
                 </Card>
@@ -327,10 +327,39 @@ const OrderDetailScreen: React.FC = () => {
                     <Card style={styles.section}>
                         <View style={styles.sectionHeader}>
                             <Ionicons name="document-text-outline" size={24} color={COLORS.primary} />
-                            <Text style={styles.sectionTitle}>Notes</Text>
+                            <Text style={styles.sectionTitle}>{t('common.notes')}</Text>
                         </View>
                         <Text style={styles.notesText}>{order.notes}</Text>
                     </Card>
+                )}
+
+                {/* Track on Map - show for in-transit orders */}
+                {(order.status === OrderStatus.PICKED_UP ||
+                    order.status === OrderStatus.IN_TRANSIT ||
+                    order.status === OrderStatus.ASSIGNED_TO_DRIVER) && (
+                    <TouchableOpacity
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: COLORS.primary,
+                            paddingVertical: SPACING.md,
+                            borderRadius: RADIUS.lg,
+                            marginBottom: SPACING.md,
+                            ...SHADOWS.md,
+                        }}
+                        onPress={() => navigation.navigate('OrderTracking' as any, { orderId: order.id })}
+                    >
+                        <Ionicons name="map-outline" size={20} color={COLORS.white} />
+                        <Text style={{
+                            fontFamily: FONTS.semiBold,
+                            fontSize: FONT_SIZES.base,
+                            color: COLORS.white,
+                            marginLeft: SPACING.sm,
+                        }}>
+                            {t('orders.trackOnMap', 'تتبع على الخريطة')}
+                        </Text>
+                    </TouchableOpacity>
                 )}
 
                 {/* Actions */}

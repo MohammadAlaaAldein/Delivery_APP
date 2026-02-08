@@ -62,13 +62,13 @@ const CompanyDashboardScreen: React.FC = () => {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Good Morning';
-        if (hour < 18) return 'Good Afternoon';
-        return 'Good Evening';
+        if (hour < 12) return t('dashboard.goodMorning');
+        if (hour < 18) return t('dashboard.goodAfternoon');
+        return t('dashboard.goodEvening');
     };
 
     if (isLoading && orders.length === 0) {
-        return <Loading fullScreen message="Loading dashboard..." />;
+        return <Loading fullScreen message={t('dashboard.loadingDashboard')} />;
     }
 
     return (
@@ -113,7 +113,7 @@ const CompanyDashboardScreen: React.FC = () => {
                         <View style={[styles.quickActionIcon, { backgroundColor: COLORS.warningSoft }]}>
                             <Ionicons name="cube-outline" size={24} color={COLORS.warning} />
                         </View>
-                        <Text style={styles.quickActionTitle}>Available Orders</Text>
+                        <Text style={styles.quickActionTitle}>{t('dashboard.availableOrders')}</Text>
                         <Text style={styles.quickActionCount}>{pendingOrders.length}</Text>
                     </TouchableOpacity>
 
@@ -124,7 +124,7 @@ const CompanyDashboardScreen: React.FC = () => {
                         <View style={[styles.quickActionIcon, { backgroundColor: COLORS.successSoft }]}>
                             <Ionicons name="people-outline" size={24} color={COLORS.success} />
                         </View>
-                        <Text style={styles.quickActionTitle}>Drivers</Text>
+                        <Text style={styles.quickActionTitle}>{t('nav.drivers')}</Text>
                         <Text style={styles.quickActionCount}>{companyStats?.totalDrivers || 0}</Text>
                     </TouchableOpacity>
                 </View>
@@ -173,25 +173,25 @@ const CompanyDashboardScreen: React.FC = () => {
                 {/* Active Orders Performance */}
                 <Card style={styles.performanceCard}>
                     <View style={styles.performanceHeader}>
-                        <Text style={styles.performanceTitle}>Today's Performance</Text>
+                        <Text style={styles.performanceTitle}>{t('dashboard.todayPerformance')}</Text>
                         <TouchableOpacity>
-                            <Text style={styles.viewDetails}>View Details</Text>
+                            <Text style={styles.viewDetails}>{t('dashboard.viewDeliveryDetails')}</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.performanceMetrics}>
                         <View style={styles.metric}>
                             <Text style={styles.metricValue}>{'--'}</Text>
-                            <Text style={styles.metricLabel}>Avg. Delivery</Text>
+                            <Text style={styles.metricLabel}>{t('dashboard.avgDelivery')}</Text>
                         </View>
                         <View style={styles.metricDivider} />
                         <View style={styles.metric}>
                             <Text style={styles.metricValue}>{'--'}%</Text>
-                            <Text style={styles.metricLabel}>Success Rate</Text>
+                            <Text style={styles.metricLabel}>{t('dashboard.successRate')}</Text>
                         </View>
                         <View style={styles.metricDivider} />
                         <View style={styles.metric}>
                             <Text style={styles.metricValue}>{companyStats?.activeDrivers || 0}</Text>
-                            <Text style={styles.metricLabel}>Active Drivers</Text>
+                            <Text style={styles.metricLabel}>{t('dashboard.activeDrivers')}</Text>
                         </View>
                     </View>
                 </Card>
@@ -216,10 +216,10 @@ const CompanyDashboardScreen: React.FC = () => {
                         ))
                     ) : (
                         <EmptyState
-                            title="No Active Deliveries"
-                            description="Accept new orders to start deliveries"
+                            title={t('dashboard.noActiveDeliveries')}
+                            description={t('dashboard.acceptNewOrders')}
                             icon="car-outline"
-                            actionLabel="View Available Orders"
+                            actionLabel={t('dashboard.viewAvailableOrders')}
                             onAction={handleViewAvailableOrders}
                         />
                     )}
@@ -230,9 +230,9 @@ const CompanyDashboardScreen: React.FC = () => {
                     <View style={styles.ordersSection}>
                         <View style={styles.sectionHeader}>
                             <View style={styles.newOrdersHeader}>
-                                <Text style={styles.sectionTitle}>New Orders</Text>
+                                <Text style={styles.sectionTitle}>{t('dashboard.newOrders')}</Text>
                                 <View style={styles.newBadge}>
-                                    <Text style={styles.newBadgeText}>{pendingOrders.length} NEW</Text>
+                                    <Text style={styles.newBadgeText}>{pendingOrders.length} {t('dashboard.new')}</Text>
                                 </View>
                             </View>
                             <TouchableOpacity onPress={handleViewAvailableOrders}>

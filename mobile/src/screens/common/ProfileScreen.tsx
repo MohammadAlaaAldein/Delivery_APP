@@ -50,10 +50,10 @@ const ProfileScreen: React.FC = () => {
 
     const getRoleBadge = (role?: UserRole) => {
         const config: Record<string, { label: string; color: string; bg: string }> = {
-            [UserRole.SHOP]: { label: 'Shop', color: COLORS.primary, bg: COLORS.primarySoft },
-            [UserRole.COMPANY]: { label: 'Company', color: COLORS.info, bg: COLORS.infoSoft },
-            [UserRole.DRIVER]: { label: 'Driver', color: COLORS.success, bg: COLORS.successSoft },
-            [UserRole.ADMIN]: { label: 'Admin', color: COLORS.warning, bg: COLORS.warningSoft },
+            [UserRole.SHOP]: { label: t('common.shop'), color: COLORS.primary, bg: COLORS.primarySoft },
+            [UserRole.COMPANY]: { label: t('common.company'), color: COLORS.info, bg: COLORS.infoSoft },
+            [UserRole.DRIVER]: { label: t('common.driver'), color: COLORS.success, bg: COLORS.successSoft },
+            [UserRole.ADMIN]: { label: t('common.admin'), color: COLORS.warning, bg: COLORS.warningSoft },
         };
         const c = config[role || ''] || config[UserRole.SHOP];
         return c;
@@ -65,27 +65,22 @@ const ProfileScreen: React.FC = () => {
         {
             icon: 'person-outline',
             label: t('profile.editProfile'),
-            onPress: () => Alert.alert(t('common.noData'), 'Coming soon'),
+            onPress: () => navigation.navigate('EditProfile' as never),
         },
         {
             icon: 'lock-closed-outline',
             label: t('profile.changePassword'),
-            onPress: () => Alert.alert(t('common.noData'), 'Coming soon'),
+            onPress: () => Alert.alert(t('common.noData'), t('common.comingSoon') || 'قريباً'),
         },
         {
             icon: 'notifications-outline',
             label: t('settings.notifications'),
-            onPress: () => Alert.alert(t('common.noData'), 'Coming soon'),
-        },
-        {
-            icon: 'language-outline',
-            label: t('settings.language'),
-            onPress: () => Alert.alert(t('common.noData'), 'Coming soon'),
+            onPress: () => Alert.alert(t('common.noData'), t('common.comingSoon') || 'قريباً'),
         },
         {
             icon: 'information-circle-outline',
             label: t('settings.about'),
-            onPress: () => Alert.alert(t('common.appName'), 'Version 1.0.0'),
+            onPress: () => Alert.alert(t('common.appName'), t('settings.version') + ' 1.0.0'),
         },
     ];
 

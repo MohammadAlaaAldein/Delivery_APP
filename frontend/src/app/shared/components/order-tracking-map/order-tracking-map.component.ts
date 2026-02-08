@@ -401,42 +401,50 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
 
         // Pickup marker (shop location)
         if (this.order.shop?.latitude && this.order.shop?.longitude) {
-            const pickupPosition = { lat: this.order.shop.latitude, lng: this.order.shop.longitude };
-            this.pickupMarker = new window.google.maps.Marker({
-                position: pickupPosition,
-                map: this.map,
-                icon: {
-                    url: 'data:image/svg+xml,' + encodeURIComponent(`
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
-                            <circle cx="12" cy="12" r="10" fill="#4CAF50" stroke="#fff" stroke-width="2"/>
-                            <text x="12" y="16" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">P</text>
-                        </svg>
-                    `),
-                    scaledSize: new window.google.maps.Size(32, 32),
-                },
-                title: 'Pickup: ' + (this.order.shop.address || this.order.shop.name),
-            });
-            bounds.extend(pickupPosition);
+            const lat = parseFloat(String(this.order.shop.latitude));
+            const lng = parseFloat(String(this.order.shop.longitude));
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const pickupPosition = { lat, lng };
+                this.pickupMarker = new window.google.maps.Marker({
+                    position: pickupPosition,
+                    map: this.map,
+                    icon: {
+                        url: 'data:image/svg+xml,' + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+                                <circle cx="12" cy="12" r="10" fill="#4CAF50" stroke="#fff" stroke-width="2"/>
+                                <text x="12" y="16" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">P</text>
+                            </svg>
+                        `),
+                        scaledSize: new window.google.maps.Size(32, 32),
+                    },
+                    title: 'Pickup: ' + (this.order.shop.address || this.order.shop.name),
+                });
+                bounds.extend(pickupPosition);
+            }
         }
 
         // Delivery marker
         if (this.order.delivery_latitude && this.order.delivery_longitude) {
-            const deliveryPosition = { lat: this.order.delivery_latitude, lng: this.order.delivery_longitude };
-            this.deliveryMarker = new window.google.maps.Marker({
-                position: deliveryPosition,
-                map: this.map,
-                icon: {
-                    url: 'data:image/svg+xml,' + encodeURIComponent(`
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
-                            <circle cx="12" cy="12" r="10" fill="#F44336" stroke="#fff" stroke-width="2"/>
-                            <text x="12" y="16" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">D</text>
-                        </svg>
-                    `),
-                    scaledSize: new window.google.maps.Size(32, 32),
-                },
-                title: 'Delivery: ' + this.order.delivery_address,
-            });
-            bounds.extend(deliveryPosition);
+            const lat = parseFloat(String(this.order.delivery_latitude));
+            const lng = parseFloat(String(this.order.delivery_longitude));
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const deliveryPosition = { lat, lng };
+                this.deliveryMarker = new window.google.maps.Marker({
+                    position: deliveryPosition,
+                    map: this.map,
+                    icon: {
+                        url: 'data:image/svg+xml,' + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+                                <circle cx="12" cy="12" r="10" fill="#F44336" stroke="#fff" stroke-width="2"/>
+                                <text x="12" y="16" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">D</text>
+                            </svg>
+                        `),
+                        scaledSize: new window.google.maps.Size(32, 32),
+                    },
+                    title: 'Delivery: ' + this.order.delivery_address,
+                });
+                bounds.extend(deliveryPosition);
+            }
         }
 
         // Fit map to show all markers
@@ -446,7 +454,15 @@ export class OrderTrackingMapComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private updateDriverPosition(location: { latitude: number; longitude: number; speed?: number; heading?: number }): void {
-        const position = { lat: location.latitude, lng: location.longitude };
+        const lat = parseFloat(String(location.latitude));
+        const lng = parseFloat(String(location.longitude));
+        
+        if (isNaN(lat) || isNaN(lng)) {
+            console.warn('Invalid driver location coordinates:', location);
+            return;
+        }
+        
+        const position = { lat, lng };
 
         if (!this.driverMarker) {
             // Create driver marker

@@ -303,7 +303,7 @@ export const API_CONFIG = {
 
 // Socket Configuration
 export const SOCKET_CONFIG = {
-    url: __DEV__ ? 'http://192.168.100.4:1000' : 'https://api.yourdeliveryapp.com',
+    url: __DEV__ ? 'http://192.168.100.4:1000/orders' : 'https://api.yourdeliveryapp.com/orders',
     options: {
         transports: ['websocket'],
         reconnection: true,

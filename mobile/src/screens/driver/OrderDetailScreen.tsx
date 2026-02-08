@@ -18,7 +18,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Card, Badge, Loading, Button, Divider } from '../../components';
 import { COLORS, FONTS, FONT_SIZES, SPACING, RADIUS, SHADOWS, ORDER_STATUS_CONFIG } from '../../constants';
 import { useOrdersStore } from '../../stores';
-import { ordersService } from '../../services';
+import { ordersService, driverLocationService } from '../../services';
 import { t } from '../../i18n';
 import { DriverStackParamList, Order, OrderStatus } from '../../types';
 
@@ -36,8 +36,18 @@ const DriverOrderDetailScreen: React.FC = () => {
 
     useEffect(() => {
         const allOrders = activeOrders.length > 0 ? activeOrders : orders;
-        const foundOrder = allOrders.find((o) => o.id === orderId);
+        const foundOrder = allOrders.find((o) => String(o.id) === String(orderId));
         setOrder(foundOrder || null);
+
+        // Auto-start location tracking if order is in tracking status
+        if (foundOrder && [OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(foundOrder.status as OrderStatus)) {
+            driverLocationService.startTracking({
+                orderId: foundOrder.id,
+                orderNumber: foundOrder.order_number,
+                shopId: foundOrder.shop_id,
+                companyId: foundOrder.company_id,
+            });
+        }
     }, [orderId, orders, activeOrders]);
 
     const handleCall = (phone: string) => {
@@ -57,10 +67,17 @@ const DriverOrderDetailScreen: React.FC = () => {
         setActionLoading(true);
         try {
             await ordersService.pickupOrder(order.id);
-            Alert.alert('Success', 'Order marked as picked up');
+            // Start location tracking on pickup
+            await driverLocationService.startTracking({
+                orderId: order.id,
+                orderNumber: order.order_number,
+                shopId: order.shop_id,
+                companyId: order.company_id,
+            });
+            Alert.alert(t('common.success'), t('orders.pickedUp') || t('common.success'));
             fetchDriverOrders();
         } catch (err: any) {
-            Alert.alert('Error', err.response?.data?.message || 'Failed to update order');
+            Alert.alert(t('common.error'), err.response?.data?.message || t('errors.unknownError'));
         } finally {
             setActionLoading(false);
         }
@@ -71,10 +88,17 @@ const DriverOrderDetailScreen: React.FC = () => {
         setActionLoading(true);
         try {
             await ordersService.startDelivery(order.id);
-            Alert.alert('Success', 'Delivery started');
+            // Ensure location tracking is active
+            await driverLocationService.startTracking({
+                orderId: order.id,
+                orderNumber: order.order_number,
+                shopId: order.shop_id,
+                companyId: order.company_id,
+            });
+            Alert.alert(t('common.success'), t('orders.inTransit') || t('common.success'));
             fetchDriverOrders();
         } catch (err: any) {
-            Alert.alert('Error', err.response?.data?.message || 'Failed to start delivery');
+            Alert.alert(t('common.error'), err.response?.data?.message || t('errors.unknownError'));
         } finally {
             setActionLoading(false);
         }
@@ -93,11 +117,13 @@ const DriverOrderDetailScreen: React.FC = () => {
                         setActionLoading(true);
                         try {
                             await ordersService.deliverOrder(order.id);
-                            Alert.alert('Success', 'Order delivered successfully!');
+                            // Stop location tracking on delivery
+                            await driverLocationService.stopTracking();
+                            Alert.alert(t('common.success'), t('orders.delivered') || t('common.success'));
                             fetchDriverOrders();
                             navigation.goBack();
                         } catch (err: any) {
-                            Alert.alert('Error', err.response?.data?.message || 'Failed to complete delivery');
+                            Alert.alert(t('common.error'), err.response?.data?.message || t('errors.unknownError'));
                         } finally {
                             setActionLoading(false);
                         }

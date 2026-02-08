@@ -25,11 +25,11 @@ type NavigationProp = NativeStackNavigationProp<CompanyStackParamList, 'Availabl
 
 const AvailableOrdersScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { orders, isLoading, fetchAvailableOrders } = useOrdersStore();
+    const { availableOrders: storeAvailableOrders, isLoading, fetchAvailableOrders } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
     const [acceptingOrder, setAcceptingOrder] = useState<string | null>(null);
 
-    const availableOrders = orders.filter((o) => o.status === OrderStatus.PENDING);
+    const availableOrders = (storeAvailableOrders || []).filter((o) => o.status === OrderStatus.PENDING);
 
     useEffect(() => {
         fetchAvailableOrders();

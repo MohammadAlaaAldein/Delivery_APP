@@ -1,16 +1,18 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, LogBox, View, ActivityIndicator, Text } from 'react-native';
+import { StyleSheet, LogBox, View, ActivityIndicator, Text, I18nManager } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import { RootNavigator } from './src/navigation';
-import { pushService } from './src/services';
-import { useAuthStore } from './src/stores';
+import { pushService, socketService } from './src/services';
+import { useAuthStore, useOrdersStore } from './src/stores';
 import { COLORS } from './src/constants';
 import { navigate } from './src/navigation/navigationRef';
 import { UserRole } from './src/types';
+import { initI18n } from './src/i18n';
+import { ROOMS } from './src/services/socket.service';
 
 // // Keep splash screen visible while loading
 // SplashScreen.preventAutoHideAsync();
@@ -25,10 +27,20 @@ LogBox.ignoreLogs([
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
     const { isAuthenticated, user } = useAuthStore();
+    const { setupSocketListeners } = useOrdersStore();
 
     useEffect(() => {
         async function prepare() {
             try {
+                // Force RTL for Arabic
+                if (!I18nManager.isRTL) {
+                    I18nManager.allowRTL(true);
+                    I18nManager.forceRTL(true);
+                }
+
+                // Initialize i18n
+                await initI18n();
+
                 // Pre-load fonts - use system fonts as fallback if custom fonts fail
                 await Font.loadAsync({
                     'Inter-Regular': require('./assets/fonts/Inter-Regular.ttf'),
@@ -49,9 +61,28 @@ export default function App() {
         prepare();
     }, []);
 
-    // Initialize push notifications when authenticated
+    // Initialize push notifications and sockets when authenticated
     useEffect(() => {
         if (isAuthenticated && user) {
+            // Setup socket listeners for real-time order updates
+            const cleanupSocket = setupSocketListeners();
+
+            // Join role-specific socket rooms
+            if (user.entity_id) {
+                switch (user.role) {
+                    case UserRole.SHOP:
+                        socketService.joinRoom(ROOMS.SHOP(user.entity_id));
+                        break;
+                    case UserRole.COMPANY:
+                        socketService.joinRoom(ROOMS.COMPANY(user.entity_id));
+                        socketService.joinRoom(ROOMS.AVAILABLE_ORDERS);
+                        break;
+                    case UserRole.DRIVER:
+                        socketService.joinRoom(ROOMS.DRIVER(user.entity_id));
+                        break;
+                }
+            }
+
             const initPush = async () => {
                 try {
                     await pushService.initialize();
@@ -86,6 +117,10 @@ export default function App() {
             };
 
             initPush();
+
+            return () => {
+                cleanupSocket();
+            };
         }
     }, [isAuthenticated, user]);
 

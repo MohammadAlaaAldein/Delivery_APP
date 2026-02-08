@@ -71,13 +71,13 @@ const DriverDashboardScreen: React.FC = () => {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Good Morning';
-        if (hour < 18) return 'Good Afternoon';
-        return 'Good Evening';
+        if (hour < 12) return t('dashboard.goodMorning');
+        if (hour < 18) return t('dashboard.goodAfternoon');
+        return t('dashboard.goodEvening');
     };
 
     if (isLoading && allDriverOrders.length === 0) {
-        return <Loading fullScreen message="Loading dashboard..." />;
+        return <Loading fullScreen message={t('dashboard.loadingDashboard')} />;
     }
 
     return (
@@ -110,7 +110,7 @@ const DriverDashboardScreen: React.FC = () => {
                     <View style={styles.onlineInfo}>
                         <View style={[styles.statusDot, isOnline && styles.statusDotOnline]} />
                         <Text style={styles.onlineText}>
-                            {isOnline ? 'You are Online' : 'You are Offline'}
+                            {isOnline ? t('driver.youAreOnline') : t('driver.youAreOffline')}
                         </Text>
                     </View>
                     <Switch
@@ -136,7 +136,7 @@ const DriverDashboardScreen: React.FC = () => {
                 {/* Earnings Card */}
                 <View style={styles.earningsCard}>
                     <View style={styles.earningsMain}>
-                        <Text style={styles.earningsLabel}>Today's Earnings</Text>
+                        <Text style={styles.earningsLabel}>{t('driver.todayEarnings')}</Text>
                         <Text style={styles.earningsValue}>
                             ${Number(driverStats?.todayEarnings || 0).toFixed(2)}
                         </Text>
@@ -145,13 +145,13 @@ const DriverDashboardScreen: React.FC = () => {
                     <View style={styles.earningsStats}>
                         <View style={styles.earningsStat}>
                             <Text style={styles.earnStatValue}>{driverStats?.todayDeliveries || 0}</Text>
-                            <Text style={styles.earnStatLabel}>Deliveries</Text>
+                            <Text style={styles.earnStatLabel}>{t('dashboard.todayDeliveries')}</Text>
                         </View>
                         <View style={styles.earningsStat}>
                             <Text style={styles.earnStatValue}>
                                 {Number(driverStats?.todayDistance || 0).toFixed(1)} km
                             </Text>
-                            <Text style={styles.earnStatLabel}>Distance</Text>
+                            <Text style={styles.earnStatLabel}>{t('driver.distance')}</Text>
                         </View>
                     </View>
                 </View>
@@ -173,7 +173,7 @@ const DriverDashboardScreen: React.FC = () => {
                         <View style={[styles.quickActionIcon, { backgroundColor: COLORS.primarySoft }]}>
                             <Ionicons name="cube" size={24} color={COLORS.primary} />
                         </View>
-                        <Text style={styles.quickActionTitle}>Active Orders</Text>
+                        <Text style={styles.quickActionTitle}>{t('dashboard.activeOrders')}</Text>
                         <View style={styles.quickActionBadge}>
                             <Text style={styles.badgeText}>{activeOrders.length}</Text>
                         </View>
@@ -186,7 +186,7 @@ const DriverDashboardScreen: React.FC = () => {
                         <View style={[styles.quickActionIcon, { backgroundColor: COLORS.successSoft }]}>
                             <Ionicons name="checkmark-circle" size={24} color={COLORS.success} />
                         </View>
-                        <Text style={styles.quickActionTitle}>History</Text>
+                        <Text style={styles.quickActionTitle}>{t('nav.orderHistory')}</Text>
                         <Ionicons name="chevron-forward" size={20} color={COLORS.gray400} />
                     </TouchableOpacity>
                 </View>
@@ -244,7 +244,7 @@ const DriverDashboardScreen: React.FC = () => {
                     ) : (
                         <EmptyState
                             title={t('driver.noActiveOrders')}
-                            description="You don't have any active deliveries"
+                            description={t('orders.noActiveDeliveriesDesc')}
                             icon="car-outline"
                         />
                     )}
@@ -252,24 +252,24 @@ const DriverDashboardScreen: React.FC = () => {
 
                 {/* Performance Card */}
                 <Card style={styles.performanceCard}>
-                    <Text style={styles.performanceTitle}>This Week's Performance</Text>
+                    <Text style={styles.performanceTitle}>{t('driver.thisWeekPerformance')}</Text>
                     <View style={styles.performanceRow}>
                         <View style={styles.performanceItem}>
                             <Ionicons name="checkmark-done" size={24} color={COLORS.success} />
                             <Text style={styles.perfValue}>{driverStats?.weeklyDeliveries || 0}</Text>
-                            <Text style={styles.perfLabel}>Completed</Text>
+                            <Text style={styles.perfLabel}>{t('dashboard.deliveredOrders')}</Text>
                         </View>
                         <View style={styles.performanceItem}>
                             <Ionicons name="time" size={24} color={COLORS.info} />
                             <Text style={styles.perfValue}>{'--'}</Text>
-                            <Text style={styles.perfLabel}>Avg. Time</Text>
+                            <Text style={styles.perfLabel}>{t('driver.avgTime')}</Text>
                         </View>
                         <View style={styles.performanceItem}>
                             <Ionicons name="cash" size={24} color={COLORS.warning} />
                             <Text style={styles.perfValue}>
                                 ${Number(driverStats?.weekEarnings || 0).toFixed(0)}
                             </Text>
-                            <Text style={styles.perfLabel}>Earned</Text>
+                            <Text style={styles.perfLabel}>{t('driver.earned')}</Text>
                         </View>
                     </View>
                 </Card>

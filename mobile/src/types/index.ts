@@ -512,6 +512,8 @@ export type ShopStackParamList = {
     OrderDetail: OrderDetailParams;
     CreateOrder: undefined;
     EditOrder: OrderDetailParams;
+    OrderTracking: OrderDetailParams;
+    EditProfile: undefined;
     Profile: undefined;
     Settings: undefined;
 };
@@ -524,8 +526,10 @@ export type CompanyStackParamList = {
     MyOrders: undefined;
     Drivers: undefined;
     OrderDetail: OrderDetailParams;
+    OrderTracking: OrderDetailParams;
     AssignDriver: AssignDriverParams;
     DriverDetail: { driverId: number };
+    EditProfile: undefined;
     Profile: undefined;
     Settings: undefined;
 };
@@ -537,6 +541,7 @@ export type DriverStackParamList = {
     History: undefined;
     OrderDetail: OrderDetailParams;
     DeliveryMap: OrderDetailParams;
+    EditProfile: undefined;
     Profile: undefined;
     Settings: undefined;
 };

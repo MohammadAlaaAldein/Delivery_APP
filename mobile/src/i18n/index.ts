@@ -12,12 +12,12 @@ const i18n = new I18n({
 });
 
 // Set default locale
-i18n.defaultLocale = 'en';
-i18n.locale = 'en';
+i18n.defaultLocale = 'ar';
+i18n.locale = 'ar';
 i18n.enableFallback = true;
 
 // RTL state
-let isRTL = false;
+let isRTL = true;
 
 // Initialize i18n
 export const initI18n = async (): Promise<void> => {

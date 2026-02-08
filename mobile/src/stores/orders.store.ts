@@ -160,7 +160,17 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
 
     fetchShopStats: async () => {
         try {
-            const stats = await ordersService.getShopDashboard(0);
+            const raw: any = await ordersService.getShopDashboard(0);
+            // Map backend field names to frontend expected names
+            const stats = {
+                totalOrders: raw?.total ?? raw?.totalOrders ?? 0,
+                pendingOrders: raw?.pending ?? raw?.pendingOrders ?? 0,
+                inProgressOrders: raw?.inProgress ?? raw?.inProgressOrders ?? 0,
+                deliveredOrders: raw?.delivered ?? raw?.deliveredOrders ?? 0,
+                cancelledOrders: raw?.cancelled ?? raw?.cancelledOrders ?? 0,
+                todayOrders: raw?.total ?? raw?.todayOrders ?? 0,
+                recentOrders: raw?.recentOrders || [],
+            };
             set({ shopStats: stats });
         } catch (error: any) {
             console.error('Failed to fetch shop stats:', error);
@@ -282,7 +292,18 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
 
     fetchCompanyStats: async () => {
         try {
-            const stats = await ordersService.getCompanyDashboard();
+            const raw: any = await ordersService.getCompanyDashboard();
+            // Map backend field names to frontend expected names
+            const stats = {
+                totalOrders: raw?.total ?? raw?.totalOrders ?? 0,
+                availableOrders: raw?.pending ?? raw?.availableOrders ?? 0,
+                activeDeliveries: raw?.inProgress ?? raw?.activeDeliveries ?? 0,
+                deliveredToday: raw?.delivered ?? raw?.deliveredToday ?? 0,
+                totalDrivers: raw?.totalDrivers ?? 0,
+                activeDrivers: raw?.activeDrivers ?? 0,
+                assignedOrders: raw?.assignedOrders ?? 0,
+                recentOrders: raw?.recentOrders || [],
+            };
             set({ companyStats: stats });
         } catch (error: any) {
             console.error('Failed to fetch company stats:', error);
@@ -375,7 +396,22 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
 
     fetchDriverStats: async () => {
         try {
-            const stats = await ordersService.getDriverDashboard();
+            const raw: any = await ordersService.getDriverDashboard();
+            // Map backend field names to frontend expected names
+            const stats = {
+                totalDeliveries: raw?.total ?? raw?.totalDeliveries ?? 0,
+                activeOrders: raw?.inProgress ?? raw?.activeOrders ?? 0,
+                todayDeliveries: raw?.delivered ?? raw?.todayDeliveries ?? 0,
+                todayEarnings: raw?.totalRevenue ?? raw?.todayEarnings ?? 0,
+                todayDistance: raw?.todayDistance ?? 0,
+                rating: raw?.rating ?? raw?.deliveryRate ?? 0,
+                weeklyDeliveries: raw?.weeklyDeliveries ?? raw?.delivered ?? 0,
+                weekEarnings: raw?.weekEarnings ?? raw?.totalRevenue ?? 0,
+                pendingPickups: raw?.pending ?? raw?.pendingPickups ?? 0,
+                inTransitOrders: raw?.inTransitOrders ?? 0,
+                currentOrder: raw?.currentOrder || undefined,
+                upcomingOrders: raw?.upcomingOrders || [],
+            };
             set({ driverStats: stats });
         } catch (error: any) {
             console.error('Failed to fetch driver stats:', error);

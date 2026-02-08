@@ -10,16 +10,16 @@ import {
     Alert,
     KeyboardAvoidingView,
     Platform,
+    Switch,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, TextInput, Card, Badge } from '../../components';
-import { COLORS, FONTS, FONT_SIZES, SPACING, RADIUS, SHADOWS } from '../../constants';
+import { COLORS, FONTS, FONT_SIZES, SPACING, RADIUS } from '../../constants';
 import { useOrdersStore } from '../../stores';
-import { ordersService, entitiesService } from '../../services';
+import { entitiesService } from '../../services';
 import { t } from '../../i18n';
 import { ShopStackParamList, OrderItemType, PaymentMethod, Company } from '../../types';
 
@@ -31,7 +31,13 @@ interface OrderItem {
     quantity: number;
     price: number;
     type: OrderItemType;
+    size?: string;
 }
+
+const CITIES = [
+    'amman', 'irbid', 'zarqa', 'balqa', 'mafraq', 'jerash',
+    'ajloun', 'madaba', 'karak', 'tafilah', 'maan', 'aqaba',
+];
 
 const CreateOrderScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
@@ -41,21 +47,38 @@ const CreateOrderScreen: React.FC = () => {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
     const [showCompanyPicker, setShowCompanyPicker] = useState(false);
+    const [showCityPicker, setShowCityPicker] = useState(false);
 
     // Customer Info
     const [customerName, setCustomerName] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
+    const [customerPhoneAlt, setCustomerPhoneAlt] = useState('');
+    const [customerEmail, setCustomerEmail] = useState('');
+
+    // Delivery Address
+    const [deliveryCity, setDeliveryCity] = useState('');
+    const [deliveryArea, setDeliveryArea] = useState('');
+    const [deliveryStreet, setDeliveryStreet] = useState('');
+    const [deliveryBuilding, setDeliveryBuilding] = useState('');
     const [deliveryAddress, setDeliveryAddress] = useState('');
-    const [notes, setNotes] = useState('');
+    const [deliveryNotes, setDeliveryNotes] = useState('');
 
     // Order Items
     const [items, setItems] = useState<OrderItem[]>([
-        { id: '1', name: '', quantity: 1, price: 0, type: OrderItemType.DOCUMENT },
+        { id: '1', name: '', quantity: 1, price: 0, type: OrderItemType.PACKAGE },
     ]);
+
+    // Order Options
+    const [requiresLargeVehicle, setRequiresLargeVehicle] = useState(false);
+    const [priority, setPriority] = useState(0);
+    const [scheduledPickupTime, setScheduledPickupTime] = useState('');
 
     // Payment
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
     const [deliveryFee, setDeliveryFee] = useState('');
+
+    // Notes
+    const [shopNotes, setShopNotes] = useState('');
 
     // Validation errors
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -77,19 +100,19 @@ const CreateOrderScreen: React.FC = () => {
         const newErrors: Record<string, string> = {};
 
         if (!customerName.trim()) {
-            newErrors.customerName = t('validation.required', { field: 'Customer name' });
+            newErrors.customerName = t('validation.required', { field: t('orders.customerName') });
         }
         if (!customerPhone.trim()) {
-            newErrors.customerPhone = t('validation.required', { field: 'Phone' });
-        }
-        if (!deliveryAddress.trim()) {
-            newErrors.deliveryAddress = t('validation.required', { field: 'Address' });
+            newErrors.customerPhone = t('validation.required', { field: t('orders.customerPhone') });
         }
 
-        // Validate items
-        const validItems = items.filter((item) => item.name.trim());
+        const validItems = items.filter((item) => item.name.trim() || item.type);
         if (validItems.length === 0) {
-            newErrors.items = 'At least one item is required';
+            newErrors.items = t('validation.required', { field: t('orders.items') });
+        }
+
+        if (customerEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+            newErrors.customerEmail = t('validation.email');
         }
 
         setErrors(newErrors);
@@ -133,36 +156,49 @@ const CreateOrderScreen: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!validate()) {
-            return;
-        }
+        if (!validate()) return;
 
         setIsLoading(true);
 
         try {
             const validItems = items
-                .filter((item) => item.name.trim())
+                .filter((item) => item.name.trim() || item.type)
                 .map((item) => ({
                     type: item.type,
                     count: item.quantity,
-                    description: item.name,
+                    description: item.name.trim() || undefined,
+                    size: item.size || undefined,
                 }));
 
-            await createOrder({
+            const orderData: any = {
                 customer_name: customerName.trim(),
                 customer_phone: customerPhone.trim(),
-                delivery_address: deliveryAddress.trim(),
-                shop_notes: notes.trim(),
                 order_items: validItems,
                 payment_method: paymentMethod,
                 order_amount: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
                 delivery_fee: parseFloat(deliveryFee) || 0,
-            });
+            };
+
+            if (customerPhoneAlt.trim()) orderData.customer_phone_alt = customerPhoneAlt.trim();
+            if (customerEmail.trim()) orderData.customer_email = customerEmail.trim();
+            if (deliveryCity) orderData.delivery_city = deliveryCity;
+            if (deliveryArea.trim()) orderData.delivery_area = deliveryArea.trim();
+            if (deliveryStreet.trim()) orderData.delivery_street = deliveryStreet.trim();
+            if (deliveryBuilding.trim()) orderData.delivery_building = deliveryBuilding.trim();
+            if (deliveryAddress.trim()) orderData.delivery_address = deliveryAddress.trim();
+            if (deliveryNotes.trim()) orderData.delivery_notes = deliveryNotes.trim();
+            if (shopNotes.trim()) orderData.shop_notes = shopNotes.trim();
+            if (selectedCompany) orderData.company_id = selectedCompany.id;
+            if (requiresLargeVehicle) orderData.requires_large_vehicle = true;
+            if (priority > 0) orderData.priority = priority;
+            if (scheduledPickupTime.trim()) orderData.scheduled_pickup_time = scheduledPickupTime.trim();
+
+            await createOrder(orderData);
 
             Alert.alert(
                 t('common.success'),
-                'Order created successfully!',
-                [{ text: 'OK', onPress: () => navigation.goBack() }]
+                t('orders.createSuccess') || t('common.success'),
+                [{ text: t('common.ok'), onPress: () => navigation.goBack() }]
             );
         } catch (err: any) {
             Alert.alert(
@@ -181,6 +217,7 @@ const CreateOrderScreen: React.FC = () => {
         label: string
     ) => (
         <TouchableOpacity
+            key={type}
             style={[
                 styles.itemTypeBtn,
                 item.type === type && styles.itemTypeBtnActive,
@@ -209,6 +246,7 @@ const CreateOrderScreen: React.FC = () => {
         label: string
     ) => (
         <TouchableOpacity
+            key={method}
             style={[
                 styles.paymentMethodBtn,
                 paymentMethod === method && styles.paymentMethodBtnActive,
@@ -262,12 +300,12 @@ const CreateOrderScreen: React.FC = () => {
                             <View style={styles.sectionIcon}>
                                 <Ionicons name="person-outline" size={20} color={COLORS.primary} />
                             </View>
-                            <Text style={styles.sectionTitle}>Customer Information</Text>
+                            <Text style={styles.sectionTitle}>{t('orders.customerInfo')}</Text>
                         </View>
 
                         <TextInput
-                            label="Customer Name"
-                            placeholder="Enter customer name"
+                            label={t('orders.customerName')}
+                            placeholder={t('orders.customerName')}
                             value={customerName}
                             onChangeText={setCustomerName}
                             error={errors.customerName}
@@ -276,8 +314,8 @@ const CreateOrderScreen: React.FC = () => {
                         />
 
                         <TextInput
-                            label="Phone Number"
-                            placeholder="Enter phone number"
+                            label={t('orders.customerPhone')}
+                            placeholder={t('orders.customerPhone')}
                             value={customerPhone}
                             onChangeText={setCustomerPhone}
                             error={errors.customerPhone}
@@ -287,15 +325,121 @@ const CreateOrderScreen: React.FC = () => {
                         />
 
                         <TextInput
-                            label="Delivery Address"
-                            placeholder="Enter full delivery address"
+                            label={t('orders.customerPhoneAlt') || t('orders.customerPhone') + ' 2'}
+                            placeholder={t('orders.customerPhoneAlt') || t('orders.customerPhone') + ' 2'}
+                            value={customerPhoneAlt}
+                            onChangeText={setCustomerPhoneAlt}
+                            leftIcon="call-outline"
+                            keyboardType="phone-pad"
+                        />
+
+                        <TextInput
+                            label={t('orders.customerEmail') || t('auth.email')}
+                            placeholder={t('orders.customerEmail') || t('auth.email')}
+                            value={customerEmail}
+                            onChangeText={setCustomerEmail}
+                            error={errors.customerEmail}
+                            leftIcon="mail-outline"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                    </Card>
+
+                    {/* Delivery Address */}
+                    <Card style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <View style={styles.sectionIcon}>
+                                <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+                            </View>
+                            <Text style={styles.sectionTitle}>{t('orders.deliveryAddress')}</Text>
+                        </View>
+
+                        {/* City Picker */}
+                        <Text style={styles.fieldLabel}>{t('orders.deliveryCity') || 'المدينة'}</Text>
+                        <TouchableOpacity
+                            style={styles.pickerButton}
+                            onPress={() => setShowCityPicker(!showCityPicker)}
+                        >
+                            <Text
+                                style={[
+                                    styles.pickerButtonText,
+                                    deliveryCity && styles.pickerButtonTextSelected,
+                                ]}
+                            >
+                                {deliveryCity ? t(`cities.${deliveryCity}`) : t('orders.selectCity') || 'اختر المدينة'}
+                            </Text>
+                            <Ionicons
+                                name={showCityPicker ? 'chevron-up' : 'chevron-down'}
+                                size={20}
+                                color={COLORS.gray500}
+                            />
+                        </TouchableOpacity>
+
+                        {showCityPicker && (
+                            <View style={styles.pickerList}>
+                                <TouchableOpacity
+                                    style={[styles.pickerOption, !deliveryCity && styles.pickerOptionActive]}
+                                    onPress={() => { setDeliveryCity(''); setShowCityPicker(false); }}
+                                >
+                                    <Text style={styles.pickerOptionText}>—</Text>
+                                </TouchableOpacity>
+                                {CITIES.map((city) => (
+                                    <TouchableOpacity
+                                        key={city}
+                                        style={[
+                                            styles.pickerOption,
+                                            deliveryCity === city && styles.pickerOptionActive,
+                                        ]}
+                                        onPress={() => { setDeliveryCity(city); setShowCityPicker(false); }}
+                                    >
+                                        <Text style={styles.pickerOptionText}>{t(`cities.${city}`)}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
+                        <TextInput
+                            label={t('orders.deliveryArea') || 'المنطقة'}
+                            placeholder={t('orders.deliveryArea') || 'المنطقة'}
+                            value={deliveryArea}
+                            onChangeText={setDeliveryArea}
+                            leftIcon="map-outline"
+                        />
+
+                        <TextInput
+                            label={t('orders.deliveryStreet') || 'الشارع'}
+                            placeholder={t('orders.deliveryStreet') || 'الشارع'}
+                            value={deliveryStreet}
+                            onChangeText={setDeliveryStreet}
+                            leftIcon="navigate-outline"
+                        />
+
+                        <TextInput
+                            label={t('orders.deliveryBuilding') || 'المبنى'}
+                            placeholder={t('orders.deliveryBuilding') || 'المبنى'}
+                            value={deliveryBuilding}
+                            onChangeText={setDeliveryBuilding}
+                            leftIcon="business-outline"
+                        />
+
+                        <TextInput
+                            label={t('orders.deliveryAddress')}
+                            placeholder={t('orders.deliveryAddress')}
                             value={deliveryAddress}
                             onChangeText={setDeliveryAddress}
-                            error={errors.deliveryAddress}
                             leftIcon="location-outline"
                             multiline
-                            numberOfLines={3}
-                            required
+                            numberOfLines={2}
+                        />
+
+                        <TextInput
+                            label={t('orders.deliveryNotes') || t('orders.notes')}
+                            placeholder={t('orders.deliveryNotes') || t('orders.notes')}
+                            value={deliveryNotes}
+                            onChangeText={setDeliveryNotes}
+                            leftIcon="chatbox-outline"
+                            multiline
+                            numberOfLines={2}
                         />
                     </Card>
 
@@ -305,7 +449,7 @@ const CreateOrderScreen: React.FC = () => {
                             <View style={styles.sectionIcon}>
                                 <Ionicons name="cube-outline" size={20} color={COLORS.primary} />
                             </View>
-                            <Text style={styles.sectionTitle}>Order Items</Text>
+                            <Text style={styles.sectionTitle}>{t('orders.items')}</Text>
                         </View>
 
                         {errors.items && (
@@ -315,7 +459,7 @@ const CreateOrderScreen: React.FC = () => {
                         {items.map((item, index) => (
                             <View key={item.id} style={styles.itemCard}>
                                 <View style={styles.itemHeader}>
-                                    <Badge label={`Item ${index + 1}`} variant="secondary" size="sm" />
+                                    <Badge label={`${t('orders.items')} ${index + 1}`} variant="secondary" size="sm" />
                                     {items.length > 1 && (
                                         <TouchableOpacity
                                             onPress={() => handleRemoveItem(item.id)}
@@ -327,23 +471,27 @@ const CreateOrderScreen: React.FC = () => {
                                 </View>
 
                                 <TextInput
-                                    label="Item Name"
-                                    placeholder="Enter item name"
+                                    label={t('orders.description')}
+                                    placeholder={t('orders.description')}
                                     value={item.name}
                                     onChangeText={(value) => handleUpdateItem(item.id, 'name', value)}
                                 />
 
                                 <View style={styles.itemTypeContainer}>
-                                    {renderItemTypeButton(item, OrderItemType.DOCUMENT, 'document-outline', 'Document')}
-                                    {renderItemTypeButton(item, OrderItemType.PACKAGE, 'cube-outline', 'Package')}
-                                    {renderItemTypeButton(item, OrderItemType.FOOD, 'fast-food-outline', 'Food')}
-                                    {renderItemTypeButton(item, OrderItemType.OTHER, 'ellipsis-horizontal', 'Other')}
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                        {renderItemTypeButton(item, OrderItemType.ENVELOPE, 'mail-outline', 'ظرف')}
+                                        {renderItemTypeButton(item, OrderItemType.BAG, 'bag-outline', 'كيس')}
+                                        {renderItemTypeButton(item, OrderItemType.SMALL_BOX, 'cube-outline', 'صغير')}
+                                        {renderItemTypeButton(item, OrderItemType.MEDIUM_BOX, 'cube', 'متوسط')}
+                                        {renderItemTypeButton(item, OrderItemType.LARGE_BOX, 'cube', 'كبير')}
+                                        {renderItemTypeButton(item, OrderItemType.CUSTOM, 'ellipsis-horizontal', 'مخصص')}
+                                    </ScrollView>
                                 </View>
 
                                 <View style={styles.itemRow}>
                                     <View style={{ flex: 1, marginRight: SPACING.md }}>
                                         <TextInput
-                                            label="Quantity"
+                                            label={t('orders.quantity') || 'الكمية'}
                                             placeholder="1"
                                             value={item.quantity.toString()}
                                             onChangeText={(value) =>
@@ -354,7 +502,7 @@ const CreateOrderScreen: React.FC = () => {
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         <TextInput
-                                            label="Price"
+                                            label={t('orders.price') || 'السعر'}
                                             placeholder="0.00"
                                             value={item.price > 0 ? item.price.toString() : ''}
                                             onChangeText={(value) =>
@@ -370,30 +518,30 @@ const CreateOrderScreen: React.FC = () => {
 
                         <TouchableOpacity style={styles.addItemBtn} onPress={handleAddItem}>
                             <Ionicons name="add-circle-outline" size={20} color={COLORS.primary} />
-                            <Text style={styles.addItemText}>Add Another Item</Text>
+                            <Text style={styles.addItemText}>{t('orders.addItem') || 'إضافة عنصر'}</Text>
                         </TouchableOpacity>
                     </Card>
 
-                    {/* Delivery Company (Optional) */}
+                    {/* Delivery Company */}
                     <Card style={styles.section}>
                         <View style={styles.sectionHeader}>
                             <View style={styles.sectionIcon}>
                                 <Ionicons name="business-outline" size={20} color={COLORS.primary} />
                             </View>
-                            <Text style={styles.sectionTitle}>Delivery Company (Optional)</Text>
+                            <Text style={styles.sectionTitle}>{t('orders.deliveryCompany') || 'شركة التوصيل'}</Text>
                         </View>
 
                         <TouchableOpacity
-                            style={styles.companyPicker}
+                            style={styles.pickerButton}
                             onPress={() => setShowCompanyPicker(!showCompanyPicker)}
                         >
                             <Text
                                 style={[
-                                    styles.companyPickerText,
-                                    selectedCompany && styles.companyPickerTextSelected,
+                                    styles.pickerButtonText,
+                                    selectedCompany && styles.pickerButtonTextSelected,
                                 ]}
                             >
-                                {selectedCompany?.name || 'Select a delivery company'}
+                                {selectedCompany?.name || t('orders.selectCompany') || 'اختيار شركة التوصيل'}
                             </Text>
                             <Ionicons
                                 name={showCompanyPicker ? 'chevron-up' : 'chevron-down'}
@@ -403,38 +551,97 @@ const CreateOrderScreen: React.FC = () => {
                         </TouchableOpacity>
 
                         {showCompanyPicker && (
-                            <View style={styles.companyList}>
+                            <View style={styles.pickerList}>
                                 <TouchableOpacity
                                     style={[
-                                        styles.companyOption,
-                                        !selectedCompany && styles.companyOptionActive,
+                                        styles.pickerOption,
+                                        !selectedCompany && styles.pickerOptionActive,
                                     ]}
                                     onPress={() => {
                                         setSelectedCompany(null);
                                         setShowCompanyPicker(false);
                                     }}
                                 >
-                                    <Text style={styles.companyOptionText}>
-                                        Auto-assign (any company)
+                                    <Text style={styles.pickerOptionText}>
+                                        {t('orders.autoAssign') || 'تعيين تلقائي'}
                                     </Text>
                                 </TouchableOpacity>
                                 {companies.map((company) => (
                                     <TouchableOpacity
                                         key={company.id}
                                         style={[
-                                            styles.companyOption,
-                                            selectedCompany?.id === company.id && styles.companyOptionActive,
+                                            styles.pickerOption,
+                                            selectedCompany?.id === company.id && styles.pickerOptionActive,
                                         ]}
                                         onPress={() => {
                                             setSelectedCompany(company);
                                             setShowCompanyPicker(false);
                                         }}
                                     >
-                                        <Text style={styles.companyOptionText}>{company.name}</Text>
+                                        <Text style={styles.pickerOptionText}>{company.name}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
                         )}
+                    </Card>
+
+                    {/* Order Options */}
+                    <Card style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <View style={styles.sectionIcon}>
+                                <Ionicons name="options-outline" size={20} color={COLORS.primary} />
+                            </View>
+                            <Text style={styles.sectionTitle}>{t('orders.orderOptions') || 'خيارات الطلب'}</Text>
+                        </View>
+
+                        {/* Priority */}
+                        <Text style={styles.fieldLabel}>{t('orders.priority')}</Text>
+                        <View style={styles.priorityContainer}>
+                            <TouchableOpacity
+                                style={[styles.priorityBtn, priority === 0 && styles.priorityBtnActive]}
+                                onPress={() => setPriority(0)}
+                            >
+                                <Ionicons name="remove-circle-outline" size={18} color={priority === 0 ? COLORS.primary : COLORS.gray500} />
+                                <Text style={[styles.priorityText, priority === 0 && styles.priorityTextActive]}>عادي</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.priorityBtn, priority === 1 && styles.priorityBtnActive]}
+                                onPress={() => setPriority(1)}
+                            >
+                                <Ionicons name="arrow-up-circle-outline" size={18} color={priority === 1 ? COLORS.primary : COLORS.gray500} />
+                                <Text style={[styles.priorityText, priority === 1 && styles.priorityTextActive]}>عالي</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.priorityBtn, priority === 2 && styles.priorityBtnUrgent]}
+                                onPress={() => setPriority(2)}
+                            >
+                                <Ionicons name="alert-circle-outline" size={18} color={priority === 2 ? COLORS.error : COLORS.gray500} />
+                                <Text style={[styles.priorityText, priority === 2 && { color: COLORS.error }]}>عاجل</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Requires Large Vehicle */}
+                        <View style={styles.switchRow}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.switchLabel}>{t('orders.requiresLargeVehicle') || 'يتطلب مركبة كبيرة'}</Text>
+                                <Text style={styles.switchDescription}>{t('orders.requiresLargeVehicleDesc') || 'للطلبات الكبيرة الحجم'}</Text>
+                            </View>
+                            <Switch
+                                value={requiresLargeVehicle}
+                                onValueChange={setRequiresLargeVehicle}
+                                trackColor={{ false: COLORS.gray300, true: COLORS.primarySoft }}
+                                thumbColor={requiresLargeVehicle ? COLORS.primary : COLORS.gray100}
+                            />
+                        </View>
+
+                        {/* Scheduled Pickup */}
+                        <TextInput
+                            label={t('orders.scheduledPickup') || 'موعد الاستلام المجدول'}
+                            placeholder="YYYY-MM-DD HH:mm"
+                            value={scheduledPickupTime}
+                            onChangeText={setScheduledPickupTime}
+                            leftIcon="time-outline"
+                        />
                     </Card>
 
                     {/* Payment */}
@@ -443,18 +650,18 @@ const CreateOrderScreen: React.FC = () => {
                             <View style={styles.sectionIcon}>
                                 <Ionicons name="wallet-outline" size={20} color={COLORS.primary} />
                             </View>
-                            <Text style={styles.sectionTitle}>Payment</Text>
+                            <Text style={styles.sectionTitle}>{t('orders.payment')}</Text>
                         </View>
 
-                        <Text style={styles.fieldLabel}>Payment Method</Text>
+                        <Text style={styles.fieldLabel}>{t('orders.paymentMethod')}</Text>
                         <View style={styles.paymentMethods}>
-                            {renderPaymentMethod(PaymentMethod.CASH, 'cash-outline', 'Cash')}
-                            {renderPaymentMethod(PaymentMethod.CARD, 'card-outline', 'Card')}
-                            {renderPaymentMethod(PaymentMethod.ONLINE, 'globe-outline', 'Online')}
+                            {renderPaymentMethod(PaymentMethod.CASH, 'cash-outline', t('orders.cash') || 'نقدي')}
+                            {renderPaymentMethod(PaymentMethod.CARD, 'card-outline', t('orders.card') || 'بطاقة')}
+                            {renderPaymentMethod(PaymentMethod.ONLINE, 'globe-outline', t('orders.online') || 'أونلاين')}
                         </View>
 
                         <TextInput
-                            label="Delivery Fee"
+                            label={t('orders.deliveryFee')}
                             placeholder="0.00"
                             value={deliveryFee}
                             onChangeText={setDeliveryFee}
@@ -463,19 +670,19 @@ const CreateOrderScreen: React.FC = () => {
                         />
                     </Card>
 
-                    {/* Notes */}
+                    {/* Shop Notes */}
                     <Card style={styles.section}>
                         <View style={styles.sectionHeader}>
                             <View style={styles.sectionIcon}>
                                 <Ionicons name="chatbox-outline" size={20} color={COLORS.primary} />
                             </View>
-                            <Text style={styles.sectionTitle}>Additional Notes</Text>
+                            <Text style={styles.sectionTitle}>{t('orders.notes')}</Text>
                         </View>
 
                         <TextInput
-                            placeholder="Add any special instructions..."
-                            value={notes}
-                            onChangeText={setNotes}
+                            placeholder={t('orders.addNotes') || t('orders.notes')}
+                            value={shopNotes}
+                            onChangeText={setShopNotes}
                             multiline
                             numberOfLines={4}
                         />
@@ -483,29 +690,29 @@ const CreateOrderScreen: React.FC = () => {
 
                     {/* Order Summary */}
                     <Card style={styles.summaryCard}>
-                        <Text style={styles.summaryTitle}>Order Summary</Text>
+                        <Text style={styles.summaryTitle}>{t('orders.summary')}</Text>
                         <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Items Total</Text>
+                            <Text style={styles.summaryLabel}>{t('orders.orderAmount')}</Text>
                             <Text style={styles.summaryValue}>
-                                ${items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+                                {items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)} {t('common.currency') || 'د.أ'}
                             </Text>
                         </View>
                         <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Delivery Fee</Text>
+                            <Text style={styles.summaryLabel}>{t('orders.deliveryFee')}</Text>
                             <Text style={styles.summaryValue}>
-                                ${(parseFloat(deliveryFee) || 0).toFixed(2)}
+                                {(parseFloat(deliveryFee) || 0).toFixed(2)} {t('common.currency') || 'د.أ'}
                             </Text>
                         </View>
                         <View style={styles.summaryDivider} />
                         <View style={styles.summaryRow}>
-                            <Text style={styles.totalLabel}>Total</Text>
-                            <Text style={styles.totalValue}>${calculateTotal().toFixed(2)}</Text>
+                            <Text style={styles.totalLabel}>{t('orders.totalAmount')}</Text>
+                            <Text style={styles.totalValue}>{calculateTotal().toFixed(2)} {t('common.currency') || 'د.أ'}</Text>
                         </View>
                     </Card>
 
                     {/* Submit Button */}
                     <Button
-                        title="Create Order"
+                        title={t('orders.createOrder') || t('shop.createOrder')}
                         onPress={handleSubmit}
                         loading={isLoading}
                         fullWidth
@@ -573,6 +780,12 @@ const styles = StyleSheet.create({
         fontSize: FONT_SIZES.base,
         color: COLORS.gray900,
     },
+    fieldLabel: {
+        fontFamily: FONTS.medium,
+        fontSize: FONT_SIZES.sm,
+        color: COLORS.gray700,
+        marginBottom: SPACING.sm,
+    },
     errorText: {
         fontFamily: FONTS.regular,
         fontSize: FONT_SIZES.sm,
@@ -595,15 +808,14 @@ const styles = StyleSheet.create({
         padding: SPACING.xs,
     },
     itemTypeContainer: {
-        flexDirection: 'row',
         marginBottom: SPACING.md,
     },
     itemTypeBtn: {
-        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: SPACING.sm,
+        paddingHorizontal: SPACING.md,
         marginRight: SPACING.xs,
         borderRadius: RADIUS.base,
         backgroundColor: COLORS.white,
@@ -643,11 +855,44 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
         marginLeft: SPACING.xs,
     },
-    fieldLabel: {
-        fontFamily: FONTS.medium,
-        fontSize: FONT_SIZES.sm,
-        color: COLORS.gray700,
+    pickerButton: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: SPACING.md,
+        backgroundColor: COLORS.gray100,
+        borderRadius: RADIUS.lg,
+        borderWidth: 1,
+        borderColor: COLORS.border,
         marginBottom: SPACING.sm,
+    },
+    pickerButtonText: {
+        fontFamily: FONTS.regular,
+        fontSize: FONT_SIZES.base,
+        color: COLORS.gray400,
+    },
+    pickerButtonTextSelected: {
+        color: COLORS.gray900,
+    },
+    pickerList: {
+        marginBottom: SPACING.sm,
+        backgroundColor: COLORS.gray50,
+        borderRadius: RADIUS.lg,
+        overflow: 'hidden',
+        maxHeight: 250,
+    },
+    pickerOption: {
+        padding: SPACING.md,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
+    },
+    pickerOptionActive: {
+        backgroundColor: COLORS.primarySoft,
+    },
+    pickerOptionText: {
+        fontFamily: FONTS.regular,
+        fontSize: FONT_SIZES.base,
+        color: COLORS.gray900,
     },
     paymentMethods: {
         flexDirection: 'row',
@@ -677,42 +922,58 @@ const styles = StyleSheet.create({
     paymentMethodTextActive: {
         color: COLORS.primary,
     },
-    companyPicker: {
+    priorityContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        marginBottom: SPACING.md,
+    },
+    priorityBtn: {
+        flex: 1,
+        flexDirection: 'row',
         alignItems: 'center',
-        padding: SPACING.md,
+        justifyContent: 'center',
+        paddingVertical: SPACING.md,
+        marginRight: SPACING.sm,
+        borderRadius: RADIUS.lg,
         backgroundColor: COLORS.gray100,
-        borderRadius: RADIUS.lg,
-        borderWidth: 1,
-        borderColor: COLORS.border,
+        borderWidth: 2,
+        borderColor: 'transparent',
     },
-    companyPickerText: {
-        fontFamily: FONTS.regular,
-        fontSize: FONT_SIZES.base,
-        color: COLORS.gray400,
+    priorityBtnActive: {
+        backgroundColor: COLORS.primarySoft,
+        borderColor: COLORS.primary,
     },
-    companyPickerTextSelected: {
-        color: COLORS.gray900,
+    priorityBtnUrgent: {
+        backgroundColor: '#FEE2E2',
+        borderColor: COLORS.error,
     },
-    companyList: {
-        marginTop: SPACING.sm,
-        backgroundColor: COLORS.gray50,
-        borderRadius: RADIUS.lg,
-        overflow: 'hidden',
+    priorityText: {
+        fontFamily: FONTS.medium,
+        fontSize: FONT_SIZES.sm,
+        color: COLORS.gray500,
+        marginLeft: SPACING.xs,
     },
-    companyOption: {
-        padding: SPACING.md,
+    priorityTextActive: {
+        color: COLORS.primary,
+    },
+    switchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: SPACING.md,
         borderBottomWidth: 1,
         borderBottomColor: COLORS.border,
+        marginBottom: SPACING.md,
     },
-    companyOptionActive: {
-        backgroundColor: COLORS.primarySoft,
-    },
-    companyOptionText: {
-        fontFamily: FONTS.regular,
+    switchLabel: {
+        fontFamily: FONTS.medium,
         fontSize: FONT_SIZES.base,
         color: COLORS.gray900,
+    },
+    switchDescription: {
+        fontFamily: FONTS.regular,
+        fontSize: FONT_SIZES.sm,
+        color: COLORS.gray500,
+        marginTop: 2,
     },
     summaryCard: {
         padding: SPACING.base,

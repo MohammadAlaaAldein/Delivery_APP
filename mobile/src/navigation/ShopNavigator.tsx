@@ -9,9 +9,12 @@ import {
     ShopCreateOrderScreen,
     ShopOrderDetailScreen,
     ProfileScreen,
+    EditProfileScreen,
+    OrderTrackingScreen,
 } from '../screens';
 import { ShopStackParamList } from '../types';
 import { COLORS, FONTS, FONT_SIZES, SPACING } from '../constants';
+import { t } from '../i18n';
 
 const Stack = createNativeStackNavigator<ShopStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -53,7 +56,7 @@ const ShopTabs: React.FC = () => {
                 name="DashboardTab"
                 component={ShopDashboardScreen}
                 options={{
-                    tabBarLabel: 'Home',
+                    tabBarLabel: t('nav.dashboard'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} size={size} />
                     ),
@@ -63,7 +66,7 @@ const ShopTabs: React.FC = () => {
                 name="OrdersTab"
                 component={ShopOrdersScreen}
                 options={{
-                    tabBarLabel: 'Orders',
+                    tabBarLabel: t('nav.orders'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'cube' : 'cube-outline'} focused={focused} size={size} />
                     ),
@@ -73,7 +76,7 @@ const ShopTabs: React.FC = () => {
                 name="CreateOrderTab"
                 component={ShopCreateOrderScreen}
                 options={{
-                    tabBarLabel: 'New Order',
+                    tabBarLabel: t('nav.createOrder'),
                     tabBarIcon: ({ focused, size }) => (
                         <View style={styles.addButtonContainer}>
                             <View style={styles.addButton}>
@@ -87,7 +90,7 @@ const ShopTabs: React.FC = () => {
                 name="ProfileTab"
                 component={ProfileScreen}
                 options={{
-                    tabBarLabel: 'Profile',
+                    tabBarLabel: t('nav.profile'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} size={size} />
                     ),
@@ -109,6 +112,8 @@ const ShopNavigator: React.FC = () => {
             <Stack.Screen name="Orders" component={ShopOrdersScreen} />
             <Stack.Screen name="CreateOrder" component={ShopCreateOrderScreen} />
             <Stack.Screen name="OrderDetail" component={ShopOrderDetailScreen} />
+            <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
     );

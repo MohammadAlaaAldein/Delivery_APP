@@ -9,9 +9,11 @@ import {
     DriverHistoryScreen,
     DriverOrderDetailScreen,
     ProfileScreen,
+    EditProfileScreen,
 } from '../screens';
 import { DriverStackParamList } from '../types';
 import { COLORS, FONTS, SPACING } from '../constants';
+import { t } from '../i18n';
 
 const Stack = createNativeStackNavigator<DriverStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -53,7 +55,7 @@ const DriverTabs: React.FC = () => {
                 name="DashboardTab"
                 component={DriverDashboardScreen}
                 options={{
-                    tabBarLabel: 'Home',
+                    tabBarLabel: t('nav.dashboard'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} size={size} />
                     ),
@@ -63,7 +65,7 @@ const DriverTabs: React.FC = () => {
                 name="ActiveOrdersTab"
                 component={DriverActiveOrdersScreen}
                 options={{
-                    tabBarLabel: 'Deliveries',
+                    tabBarLabel: t('nav.activeOrders'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'car' : 'car-outline'} focused={focused} size={size} />
                     ),
@@ -73,7 +75,7 @@ const DriverTabs: React.FC = () => {
                 name="HistoryTab"
                 component={DriverHistoryScreen}
                 options={{
-                    tabBarLabel: 'History',
+                    tabBarLabel: t('nav.orderHistory'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'time' : 'time-outline'} focused={focused} size={size} />
                     ),
@@ -83,7 +85,7 @@ const DriverTabs: React.FC = () => {
                 name="ProfileTab"
                 component={ProfileScreen}
                 options={{
-                    tabBarLabel: 'Profile',
+                    tabBarLabel: t('nav.profile'),
                     tabBarIcon: ({ focused, size }) => (
                         <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} size={size} />
                     ),
@@ -105,6 +107,7 @@ const DriverNavigator: React.FC = () => {
             <Stack.Screen name="ActiveOrders" component={DriverActiveOrdersScreen} />
             <Stack.Screen name="History" component={DriverHistoryScreen} />
             <Stack.Screen name="OrderDetail" component={DriverOrderDetailScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
     );

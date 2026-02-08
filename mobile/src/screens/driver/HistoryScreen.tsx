@@ -25,14 +25,11 @@ const TABS = ['all', 'delivered', 'cancelled'];
 
 const HistoryScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { activeOrders: storeActiveOrders, orders, isLoading, fetchDriverOrders } = useOrdersStore();
+    const { orderHistory, isLoading, fetchDriverHistory } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
     const [activeTab, setActiveTab] = useState('all');
 
-    const allOrders = storeActiveOrders.length > 0 ? storeActiveOrders : orders;
-    const completedOrders = allOrders.filter(
-        (o) => [OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(o.status as OrderStatus)
-    );
+    const completedOrders = Array.isArray(orderHistory) ? orderHistory : [];
 
     const filteredOrders = completedOrders.filter((order) => {
         if (activeTab === 'all') return true;
@@ -42,12 +39,12 @@ const HistoryScreen: React.FC = () => {
     });
 
     useEffect(() => {
-        fetchDriverOrders();
+        fetchDriverHistory();
     }, []);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        await fetchDriverOrders();
+        await fetchDriverHistory();
         setRefreshing(false);
     }, []);
 

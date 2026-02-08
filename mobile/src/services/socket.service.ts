@@ -25,6 +25,7 @@ export const SOCKET_EVENTS = {
 
     // Driver events
     DRIVER_LOCATION_UPDATE: 'driver:location_update',
+    DRIVER_UPDATE_LOCATION: 'driver:updateLocation', // For sending location to backend
 
     // Room events
     JOIN_ROOM: 'join:room',

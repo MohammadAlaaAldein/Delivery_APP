@@ -59,13 +59,13 @@ const ShopDashboardScreen: React.FC = () => {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 12) return 'Good Morning';
-        if (hour < 18) return 'Good Afternoon';
-        return 'Good Evening';
+        if (hour < 12) return t('dashboard.goodMorning');
+        if (hour < 18) return t('dashboard.goodAfternoon');
+        return t('dashboard.goodEvening');
     };
 
     if (isLoading && orders.length === 0) {
-        return <Loading fullScreen message="Loading dashboard..." />;
+        return <Loading fullScreen message={t('dashboard.loadingDashboard')} />;
     }
 
     return (
@@ -108,9 +108,9 @@ const ShopDashboardScreen: React.FC = () => {
                             <Ionicons name="add-circle" size={28} color={COLORS.primary} />
                         </View>
                         <View style={styles.quickActionText}>
-                            <Text style={styles.quickActionTitle}>Create New Order</Text>
+                            <Text style={styles.quickActionTitle}>{t('dashboard.createNewOrder')}</Text>
                             <Text style={styles.quickActionSubtitle}>
-                                Start a new delivery request
+                                {t('dashboard.startNewDelivery')}
                             </Text>
                         </View>
                     </View>
@@ -166,12 +166,12 @@ const ShopDashboardScreen: React.FC = () => {
                                 <Text style={styles.quickStatValue}>
                                     ${Number(shopStats?.todayRevenue || 0).toFixed(2)}
                                 </Text>
-                                <Text style={styles.quickStatLabel}>Today's Revenue</Text>
+                                <Text style={styles.quickStatLabel}>{t('dashboard.todayRevenue')}</Text>
                             </View>
                             <View style={styles.quickStatDivider} />
                             <View style={styles.quickStatItem}>
                                 <Text style={styles.quickStatValue}>{shopStats?.todayOrders || 0}</Text>
-                                <Text style={styles.quickStatLabel}>Today's Orders</Text>
+                                <Text style={styles.quickStatLabel}>{t('dashboard.todayOrders')}</Text>
                             </View>
                         </View>
                     </Card>
@@ -198,9 +198,9 @@ const ShopDashboardScreen: React.FC = () => {
                     ) : (
                         <EmptyState
                             title={t('shop.noOrders')}
-                            description="Start by creating your first order"
+                            description={t('dashboard.startByCreating')}
                             icon="cube-outline"
-                            actionLabel="Create Order"
+                            actionLabel={t('orders.createOrder')}
                             onAction={handleCreateOrder}
                         />
                     )}
