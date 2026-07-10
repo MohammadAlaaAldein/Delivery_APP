@@ -100,15 +100,15 @@ class AuthService {
                 return null;
             }
 
-            const response = await apiService.post<{ access_token: string }>('/auth/refresh', null, {
+            const response = await apiService.post<{ accessToken: string }>('/auth/refresh', null, {
                 headers: {
                     Authorization: `Bearer ${refreshToken}`,
                 },
             });
 
-            if (response?.access_token) {
-                await SecureStore.setItemAsync(STORAGE_KEYS.accessToken, response.access_token);
-                return response.access_token;
+            if (response?.accessToken) {
+                await SecureStore.setItemAsync(STORAGE_KEYS.accessToken, response.accessToken);
+                return response.accessToken;
             }
 
             return null;

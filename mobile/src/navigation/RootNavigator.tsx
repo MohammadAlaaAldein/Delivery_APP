@@ -32,7 +32,7 @@ const RootNavigator: React.FC = () => {
         prepare();
     }, []);
 
-    if (!isReady || isLoading) {
+    if (!isReady || !isInitialized) {
         return <Loading fullScreen message="Loading..." />;
     }
 

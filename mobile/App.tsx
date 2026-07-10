@@ -11,7 +11,7 @@ import { useAuthStore, useOrdersStore } from './src/stores';
 import { COLORS } from './src/constants';
 import { navigate } from './src/navigation/navigationRef';
 import { UserRole } from './src/types';
-import { initI18n } from './src/i18n';
+import { getCurrentLanguage, initI18n } from './src/i18n';
 import { ROOMS } from './src/services/socket.service';
 
 // // Keep splash screen visible while loading
@@ -32,14 +32,16 @@ export default function App() {
     useEffect(() => {
         async function prepare() {
             try {
-                // Force RTL for Arabic
-                if (!I18nManager.isRTL) {
-                    I18nManager.allowRTL(true);
-                    I18nManager.forceRTL(true);
-                }
-
                 // Initialize i18n
                 await initI18n();
+
+                // Apply saved language layout direction
+                const currentLanguage = getCurrentLanguage();
+                const shouldBeRTL = currentLanguage === 'ar';
+                if (I18nManager.isRTL !== shouldBeRTL) {
+                    I18nManager.allowRTL(shouldBeRTL);
+                    I18nManager.forceRTL(shouldBeRTL);
+                }
 
                 // Pre-load fonts - use system fonts as fallback if custom fonts fail
                 await Font.loadAsync({

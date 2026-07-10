@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
@@ -20,19 +20,23 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, TextInput } from '../../components';
 import { COLORS, FONTS, FONT_SIZES, SPACING, RADIUS, SHADOWS, SCREEN } from '../../constants';
 import { useAuthStore } from '../../stores';
-import { t } from '../../i18n';
+import { getCurrentLanguage, t, toggleLanguage } from '../../i18n';
 import { AuthStackParamList } from '../../types';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { login, isLoading, error, clearError } = useAuthStore();
+    const login = useAuthStore(state => state.login);
+    const clearError = useAuthStore(state => state.clearError);
+    const isLoading = useAuthStore(state => state.isLoading);
+    const error = useAuthStore(state => state.error);
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [language, setLanguage] = useState(getCurrentLanguage());
 
     const validateEmail = (value: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,7 +65,7 @@ const LoginScreen: React.FC = () => {
         return true;
     };
 
-    const handleLogin = async () => {
+    const handleLogin = useCallback(async () => {
         clearError();
         const isEmailValid = validateEmail(email);
         const isPasswordValid = validatePassword(password);
@@ -74,16 +78,22 @@ const LoginScreen: React.FC = () => {
             await login(email, password);
             // Navigation will be handled by the RootNavigator based on auth state
         } catch (err: any) {
-            Alert.alert(
-                t('common.error'),
-                err.response?.data?.message || t('auth.invalidCredentials')
-            );
+            const errorMessage =
+                err.response?.status === 401
+                    ? t('auth.invalidCredentials')
+                    : err.response?.data?.message || err.message || t('auth.invalidCredentials');
+            Alert.alert(t('common.error'), errorMessage);
         }
-    };
+    }, [clearError, email, login, password]);
 
-    const handleForgotPassword = () => {
+    const handleForgotPassword = useCallback(() => {
         navigation.navigate('ForgotPassword');
-    };
+    }, [navigation]);
+
+    const handleToggleLanguage = useCallback(async () => {
+        const nextLanguage = await toggleLanguage();
+        setLanguage(nextLanguage);
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -99,10 +109,14 @@ const LoginScreen: React.FC = () => {
                 <View style={styles.headerContent}>
                     {/* Logo placeholder */}
                     <View style={styles.logoContainer}>
-                        <Ionicons name="cube" size={60} color={COLORS.white} />
+                        <Image
+                            source={require('../../../assets/icon.png')}
+                            style={styles.logoImage}
+                            resizeMode="contain"
+                        />
                     </View>
                     <Text style={styles.appName}>{t('common.appName')}</Text>
-                    <Text style={styles.headerSubtitle}>Fast & Reliable Delivery</Text>
+                    <Text style={styles.headerSubtitle}>{t('auth.headerSubtitle')}</Text>
                 </View>
 
                 {/* Decorative circles */}
@@ -185,7 +199,7 @@ const LoginScreen: React.FC = () => {
                         />
 
                         {/* Language Toggle */}
-                        <TouchableOpacity style={styles.languageToggle}>
+                        <TouchableOpacity style={styles.languageToggle} onPress={handleToggleLanguage}>
                             <Ionicons name="globe-outline" size={20} color={COLORS.gray500} />
                             <Text style={styles.languageText}>
                                 {t('common.english')} / {t('common.arabic')}
@@ -233,6 +247,10 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.regular,
         fontSize: FONT_SIZES.base,
         color: 'rgba(255,255,255,0.8)',
+    },
+    logoImage: {
+        width: 80,
+        height: 80,
     },
     circle: {
         position: 'absolute',

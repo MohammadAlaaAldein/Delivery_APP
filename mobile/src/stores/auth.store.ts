@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { User, UserRole, AuthResponse } from '../types';
 import { authService, socketService, pushNotificationService } from '../services';
+import { t } from '../i18n';
 
 interface AuthState {
     // State
@@ -100,12 +101,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
             return response;
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+            const errorMessage =
+                error.response?.status === 401
+                    ? t('auth.invalidCredentials')
+                    : error.response?.data?.message || error.message || 'Login failed';
             set({
                 isLoading: false,
                 error: errorMessage,
             });
-            throw error;
+            throw new Error(errorMessage);
         }
     },
 

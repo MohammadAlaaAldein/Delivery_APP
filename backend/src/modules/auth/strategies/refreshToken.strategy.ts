@@ -4,13 +4,18 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { JWT_REFRESH_SECRET_TOKEN } from 'src/common/constants';
 import { AuthService } from '../auth.service';
 
+const refreshTokenExtractor = ExtractJwt.fromExtractors([
+	ExtractJwt.fromAuthHeaderAsBearerToken(),
+	ExtractJwt.fromBodyField('refresh'),
+]);
+
 @Injectable()
 export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
 	constructor(
 		private readonly authService: AuthService,
 	) {
 		super({
-			jwtFromRequest: ExtractJwt.fromBodyField('refresh'),
+			jwtFromRequest: refreshTokenExtractor,
 			ignoreExpiration: false,
 			secretOrKey: `${JWT_REFRESH_SECRET_TOKEN}`,
 		});

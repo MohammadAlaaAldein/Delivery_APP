@@ -7,6 +7,7 @@ import {
     TextInputProps as RNTextInputProps,
     ViewStyle,
     TouchableOpacity,
+    I18nManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, FONT_SIZES, SPACING, RADIUS, INPUT_HEIGHTS, SHADOWS } from '../../constants';
@@ -64,6 +65,7 @@ const TextInput: React.FC<TextInputProps> = ({
     };
 
     const sizeStyles = getSizeStyles();
+    const isRTL = I18nManager.isRTL;
 
     const getBorderColor = () => {
         if (error) return COLORS.error;
@@ -94,12 +96,13 @@ const TextInput: React.FC<TextInputProps> = ({
                 ]}
             >
                 {leftIcon && (
-                    <Ionicons
-                        name={leftIcon}
-                        size={sizeStyles.iconSize}
-                        color={isFocused ? COLORS.primary : COLORS.gray400}
-                        style={styles.leftIcon}
-                    />
+                    <View style={[styles.iconWrapper, { start: SPACING.sm }]}> 
+                        <Ionicons
+                            name={leftIcon}
+                            size={sizeStyles.iconSize}
+                            color={isFocused ? COLORS.primary : COLORS.gray400}
+                        />
+                    </View>
                 )}
 
                 <RNTextInput
@@ -107,21 +110,25 @@ const TextInput: React.FC<TextInputProps> = ({
                         styles.input,
                         {
                             fontSize: sizeStyles.fontSize,
-                            paddingLeft: leftIcon ? 0 : SPACING.base,
-                            paddingRight: rightIcon || secureTextEntry ? 0 : SPACING.base,
+                            paddingStart: leftIcon ? 44 : SPACING.base,
+                            paddingEnd: (rightIcon || secureTextEntry) ? 44 : SPACING.base,
+                            textAlign: isRTL ? 'right' : 'left',
+                            writingDirection: isRTL ? 'rtl' : 'ltr',
                         },
                     ]}
                     placeholderTextColor={COLORS.gray400}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     secureTextEntry={isSecure}
+                    textAlignVertical="center"
+                    allowFontScaling={false}
                     {...props}
                 />
 
                 {secureTextEntry && (
                     <TouchableOpacity
                         onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                        style={styles.rightIconContainer}
+                        style={[styles.iconWrapper, styles.iconRightWrapper, { end: SPACING.sm }]}
                     >
                         <Ionicons
                             name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
@@ -134,7 +141,7 @@ const TextInput: React.FC<TextInputProps> = ({
                 {rightIcon && !secureTextEntry && (
                     <TouchableOpacity
                         onPress={onRightIconPress}
-                        style={styles.rightIconContainer}
+                        style={[styles.iconWrapper, styles.iconRightWrapper, { end: SPACING.sm }]}
                         disabled={!onRightIconPress}
                     >
                         <Ionicons
@@ -173,8 +180,7 @@ const styles = StyleSheet.create({
         marginLeft: 2,
     },
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        position: 'relative',
         backgroundColor: COLORS.white,
         borderWidth: 1.5,
         borderRadius: RADIUS.base,
@@ -193,10 +199,19 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.regular,
         color: COLORS.text,
         height: '100%',
+        minHeight: 40,
     },
-    leftIcon: {
-        marginLeft: SPACING.md,
-        marginRight: SPACING.sm,
+    iconWrapper: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+        width: 44,
+    },
+    iconRightWrapper: {
+        end: SPACING.sm,
     },
     rightIconContainer: {
         padding: SPACING.md,

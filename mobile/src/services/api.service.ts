@@ -57,8 +57,13 @@ api.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+        const isAuthRequest = (url?: string) => {
+            if (!url) return false;
+            return /\/auth\/(login|refresh|verify-otp|forgot-password|reset-password|resend-login-otp)/.test(url);
+        };
+
         // Handle 401 errors (token expired)
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest(originalRequest.url)) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
