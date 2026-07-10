@@ -14,7 +14,7 @@ export const LANGUAGES = {
 
 export class LanguageService {
 
-	public changeLanguageSubject: BehaviorSubject<string> = new BehaviorSubject(LANGUAGES.EN);
+	public changeLanguageSubject = new BehaviorSubject<string>(this.getUsedLanguage());
 	public changeLanguage = this.changeLanguageSubject.asObservable();
 
 	constructor(
@@ -27,6 +27,7 @@ export class LanguageService {
 
 	checkLanguage() {
 		const language = this.getUsedLanguage();
+		this.translate.setDefaultLang(language);
 		this.useLanguage(language);
 	}
 

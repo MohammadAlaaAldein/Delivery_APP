@@ -225,10 +225,6 @@ export class NavRightComponent implements OnInit {
 		this.user = this.authService.getCurrentUser();
 		this.selectedTimezone = this.commonDataService.getCurrentUserTimeZone();
 		this.timezones = this.commonDataService.timeZoneMenu.map(tz => ({ value: tz.id, label: tz.displayName }));
-
-		setTimeout(() => {
-			this.useLanguage(DeliveryAppConfig.i18n);
-		}, 0);
 	}
 
 	logout() {
@@ -237,7 +233,7 @@ export class NavRightComponent implements OnInit {
 
 	// user according language change of sidebar menu item
 	useLanguage(language: string) {
-		this.translate.use(language);
+		this.languageService.useLanguage(language);
 	}
 
 	// full screen toggle

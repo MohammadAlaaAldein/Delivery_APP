@@ -78,7 +78,7 @@ export class ConfigurationComponent implements OnInit {
 		}
 
 		this.languageService.changeLanguage.subscribe(language => {
-			this.setRtlLayout(language == LANGUAGES.AR ? true : true);
+			this.setRtlLayout(language === LANGUAGES.AR);
 		});
 	}
 
