@@ -150,7 +150,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
             {order.order_items && order.order_items.length > 0 && (
                 <View style={styles.itemsSummary}>
                     <Text style={styles.itemsText}>
-                        {order.order_items.reduce((sum, item) => sum + item.quantity, 0)} items
+                        {order.order_items.reduce((sum, item) => sum + (item.quantity || 0), 0)} {t('common.items')}
                     </Text>
                     {order.requires_large_vehicle && (
                         <View style={styles.largeVehicleBadge}>

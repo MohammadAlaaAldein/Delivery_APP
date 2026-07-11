@@ -4,12 +4,12 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     FlatList,
     RefreshControl,
     TouchableOpacity,
     Alert,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -65,6 +65,8 @@ const AvailableOrdersScreen: React.FC = () => {
             ]
         );
     };
+
+    const insets = useSafeAreaInsets();
 
     const handleOrderPress = (orderId: string) => {
         navigation.navigate('OrderDetail', { orderId });
@@ -130,10 +132,10 @@ const AvailableOrdersScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
 
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { paddingTop: insets.top + 16 }]}> 
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}

@@ -26,7 +26,6 @@ const TabIcon = ({ name, focused, size }: { name: any; focused: boolean; size: n
             size={size}
             color={focused ? COLORS.primary : COLORS.gray400}
         />
-        {focused && <View style={styles.tabIndicator} />}
     </View>
 );
 

@@ -4,12 +4,12 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     RefreshControl,
     TouchableOpacity,
     Alert,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -67,20 +67,22 @@ const CompanyDashboardScreen: React.FC = () => {
         return t('dashboard.goodEvening');
     };
 
+    const insets = useSafeAreaInsets();
+
     if (isLoading && orders.length === 0) {
         return <Loading fullScreen message={t('dashboard.loadingDashboard')} />;
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="light" />
+            <StatusBar style="light" translucent backgroundColor="transparent" />
 
             {/* Header */}
             <LinearGradient
                 colors={['#6366F1', '#4F46E5'] as [string, string]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={styles.header}
+                style={[styles.header, { paddingTop: insets.top + 16 }]}
             >
                 <View style={styles.headerContent}>
                     <View style={styles.headerLeft}>
@@ -98,9 +100,9 @@ const CompanyDashboardScreen: React.FC = () => {
                                 </View>
                             )}
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
+                        {/* <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
                             <Ionicons name="person-outline" size={24} color={COLORS.white} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                 </View>
 

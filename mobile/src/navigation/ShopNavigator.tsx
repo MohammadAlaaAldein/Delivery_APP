@@ -26,7 +26,6 @@ const TabIcon = ({ name, focused, size }: { name: any; focused: boolean; size: n
             size={size}
             color={focused ? COLORS.primary : COLORS.gray400}
         />
-        {focused && <View style={styles.tabIndicator} />}
     </View>
 );
 
@@ -78,11 +77,7 @@ const ShopTabs: React.FC = () => {
                 options={{
                     tabBarLabel: t('nav.createOrder'),
                     tabBarIcon: ({ focused, size }) => (
-                        <View style={styles.addButtonContainer}>
-                            <View style={styles.addButton}>
-                                <Ionicons name="add" size={28} color={COLORS.white} />
-                            </View>
-                        </View>
+                        <TabIcon name={focused ? 'add-circle' : 'add-circle-outline'} focused={focused} size={size} />
                     ),
                 }}
             />

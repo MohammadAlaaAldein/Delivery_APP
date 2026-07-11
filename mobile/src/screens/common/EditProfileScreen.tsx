@@ -1,16 +1,17 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     Alert,
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -61,11 +62,7 @@ const EditProfileScreen: React.FC = () => {
     const [vehicleColor, setVehicleColor] = useState('');
     const [plateNumber, setPlateNumber] = useState('');
 
-    useEffect(() => {
-        loadProfile();
-    }, []);
-
-    const loadProfile = async () => {
+    const loadProfile = useCallback(async () => {
         setIsFetching(true);
         try {
             switch (user?.role) {
@@ -113,13 +110,23 @@ const EditProfileScreen: React.FC = () => {
                     break;
                 }
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to load profile:', error);
             Alert.alert(t('common.error'), error.response?.data?.message || t('errors.unknownError'));
         } finally {
             setIsFetching(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        loadProfile();
+    }, [loadProfile]);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadProfile();
+        }, [loadProfile])
+    );
 
     const handleSave = async () => {
         if (!name.trim()) {
@@ -187,7 +194,7 @@ const EditProfileScreen: React.FC = () => {
                 t('profile.updateSuccess') || t('common.success'),
                 [{ text: t('common.ok'), onPress: () => navigation.goBack() }]
             );
-        } catch (error: any) {
+        } catch (error) {
             Alert.alert(
                 t('common.error'),
                 error.response?.data?.message || t('errors.unknownError')
@@ -228,7 +235,7 @@ const EditProfileScreen: React.FC = () => {
     if (isFetching) {
         return (
             <SafeAreaView style={styles.container}>
-                <StatusBar style="dark" />
+                <StatusBar style="dark" translucent backgroundColor="transparent" />
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color={COLORS.gray900} />
@@ -245,7 +252,7 @@ const EditProfileScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
 
             {/* Header */}
             <View style={styles.header}>

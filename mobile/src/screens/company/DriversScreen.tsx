@@ -4,13 +4,13 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     FlatList,
     RefreshControl,
     TouchableOpacity,
     Modal,
     Alert,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -175,11 +175,10 @@ const DriversScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
 
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity
+            <View style={[styles.header, { paddingTop: insets.top + 16 }]}>                <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >

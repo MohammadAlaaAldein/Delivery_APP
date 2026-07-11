@@ -4,13 +4,13 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     RefreshControl,
     TouchableOpacity,
     Switch,
     Alert,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,10 +27,16 @@ type NavigationProp = NativeStackNavigationProp<DriverStackParamList, 'Dashboard
 
 const DriverDashboardScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
-    const { user } = useAuthStore();
+    const { user, updateUser } = useAuthStore();
     const { orders, activeOrders: storeActiveOrders, driverStats, isLoading, fetchDriverOrders, fetchDriverStats } = useOrdersStore();
     const [refreshing, setRefreshing] = useState(false);
-    const [isOnline, setIsOnline] = useState(true);
+    const [isOnline, setIsOnline] = useState(user?.is_active ?? true);
+
+    useEffect(() => {
+        if (user?.is_active !== undefined) {
+            setIsOnline(user.is_active);
+        }
+    }, [user?.is_active]);
 
     useEffect(() => {
         loadData();
@@ -51,6 +57,8 @@ const DriverDashboardScreen: React.FC = () => {
     const activeOrders = allDriverOrders.filter(
         (o) => [OrderStatus.ASSIGNED_TO_DRIVER, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT].includes(o.status as OrderStatus)
     );
+
+    console.log(JSON.stringify(allDriverOrders));
 
     const pendingPickup = allDriverOrders.filter((o) => o.status === OrderStatus.ASSIGNED_TO_DRIVER);
     const inProgress = allDriverOrders.filter(
@@ -76,20 +84,22 @@ const DriverDashboardScreen: React.FC = () => {
         return t('dashboard.goodEvening');
     };
 
+    const insets = useSafeAreaInsets();
+
     if (isLoading && allDriverOrders.length === 0) {
         return <Loading fullScreen message={t('dashboard.loadingDashboard')} />;
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="light" />
+            <StatusBar style="light" translucent backgroundColor="transparent" />
 
             {/* Header */}
             <LinearGradient
                 colors={['#10B981', '#059669'] as [string, string]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={styles.header}
+                style={[styles.header, { paddingTop: insets.top + 16 }]}
             >
                 <View style={styles.headerContent}>
                     <View style={styles.headerLeft}>
@@ -98,11 +108,11 @@ const DriverDashboardScreen: React.FC = () => {
                             {user?.name || 'Driver'}
                         </Text>
                     </View>
-                    <View style={styles.headerRight}>
+                    {/* <View style={styles.headerRight}>
                         <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
                             <Ionicons name="person-outline" size={24} color={COLORS.white} />
                         </TouchableOpacity>
-                    </View>
+                    </View> */}
                 </View>
 
                 {/* Online Toggle */}
@@ -118,14 +128,16 @@ const DriverDashboardScreen: React.FC = () => {
                         onValueChange={async (value) => {
                             setIsOnline(value);
                             try {
-                                if (value) {
-                                    // Send a dummy location update to mark as active
-                                    await entitiesService.updateDriverLocation(0, 0);
-                                } else {
-                                    await entitiesService.clearDriverLocation();
-                                }
+                                await entitiesService.updateMyDriverProfile({ is_active: value });
+                                updateUser({ is_active: value });
+                                // if (value) {
+                                //     await entitiesService.updateDriverLocation(0, 0);
+                                // } else {
+                                //     await entitiesService.clearDriverLocation();
+                                // }
                             } catch (err) {
                                 console.log('Toggle online status error:', err);
+                                setIsOnline(!value);
                             }
                         }}
                         trackColor={{ false: 'rgba(255,255,255,0.3)', true: COLORS.white }}
@@ -133,28 +145,6 @@ const DriverDashboardScreen: React.FC = () => {
                     />
                 </View>
 
-                {/* Earnings Card */}
-                <View style={styles.earningsCard}>
-                    <View style={styles.earningsMain}>
-                        <Text style={styles.earningsLabel}>{t('driver.todayEarnings')}</Text>
-                        <Text style={styles.earningsValue}>
-                            ${Number(driverStats?.todayEarnings || 0).toFixed(2)}
-                        </Text>
-                    </View>
-                    <View style={styles.earningsDivider} />
-                    <View style={styles.earningsStats}>
-                        <View style={styles.earningsStat}>
-                            <Text style={styles.earnStatValue}>{driverStats?.todayDeliveries || 0}</Text>
-                            <Text style={styles.earnStatLabel}>{t('dashboard.todayDeliveries')}</Text>
-                        </View>
-                        <View style={styles.earningsStat}>
-                            <Text style={styles.earnStatValue}>
-                                {Number(driverStats?.todayDistance || 0).toFixed(1)} km
-                            </Text>
-                            <Text style={styles.earnStatLabel}>{t('driver.distance')}</Text>
-                        </View>
-                    </View>
-                </View>
             </LinearGradient>
 
             <ScrollView
@@ -192,7 +182,7 @@ const DriverDashboardScreen: React.FC = () => {
                 </View>
 
                 {/* Stats */}
-                <View style={styles.statsSection}>
+                {/* <View style={styles.statsSection}>
                     <Text style={styles.sectionTitle}>{t('driver.stats')}</Text>
                     <View style={styles.statsGrid}>
                         <StatCard
@@ -220,7 +210,7 @@ const DriverDashboardScreen: React.FC = () => {
                             color={COLORS.warning}
                         />
                     </View>
-                </View>
+                </View> */}
 
                 {/* Active Orders */}
                 <View style={styles.ordersSection}>
@@ -259,18 +249,18 @@ const DriverDashboardScreen: React.FC = () => {
                             <Text style={styles.perfValue}>{driverStats?.weeklyDeliveries || 0}</Text>
                             <Text style={styles.perfLabel}>{t('dashboard.deliveredOrders')}</Text>
                         </View>
-                        <View style={styles.performanceItem}>
+                        {/* <View style={styles.performanceItem}>
                             <Ionicons name="time" size={24} color={COLORS.info} />
                             <Text style={styles.perfValue}>{'--'}</Text>
                             <Text style={styles.perfLabel}>{t('driver.avgTime')}</Text>
-                        </View>
-                        <View style={styles.performanceItem}>
+                        </View> */}
+                        {/* <View style={styles.performanceItem}>
                             <Ionicons name="cash" size={24} color={COLORS.warning} />
                             <Text style={styles.perfValue}>
                                 ${Number(driverStats?.weekEarnings || 0).toFixed(0)}
                             </Text>
                             <Text style={styles.perfLabel}>{t('driver.earned')}</Text>
-                        </View>
+                        </View> */}
                     </View>
                 </Card>
             </ScrollView>

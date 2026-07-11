@@ -62,6 +62,8 @@ export default {
         company: 'شركة',
         driver: 'سائق',
         admin: 'مدير',
+        comingSoon: 'قريباً',
+        items: 'العناصر',
     },
 
     // Auth
@@ -198,6 +200,7 @@ export default {
             in_transit: 'قيد التوصيل',
             delivered: 'تم التسليم',
             cancelled: 'ملغي',
+            assigned: 'مسند',
         },
 
         // Customer Info
@@ -413,6 +416,18 @@ export default {
         shopInfo: 'معلومات المتجر',
         companyInfo: 'معلومات الشركة',
         driverInfo: 'معلومات السائق',
+        nationalId: 'الرقم الوطني',
+        birthDate: 'تاريخ الميلاد',
+        whatsapp: 'واتساب',
+        licenseNumber: 'رقم الترخيص',
+        website: 'الموقع الإلكتروني',
+        companyType: 'نوع الشركة',
+        vehicleType: 'نوع المركبة',
+        vehicleBrand: 'ماركة المركبة',
+        vehicleModel: 'موديل المركبة',
+        vehicleYear: 'سنة الصنع',
+        vehicleColor: 'لون المركبة',
+        plateNumber: 'رقم اللوحة',
         updateSuccess: 'تم تحديث الملف الشخصي بنجاح',
         changePassword: 'تغيير كلمة المرور',
         deleteAccount: 'حذف الحساب',
@@ -424,6 +439,7 @@ export default {
         title: 'الإعدادات',
         general: 'عام',
         language: 'اللغة',
+        selectLanguageMessage: 'اختر لغة التطبيق.',
         theme: 'المظهر',
         themeLight: 'فاتح',
         themeDark: 'داكن',

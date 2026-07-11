@@ -4,12 +4,12 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     FlatList,
     RefreshControl,
     TouchableOpacity,
     TextInput as RNTextInput,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -23,13 +23,13 @@ import { ShopStackParamList, OrderStatus, Order } from '../../types';
 type NavigationProp = NativeStackNavigationProp<ShopStackParamList, 'Orders'>;
 
 const TABS = [
-    { key: 'all', label: 'All' },
-    { key: OrderStatus.PENDING, label: 'Pending' },
-    { key: OrderStatus.ASSIGNED_TO_COMPANY, label: 'Assigned' },
-    { key: OrderStatus.PICKED_UP, label: 'Picked Up' },
-    { key: OrderStatus.IN_TRANSIT, label: 'In Transit' },
-    { key: OrderStatus.DELIVERED, label: 'Delivered' },
-    { key: OrderStatus.CANCELLED, label: 'Cancelled' },
+    { key: 'all', label: t('common.all') },
+    { key: OrderStatus.PENDING, label: t('orders.status.pending') },
+    { key: OrderStatus.ASSIGNED_TO_COMPANY, label: t('orders.status.assigned') },
+    { key: OrderStatus.PICKED_UP, label: t('orders.status.picked_up') },
+    { key: OrderStatus.IN_TRANSIT, label: t('orders.status.in_transit') },
+    { key: OrderStatus.DELIVERED, label: t('orders.status.delivered') },
+    { key: OrderStatus.CANCELLED, label: t('orders.status.cancelled') },
 ];
 
 const ShopOrdersScreen: React.FC = () => {
@@ -92,7 +92,7 @@ const ShopOrdersScreen: React.FC = () => {
                     <Ionicons name="search-outline" size={20} color={COLORS.gray400} />
                     <RNTextInput
                         style={styles.searchInput}
-                        placeholder="Search orders..."
+                        placeholder={t('orders.searchOrders')}
                         placeholderTextColor={COLORS.gray400}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
@@ -146,24 +146,21 @@ const ShopOrdersScreen: React.FC = () => {
                 <Text style={styles.resultsText}>
                     {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'}
                 </Text>
-                <TouchableOpacity style={styles.sortBtn}>
+                {/* <TouchableOpacity style={styles.sortBtn}>
                     <Ionicons name="filter-outline" size={18} color={COLORS.gray600} />
                     <Text style={styles.sortText}>Filter</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </>
     );
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
 
             {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.title}>{t('shop.orders')}</Text>
-                <TouchableOpacity style={styles.addBtn} onPress={handleCreateOrder}>
-                    <Ionicons name="add" size={24} color={COLORS.white} />
-                </TouchableOpacity>
             </View>
 
             {isLoading && orders.length === 0 ? (

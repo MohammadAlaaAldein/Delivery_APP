@@ -62,6 +62,8 @@ export default {
         company: 'Company',
         driver: 'Driver',
         admin: 'Admin',
+        comingSoon: 'Coming Soon',
+        items: 'Items',
     },
 
     // Auth
@@ -198,6 +200,7 @@ export default {
             in_transit: 'In Transit',
             delivered: 'Delivered',
             cancelled: 'Cancelled',
+            assigned: 'Assigned',
         },
 
         // Customer Info
@@ -413,6 +416,18 @@ export default {
         shopInfo: 'Shop Information',
         companyInfo: 'Company Information',
         driverInfo: 'Driver Information',
+        nationalId: 'National ID',
+        birthDate: 'Birth Date',
+        whatsapp: 'WhatsApp',
+        licenseNumber: 'License Number',
+        website: 'Website',
+        companyType: 'Company Type',
+        vehicleType: 'Vehicle Type',
+        vehicleBrand: 'Vehicle Brand',
+        vehicleModel: 'Vehicle Model',
+        vehicleYear: 'Vehicle Year',
+        vehicleColor: 'Vehicle Color',
+        plateNumber: 'Plate Number',
         updateSuccess: 'Profile updated successfully',
         changePassword: 'Change Password',
         deleteAccount: 'Delete Account',
@@ -424,6 +439,7 @@ export default {
         title: 'Settings',
         general: 'General',
         language: 'Language',
+        selectLanguageMessage: 'Select the language for the app.',
         theme: 'Theme',
         themeLight: 'Light',
         themeDark: 'Dark',

@@ -403,7 +403,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
                 activeOrders: raw?.inProgress ?? raw?.activeOrders ?? 0,
                 todayDeliveries: raw?.delivered ?? raw?.todayDeliveries ?? 0,
                 todayEarnings: raw?.totalRevenue ?? raw?.todayEarnings ?? 0,
-                todayDistance: raw?.todayDistance ?? 0,
+                // todayDistance: raw?.todayDistance ?? 0,
                 rating: raw?.rating ?? raw?.deliveryRate ?? 0,
                 weeklyDeliveries: raw?.weeklyDeliveries ?? raw?.delivered ?? 0,
                 weekEarnings: raw?.weekEarnings ?? raw?.totalRevenue ?? 0,

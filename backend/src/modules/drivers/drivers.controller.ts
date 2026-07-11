@@ -56,8 +56,8 @@ export class DriversController {
     ) {
         const driverId = req.user.id;
 
-        // Remove fields that drivers cannot modify themselves
-        const { is_active, company_id, ...allowedFields } = updateDriverDto;
+        // Allow drivers to update their online status and profile fields
+        const { company_id, ...allowedFields } = updateDriverDto;
 
         const result = await this.driversService.update(driverId, allowedFields, { req });
 

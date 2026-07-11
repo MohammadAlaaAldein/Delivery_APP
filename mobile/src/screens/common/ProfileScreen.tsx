@@ -1,28 +1,65 @@
 // @ts-nocheck
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     TouchableOpacity,
     Alert,
-    Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { Card } from '../../components';
 import { COLORS, FONTS, FONT_SIZES, SPACING, RADIUS, SHADOWS } from '../../constants';
 import { useAuthStore } from '../../stores';
-import { t } from '../../i18n';
+import { getCurrentLanguage, setLanguage, t } from '../../i18n';
 import { UserRole } from '../../types';
+import { DevSettings, I18nManager } from 'react-native';
+import * as Updates from 'expo-updates';
 
 const ProfileScreen: React.FC = () => {
     const navigation = useNavigation();
     const { user, logout } = useAuthStore();
     const [loggingOut, setLoggingOut] = useState(false);
+    const [language, setLanguageState] = useState(getCurrentLanguage());
+
+    const handleChangeLanguage = useCallback(async () => {
+        Alert.alert(
+            t('settings.language'),
+            '',
+            [
+                {
+                    text: t('common.english') || 'English',
+                    onPress: async () => {
+                        await setLanguage('en');
+                        setLanguageState('en');
+
+                        // if (__DEV__)
+                        //     DevSettings.reload();
+                        // else
+                        await Updates.reloadAsync();
+                    },
+                },
+                { text: '', style: 'cancel' },
+                {
+                    text: t('common.arabic') || 'العربية',
+                    onPress: async () => {
+                        await setLanguage('ar');
+                        setLanguageState('ar');
+
+                        if (__DEV__)
+                            DevSettings.reload();
+                        else
+                            await Updates.reloadAsync();
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    }, []);
 
     const handleLogout = () => {
         Alert.alert(
@@ -67,16 +104,21 @@ const ProfileScreen: React.FC = () => {
             label: t('profile.editProfile'),
             onPress: () => navigation.navigate('EditProfile' as never),
         },
+        // {
+        //     icon: 'lock-closed-outline',
+        //     label: t('profile.changePassword'),
+        //     onPress: () => Alert.alert(t('common.noData'), t('common.comingSoon') || 'Coming soon'),
+        // },
         {
-            icon: 'lock-closed-outline',
-            label: t('profile.changePassword'),
-            onPress: () => Alert.alert(t('common.noData'), t('common.comingSoon') || 'قريباً'),
+            icon: 'language-outline',
+            label: t('settings.language'),
+            onPress: handleChangeLanguage,
         },
-        {
-            icon: 'notifications-outline',
-            label: t('settings.notifications'),
-            onPress: () => Alert.alert(t('common.noData'), t('common.comingSoon') || 'قريباً'),
-        },
+        // {
+        //     icon: 'notifications-outline',
+        //     label: t('settings.notifications'),
+        //     onPress: () => Alert.alert(t('common.noData'), t('common.comingSoon') || 'Coming soon'),
+        // },
         {
             icon: 'information-circle-outline',
             label: t('settings.about'),
@@ -86,7 +128,7 @@ const ProfileScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
 
             {/* Header */}
             <View style={styles.header}>

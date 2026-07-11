@@ -612,11 +612,27 @@ export class OrdersService {
             ]);
         }
 
-        return await this.ordersRepository.find({
-            where,
-            relations: ['shop', 'company'],
-            order: { priority: 'DESC', created_at: 'ASC' },
-        });
+        return await this.ordersRepository.createQueryBuilder('order')
+            .leftJoin('order.shop', 'shop')
+            // .leftJoin('order.company', 'company')
+            .select([
+                'order', // Selects all columns of order
+                'shop.id',
+                'shop.name',
+                'shop.name',
+                'shop.city',
+                'shop.address',
+                'shop.area',
+                'shop.latitude',
+                'shop.longitude',
+                'shop.phone',
+                'shop.street',
+                'shop.whatsapp',
+            ])
+            .where(where)
+            .orderBy('order.priority', 'DESC')
+            .addOrderBy('order.created_at', 'ASC')
+            .getMany();
     }
 
     // Driver gets a specific order
@@ -953,7 +969,7 @@ export class OrdersService {
     // ==================== STATISTICS ====================
 
     async getShopStatistics(shopId: number): Promise<any> {
-        const orders = await this.ordersRepository.find({
+        const orders = await this.ordersHistoryRepository.find({
             where: { shop_id: shopId },
         });
 
@@ -961,7 +977,7 @@ export class OrdersService {
     }
 
     async getCompanyStatistics(companyId: number): Promise<any> {
-        const orders = await this.ordersRepository.find({
+        const orders = await this.ordersHistoryRepository.find({
             where: { company_id: companyId },
         });
 
@@ -969,14 +985,14 @@ export class OrdersService {
     }
 
     async getDriverStatistics(driverId: number): Promise<any> {
-        const orders = await this.ordersRepository.find({
+        const orders = await this.ordersHistoryRepository.find({
             where: { driver_id: driverId },
         });
 
         return this.calculateStatistics(orders);
     }
 
-    private calculateStatistics(orders: Order[]): any {
+    private calculateStatistics(orders: OrderHistory[]): any {
         const total = orders.length;
         const pending = orders.filter(o => o.status === OrderStatus.PENDING).length;
         const inProgress = orders.filter(o =>

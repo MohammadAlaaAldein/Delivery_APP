@@ -4,12 +4,12 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     ScrollView,
     RefreshControl,
     TouchableOpacity,
     Alert,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,20 +64,22 @@ const ShopDashboardScreen: React.FC = () => {
         return t('dashboard.goodEvening');
     };
 
+    const insets = useSafeAreaInsets();
+
     if (isLoading && orders.length === 0) {
         return <Loading fullScreen message={t('dashboard.loadingDashboard')} />;
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="light" />
+            <StatusBar style="light" translucent backgroundColor="transparent" />
 
             {/* Header */}
             <LinearGradient
                 colors={COLORS.gradientPrimary as [string, string]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={styles.header}
+                style={[styles.header, { paddingTop: insets.top + 16 }]}
             >
                 <View style={styles.headerContent}>
                     <View style={styles.headerLeft}>
@@ -87,13 +89,13 @@ const ShopDashboardScreen: React.FC = () => {
                         </Text>
                     </View>
                     <View style={styles.headerRight}>
-                        <TouchableOpacity style={styles.notificationBtn} onPress={() => Alert.alert(t('notifications.title'), t('notifications.noNotifications'))}>
+                        {/* <TouchableOpacity style={styles.notificationBtn} onPress={() => Alert.alert(t('notifications.title'), t('notifications.noNotifications'))}>
                             <Ionicons name="notifications-outline" size={24} color={COLORS.white} />
                             <View style={styles.notificationBadge} />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
+                        </TouchableOpacity> */}
+                        {/* <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.getParent()?.navigate('Profile')}>
                             <Ionicons name="person-outline" size={24} color={COLORS.white} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                 </View>
 
@@ -126,7 +128,7 @@ const ShopDashboardScreen: React.FC = () => {
                 }
             >
                 {/* Stats Cards */}
-                <View style={styles.statsContainer}>
+                {/* <View style={styles.statsContainer}>
                     <Text style={styles.sectionTitle}>{t('shop.stats')}</Text>
                     <View style={styles.statsGrid}>
                         <StatCard
@@ -156,18 +158,18 @@ const ShopDashboardScreen: React.FC = () => {
                             color={COLORS.primary}
                         />
                     </View>
-                </View>
+                </View> */}
 
                 {/* Quick Stats */}
                 <View style={styles.quickStats}>
                     <Card style={styles.quickStatCard}>
                         <View style={styles.quickStatRow}>
-                            <View style={styles.quickStatItem}>
+                            {/* <View style={styles.quickStatItem}>
                                 <Text style={styles.quickStatValue}>
                                     ${Number(shopStats?.todayRevenue || 0).toFixed(2)}
                                 </Text>
                                 <Text style={styles.quickStatLabel}>{t('dashboard.todayRevenue')}</Text>
-                            </View>
+                            </View> */}
                             <View style={styles.quickStatDivider} />
                             <View style={styles.quickStatItem}>
                                 <Text style={styles.quickStatValue}>{shopStats?.todayOrders || 0}</Text>
@@ -206,20 +208,6 @@ const ShopDashboardScreen: React.FC = () => {
                     )}
                 </View>
             </ScrollView>
-
-            {/* Floating Action Button */}
-            <TouchableOpacity
-                style={styles.fab}
-                onPress={handleCreateOrder}
-                activeOpacity={0.8}
-            >
-                <LinearGradient
-                    colors={COLORS.gradientPrimary as [string, string]}
-                    style={styles.fabGradient}
-                >
-                    <Ionicons name="add" size={28} color={COLORS.white} />
-                </LinearGradient>
-            </TouchableOpacity>
         </SafeAreaView>
     );
 };

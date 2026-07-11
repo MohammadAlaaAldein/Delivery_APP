@@ -4,13 +4,13 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     KeyboardAvoidingView,
     Platform,
     TouchableOpacity,
     Alert,
     ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -73,7 +73,7 @@ const ForgotPasswordScreen: React.FC = () => {
     if (isSuccess) {
         return (
             <SafeAreaView style={styles.container}>
-                <StatusBar style="dark" />
+                <StatusBar style="dark" translucent backgroundColor="transparent" />
                 <View style={styles.successContainer}>
                     <View style={styles.successIconContainer}>
                         <LinearGradient
@@ -102,7 +102,7 @@ const ForgotPasswordScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+            <StatusBar style="dark" translucent backgroundColor="transparent" />
 
             {/* Header */}
             <View style={styles.header}>
